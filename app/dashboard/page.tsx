@@ -708,6 +708,53 @@ function AdmissionForm() {
 }
 
 function AdmissionRequirementsForm() {
+	const [documents, setDocuments] = useState([
+		"জন্ম নিবন্ধন সার্টিফিকেট",
+		"একাডেমিক রেকর্ড (যদি থাকে)",
+		"স্বাস্থ্য পরীক্ষার রিপোর্ট",
+		"অভিভাবকের পরিচয়পত্র (এনআইডি)",
+		"পাসপোর্ট সাইজ ছবি (৪×৬)",
+	]);
+
+	const [infoCards, setInfoCards] = useState([
+		{ title: "শ্রেণী সমূহ", value: "নূরানী থেকে আলিম পর্যন্ত" },
+		{ title: "বার্ষিক ফি", value: "২,০০০ - ৫,০০০ টাকা" },
+		{ title: "প্রতি ক্লাসে ধারণক্ষমতা", value: "৫০ - ৭৫ জন শিক্ষার্থী" },
+		{ title: "শিক্ষা সময়কাল", value: "২ - ১০ বছর" },
+	]);
+
+	const addDocument = () => {
+		setDocuments([...documents, ""]);
+	};
+
+	const removeDocument = (index: number) => {
+		setDocuments(documents.filter((_, i) => i !== index));
+	};
+
+	const updateDocument = (index: number, value: string) => {
+		setDocuments(documents.map((doc, i) => (i === index ? value : doc)));
+	};
+
+	const addInfoCard = () => {
+		setInfoCards([...infoCards, { title: "", value: "" }]);
+	};
+
+	const removeInfoCard = (index: number) => {
+		setInfoCards(infoCards.filter((_, i) => i !== index));
+	};
+
+	const updateInfoCard = (
+		index: number,
+		field: "title" | "value",
+		value: string
+	) => {
+		setInfoCards(
+			infoCards.map((card, i) =>
+				i === index ? { ...card, [field]: value } : card
+			)
+		);
+	};
+
 	return (
 		<div>
 			<h2 className="text-lg font-medium text-gray-900 mb-6">
@@ -720,21 +767,31 @@ function AdmissionRequirementsForm() {
 						ইনফো কার্ডস
 					</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{[
-							{ title: "শ্রেণী সমূহ", value: "নূরানী থেকে আলিম পর্যন্ত" },
-							{ title: "বার্ষিক ফি", value: "২,০০০ - ৫,০০০ টাকা" },
-							{
-								title: "প্রতি ক্লাসে ধারণক্ষমতা",
-								value: "৫০ - ৭৫ জন শিক্ষার্থী",
-							},
-							{ title: "শিক্ষা সময়কাল", value: "২ - ১০ বছর" },
-						].map((card, idx) => (
+						{infoCards.map((card, idx) => (
 							<div key={idx} className="p-4 border rounded-md space-y-4">
+								<div className="flex justify-between items-center mb-2">
+									<h4 className="text-sm font-medium text-gray-600">
+										কার্ড {idx + 1}
+									</h4>
+									<Button
+										type="button"
+										onClick={() => removeInfoCard(idx)}
+										variant="outline"
+										size="sm"
+										className="text-red-600 hover:text-red-800"
+										disabled={infoCards.length <= 1}
+									>
+										🗑️
+									</Button>
+								</div>
 								<div className="space-y-2">
 									<Label className={labelClasses}>টাইটেল</Label>
 									<Input
 										type="text"
-										defaultValue={card.title}
+										value={card.title}
+										onChange={(e) =>
+											updateInfoCard(idx, "title", e.target.value)
+										}
 										className={inputClasses}
 									/>
 								</div>
@@ -742,13 +799,24 @@ function AdmissionRequirementsForm() {
 									<Label className={labelClasses}>ভ্যালু</Label>
 									<Input
 										type="text"
-										defaultValue={card.value}
+										value={card.value}
+										onChange={(e) =>
+											updateInfoCard(idx, "value", e.target.value)
+										}
 										className={inputClasses}
 									/>
 								</div>
 							</div>
 						))}
 					</div>
+					<Button
+						type="button"
+						onClick={addInfoCard}
+						variant="outline"
+						className="mt-4"
+					>
+						+ নতুন ইনফো কার্ড যোগ করুন
+					</Button>
 				</div>
 
 				{/* Required Documents */}
@@ -757,22 +825,35 @@ function AdmissionRequirementsForm() {
 						প্রয়োজনীয় ডকুমেন্টস
 					</h3>
 					<div className="space-y-4">
-						{[
-							"জন্ম নিবন্ধন সার্টিফিকেট",
-							"একাডেমিক রেকর্ড (যদি থাকে)",
-							"স্বাস্থ্য পরীক্ষার রিপোর্ট",
-							"অভিভাবকের পরিচয়পত্র (এনআইডি)",
-							"পাসপোর্ট সাইজ ছবি (৪×৬)",
-						].map((doc, idx) => (
-							<div key={idx} className="space-y-2">
-								<Label className={labelClasses}>ডকুমেন্ট {idx + 1}</Label>
+						{documents.map((doc, idx) => (
+							<div key={idx} className="flex items-center space-x-2">
 								<Input
 									type="text"
-									defaultValue={doc}
+									value={doc}
+									onChange={(e) => updateDocument(idx, e.target.value)}
 									className={inputClasses}
+									placeholder={`ডকুমেন্ট ${idx + 1}`}
 								/>
+								<Button
+									type="button"
+									onClick={() => removeDocument(idx)}
+									variant="outline"
+									size="sm"
+									className="text-red-600 hover:text-red-800"
+									disabled={documents.length <= 1}
+								>
+									🗑️
+								</Button>
 							</div>
 						))}
+						<Button
+							type="button"
+							onClick={addDocument}
+							variant="outline"
+							className="mt-2"
+						>
+							+ নতুন ডকুমেন্ট যোগ করুন
+						</Button>
 					</div>
 				</div>
 
@@ -855,7 +936,7 @@ function AdmissionProcessForm() {
 				{/* Class Information */}
 				<div>
 					<h3 className="text-md font-medium text-gray-700 mb-4">
-						শ্রেণী তথ্য
+						শ্রেণী ও ফি তথ্য
 					</h3>
 					<div className="space-y-4">
 						{[
