@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -28,7 +29,7 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 		const savedTheme = localStorage.getItem("dashboard-theme") || "light";
 		setTheme(savedTheme);
 		document.documentElement.classList.toggle("dark", savedTheme === "dark");
-	}, []);
+	}, [theme]);
 
 	const toggleTheme = () => {
 		const newTheme = theme === "light" ? "dark" : "light";
@@ -308,6 +309,18 @@ function DashboardContent() {
 								)}
 							</button>
 						))}
+						{/* Logout Button at Bottom */}
+						<div className="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-gray-700">
+							<button
+								onClick={async () => {
+									await fetch("/api/auth/logout", { method: "POST" });
+									window.location.href = "/";
+								}}
+								className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
+							>
+								Logout
+							</button>
+						</div>
 					</div>
 				</nav>
 			</div>

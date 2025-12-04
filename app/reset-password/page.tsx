@@ -1,10 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import Image from "next/image";
 
-const ResetPassword: React.FC = () => {
+const ResetPasswordForm: React.FC = () => {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
@@ -71,7 +71,7 @@ const ResetPassword: React.FC = () => {
 				<div className="text-center mb-8">
 					<div className="flex size-30 mx-auto rounded-full justify-center mb-4 border">
 						<Image
-							src="/logo.avif"
+							src="/logo.png"
 							width={1000}
 							height={1000}
 							alt="logo"
@@ -170,6 +170,14 @@ const ResetPassword: React.FC = () => {
 				</div>
 			</div>
 		</div>
+	);
+};
+
+const ResetPassword: React.FC = () => {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ResetPasswordForm />
+		</Suspense>
 	);
 };
 

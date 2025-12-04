@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, LogIn, X } from "lucide-react";
 import Image from "next/image";
@@ -18,6 +18,17 @@ const Login: React.FC = () => {
 	const [forgotMessage, setForgotMessage] = useState("");
 	const [forgotError, setForgotError] = useState("");
 
+	// if user is already logged in, redirect to dashboard
+	useEffect(() => {
+		const checkAuth = async () => {
+			const res = await fetch("/api/auth/check");
+			if (res.ok) {
+				router.push("/dashboard");
+			}
+		};
+		checkAuth();
+	}, [router]);
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!email || !password) {
@@ -33,9 +44,9 @@ const Login: React.FC = () => {
 			});
 			const data = await res.json();
 			if (res.ok) {
-				console.log("লগইন সফল!");
+				alert("লগইন সফল!");
 				// Redirect to dashboard
-				router.push("/dashboard");
+				window.location.href = "/dashboard";
 			} else {
 				alert(data.error || "লগইন ব্যর্থ");
 			}
@@ -82,7 +93,7 @@ const Login: React.FC = () => {
 				<div className="text-center mb-8">
 					<div className="flex size-30 mx-auto rounded-full justify-center mb-4 border">
 						<Image
-							src="/logo.avif"
+							src="/logo.png"
 							width={1000}
 							height={1000}
 							alt="logo"
