@@ -3,6 +3,23 @@ import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
 export default function middleware(request: NextRequest) {
+	const response = NextResponse.next();
+
+	// Handle CORS for API routes
+	if (request.nextUrl.pathname.startsWith("/api")) {
+		response.headers.set("Access-Control-Allow-Origin", "*");
+		response.headers.set(
+			"Access-Control-Allow-Methods",
+			"GET,POST,PUT,DELETE,OPTIONS"
+		);
+		response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+		// Handle preflight OPTIONS request
+		if (request.method === "OPTIONS") {
+			return new NextResponse(null, { status: 200, headers: response.headers });
+		}
+	}
+
 	const token = request.cookies.get("token")?.value;
 	console.log("Middleware:", request.nextUrl.pathname, "token:", !!token);
 
@@ -39,5 +56,5 @@ export default function middleware(request: NextRequest) {
 export const runtime = "nodejs";
 
 export const config = {
-	matcher: ["/", "/dashboard/:path*"],
+	matcher: ["/", "/dashboard/:path*", "/api/:path*"],
 };
