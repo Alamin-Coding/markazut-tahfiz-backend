@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import ControlDashboardPage from "./control/page";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -166,6 +167,7 @@ function DashboardContent() {
 		{ id: "notice", label: "নোটিশ", icon: "📢" },
 		{ id: "faq", label: "FAQ", icon: "❓" },
 		{ id: "contact", label: "যোগাযোগ", icon: "📞" },
+		{ id: "control", label: "কন্ট্রোল প্যানেল", icon: "⚙️" },
 	];
 
 	const getTabsForPage = (pageId: string) => {
@@ -211,6 +213,8 @@ function DashboardContent() {
 					{ id: "info", label: "যোগাযোগ তথ্য" },
 					{ id: "faq", label: "FAQ" },
 				];
+			case "control":
+				return [];
 			default:
 				return [];
 		}
@@ -334,6 +338,16 @@ function DashboardContent() {
 								)}
 							</button>
 						))}
+						<button
+							onClick={() => {
+								setActivePage("control");
+								setActiveTab("");
+								setSidebarOpen(false);
+							}}
+							className="w-full mt-2 px-3 py-2 text-sm font-medium rounded-md text-left bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+						>
+							⚙️ কন্ট্রোল প্যানেল
+						</button>
 						{/* Logout Button at Bottom */}
 						<div className="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-gray-700">
 							<button
@@ -485,6 +499,7 @@ function DashboardContent() {
 							{activePage === "contact" && activeTab === "faq" && (
 								<FAQManagementForm />
 							)}
+							{activePage === "control" && <ControlDashboardPage />}
 						</div>
 					</div>
 				</div>
@@ -1675,6 +1690,10 @@ function ResultsManageForm() {
 			{ name: "আচরণ ও শৃঙ্খলা", marks: 0, total: 100 },
 		],
 	});
+	const [examDateValue, setExamDateValue] = useState<Date | undefined>(undefined);
+	const [resultDateValue, setResultDateValue] = useState<Date | undefined>(
+		undefined
+	);
 
 	// Fetch results on component mount
 	useEffect(() => {
@@ -1712,8 +1731,8 @@ function ResultsManageForm() {
 			!formData.division ||
 			!formData.class ||
 			!formData.term ||
-			!formData.examDate ||
-			!formData.resultDate
+			!(examDateValue || formData.examDate) ||
+			!(resultDateValue || formData.resultDate)
 		) {
 			alert("অনুগ্রহ করে সকল প্রয়োজনীয় তথ্য পূরণ করুন");
 			return;
@@ -1732,8 +1751,12 @@ function ResultsManageForm() {
 			term: formData.term,
 			totalMarks,
 			subjects: formData.subjects,
-			examDate: formData.examDate,
-			resultDate: formData.resultDate,
+			examDate: examDateValue
+				? examDateValue.toISOString()
+				: formData.examDate,
+			resultDate: resultDateValue
+				? resultDateValue.toISOString()
+				: formData.resultDate,
 			principal: formData.principal,
 		};
 
@@ -1793,6 +1816,8 @@ function ResultsManageForm() {
 				{ name: "আচরণ ও শৃঙ্খলা", marks: 0, total: 100 },
 			],
 		});
+		setExamDateValue(undefined);
+		setResultDateValue(undefined);
 	};
 
 	// Filter results based on search and filters
@@ -1837,6 +1862,10 @@ function ResultsManageForm() {
 			principal: result.principal,
 			subjects: result.subjects,
 		});
+		const parsedExam = new Date(result.examDate);
+		setExamDateValue(isNaN(parsedExam.getTime()) ? undefined : parsedExam);
+		const parsedResult = new Date(result.resultDate);
+		setResultDateValue(isNaN(parsedResult.getTime()) ? undefined : parsedResult);
 		setShowAddForm(true);
 	};
 
@@ -1911,7 +1940,11 @@ function ResultsManageForm() {
 				</h2>
 				<div className="flex gap-2">
 					<Button
-						onClick={() => setShowAddForm(true)}
+						onClick={() => {
+							setEditingId(null);
+							resetForm();
+							setShowAddForm(true);
+						}}
 						className="bg-green-600 hover:bg-green-700"
 					>
 						+ নতুন ফলাফল যোগ করুন
@@ -2190,26 +2223,30 @@ function ResultsManageForm() {
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Label className={labelClasses}>পরীক্ষার তারিখ</Label>
-									<Input
-										type="text"
-										value={formData.examDate}
-										onChange={(e) =>
-											setFormData({ ...formData, examDate: e.target.value })
-										}
-										className={inputClasses}
-										placeholder="উদাহরণ: ২৪ জানুয়ারি ২০২৫"
+									<DatePicker
+										date={examDateValue}
+										onSelect={(date) => {
+											setExamDateValue(date || undefined);
+											setFormData({
+												...formData,
+												examDate: date ? date.toISOString() : "",
+											});
+										}}
+										placeholder="তারিখ নির্বাচন করুন"
 									/>
 								</div>
 								<div className="space-y-2">
 									<Label className={labelClasses}>ফলাফল প্রকাশের তারিখ</Label>
-									<Input
-										type="text"
-										value={formData.resultDate}
-										onChange={(e) =>
-											setFormData({ ...formData, resultDate: e.target.value })
-										}
-										className={inputClasses}
-										placeholder="উদাহরণ: ২৪ ফেব্রুয়ারি ২০২৫"
+									<DatePicker
+										date={resultDateValue}
+										onSelect={(date) => {
+											setResultDateValue(date || undefined);
+											setFormData({
+												...formData,
+												resultDate: date ? date.toISOString() : "",
+											});
+										}}
+										placeholder="তারিখ নির্বাচন করুন"
 									/>
 								</div>
 							</div>
