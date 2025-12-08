@@ -39,7 +39,6 @@ export const uploadImage = async (
 			folder,
 			resource_type: "auto",
 			quality: "auto",
-			format: "auto",
 		};
 
 		if (publicId) {
@@ -49,8 +48,9 @@ export const uploadImage = async (
 		const result = await cloudinary.uploader.upload(file, uploadOptions);
 		return result as CloudinaryUploadResult;
 	} catch (error) {
-		console.error("Cloudinary upload error:", error);
-		throw new Error("Failed to upload image to Cloudinary");
+		console.error("Cloudinary upload error FULL DETAILS:", JSON.stringify(error, null, 2));
+		console.error("Cloudinary upload error object:", error);
+		throw error;
 	}
 };
 

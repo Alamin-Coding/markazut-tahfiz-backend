@@ -7,8 +7,23 @@ export async function POST(request: NextRequest) {
 		const files = formData.getAll("files") as File[];
 		const folder = (formData.get("folder") as string) || "markazut-tahfiz";
 
+
 		if (!files || files.length === 0) {
 			return NextResponse.json({ error: "No files provided" }, { status: 400 });
+		}
+
+		// Check for Cloudinary credentials
+		if (
+			!process.env.CLOUDINARY_CLOUD_NAME ||
+			!process.env.CLOUDINARY_API_KEY ||
+			!process.env.CLOUDINARY_API_SECRET
+		) {
+			return NextResponse.json(
+				{
+					error: "Cloudinary credentials are not configured in the backend .env file.",
+				},
+				{ status: 500 }
+			);
 		}
 
 		// Convert files to base64 strings
@@ -34,8 +49,9 @@ export async function POST(request: NextRequest) {
 			data: results,
 			message: `${results.length} image(s) uploaded successfully`,
 		});
-	} catch (error) {
+	} catch (error: any) {
 		console.error("Upload API error:", error);
+		console.error("Upload API error message:", error.message);
 		return NextResponse.json(
 			{
 				error: "Failed to upload images",

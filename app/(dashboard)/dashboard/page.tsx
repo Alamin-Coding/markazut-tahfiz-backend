@@ -31,8 +31,8 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
-import HeroForm from "@/components/HeroForm";
+import HomePageContent from "@/components/HomePageContent";
+
 
 // Theme Context
 const ThemeContext = React.createContext({
@@ -80,76 +80,7 @@ export const labelClasses = "text-gray-700 dark:text-gray-300 font-medium";
 export const selectClasses =
 	"border-gray-300 dark:border-gray-600 focus:border-green-500 dark:focus:border-green-400 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white";
 
-// Cloudinary Image Upload Component
-function CloudinaryImageUpload({
-	label,
-	value,
-	onChange,
-	folder = "markazut-tahfiz",
-	className = "",
-	uploadToCloudinary,
-}: {
-	label: string;
-	value?: string;
-	onChange: (url: string) => void;
-	folder?: string;
-	className?: string;
-	uploadToCloudinary: (file: File, folder?: string) => Promise<any>;
-}) {
-	const [uploading, setUploading] = useState(false);
-	const [preview, setPreview] = useState<string | null>(value || null);
 
-	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-
-		setUploading(true);
-		try {
-			const result = await uploadToCloudinary(file, folder);
-			const imageUrl = result.secure_url;
-			setPreview(imageUrl);
-			onChange(imageUrl);
-		} catch (error) {
-			alert("Image upload failed. Please try again.");
-		} finally {
-			setUploading(false);
-		}
-	};
-
-	return (
-		<div className={`space-y-2 ${className}`}>
-			<Label>{label}</Label>
-			<div className="space-y-3">
-				<Input
-					type="file"
-					accept="image/*"
-					onChange={handleFileChange}
-					disabled={uploading}
-					className={uploading ? "opacity-50" : ""}
-				/>
-				{uploading && (
-					<div className="text-sm text-blue-600 flex items-center">
-						<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-						Uploading to Cloudinary...
-					</div>
-				)}
-				{preview && (
-					<div className="border rounded-lg p-3 bg-gray-50">
-						<p className="text-sm text-gray-600 mb-2">Preview:</p>
-						<img
-							src={preview}
-							alt="Uploaded preview"
-							className="max-w-full h-32 object-cover rounded border"
-						/>
-						<p className="text-xs text-gray-500 mt-2 break-all">
-							URL: {preview}
-						</p>
-					</div>
-				)}
-			</div>
-		</div>
-	);
-}
 
 function DashboardContent() {
 	const [activePage, setActivePage] = useState("home");
@@ -243,12 +174,12 @@ function DashboardContent() {
 	// Function to upload image to Cloudinary
 	const uploadToCloudinary = async (
 		file: File,
-		folder: string = "markazut-tahfiz"
+		folder?: string
 	) => {
 		try {
 			const formData = new FormData();
 			formData.append("files", file);
-			formData.append("folder", folder);
+			formData.append("folder", folder || "markazut-tahfiz-images");
 
 			const response = await fetch("/api/upload", {
 				method: "POST",
@@ -258,7 +189,10 @@ function DashboardContent() {
 			const result = await response.json();
 
 			if (!response.ok) {
-				throw new Error(result.error || "Upload failed");
+				const errorMessage = result.details
+					? `${result.error}: ${result.details}`
+					: result.error || "Upload failed";
+				throw new Error(errorMessage);
 			}
 
 			return result.data[0]; // Return the first uploaded image data
@@ -429,17 +363,19 @@ function DashboardContent() {
 						{/* Tab Content */}
 						<div className="bg-gray-50 rounded-lg p-4 sm:p-6">
 							{activePage === "home" && activeTab === "hero" && (
-								<HeroForm uploadToCloudinary={uploadToCloudinary} />
+								<HomePageContent uploadToCloudinary={uploadToCloudinary} />
 							)}
-							{activePage === "home" && activeTab === "about" && <AboutForm />}
+							{activePage === "home" && activeTab === "about" && (
+								<AboutForm uploadToCloudinary={uploadToCloudinary} />
+							)}
 							{activePage === "home" && activeTab === "speech" && (
-								<SpeechForm />
+								<SpeechForm uploadToCloudinary={uploadToCloudinary} />
 							)}
 							{activePage === "home" && activeTab === "testimonial" && (
-								<TestimonialForm />
+								<TestimonialForm uploadToCloudinary={uploadToCloudinary} />
 							)}
 							{activePage === "home" && activeTab === "gallery" && (
-								<GalleryForm />
+								<GalleryForm uploadToCloudinary={uploadToCloudinary} />
 							)}
 
 							{/* About Page Content */}
@@ -508,100 +444,7 @@ function DashboardContent() {
 	);
 }
 
-// About Section Form
-function AboutForm() {
-	return (
-		<div>
-			<h2 className="text-lg font-medium text-gray-900 mb-6">
-				আমাদের সম্পর্কে সেকশন সম্পাদনা
-			</h2>
-			<form className="space-y-6">
-				{/* Steps */}
-				<div>
-					<h3 className="text-md font-medium text-green-500 mb-4">স্টেপস</h3>
-					{[1, 2, 3, 4].map((step) => (
-						<div key={step} className="mb-4 p-4 border rounded-md">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label className={labelClasses}>টাইটেল</Label>
-									<Input
-										type="text"
-										defaultValue={
-											step === 1
-												? "আধুনিক ক্যাম্পাস"
-												: step === 2
-												? "অভিজ্ঞ ওস্তাদ"
-												: step === 3
-												? "দক্ষ ব্যবস্থাপনা"
-												: "আধুনিক পাঠ্যক্রম"
-										}
-										className={inputClasses}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label className={labelClasses}>আইকন</Label>
-									<Select
-										defaultValue={
-											step === 1
-												? "School"
-												: step === 2
-												? "NotebookPen"
-												: step === 3
-												? "MonitorCog"
-												: "BookOpenText"
-										}
-									>
-										<SelectTrigger className={selectClasses}>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="School">School</SelectItem>
-											<SelectItem value="NotebookPen">NotebookPen</SelectItem>
-											<SelectItem value="MonitorCog">MonitorCog</SelectItem>
-											<SelectItem value="BookOpenText">BookOpenText</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-						</div>
-					))}
-				</div>
-
-				{/* Content */}
-				<div className="space-y-2">
-					<Label>মূল কনটেন্ট</Label>
-					<Textarea
-						rows={4}
-						defaultValue="আমাদের প্রতিষ্ঠান আপনার সন্তানের হিফজ শিক্ষাগত মান ও জ্ঞান বিকাশে প্রতিশ্রুতিবদ্ধ..."
-					/>
-				</div>
-
-				{/* Images */}
-				<div>
-					<h3 className="text-md font-medium text-green-500 mb-4">ইমেজেস</h3>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label>ইমেজ ১</Label>
-							<Input type="file" accept="image/*" />
-						</div>
-						<div className="space-y-2">
-							<Label>ইমেজ ২</Label>
-							<Input type="file" accept="image/*" />
-						</div>
-					</div>
-				</div>
-
-				{/* Phone */}
-				<div className="space-y-2">
-					<Label>ফোন নাম্বার</Label>
-					<Input type="text" defaultValue="+8801712-054763" />
-				</div>
-
-				<Button type="submit">সেভ করুন</Button>
-			</form>
-		</div>
-	);
-}
+// AboutForm removed (replaced by imported component)
 
 // About Page Hero Form
 function AboutHeroForm() {
@@ -3909,216 +3752,4 @@ function AboutFeaturesForm() {
 	);
 }
 
-// Speech Section Form
-function SpeechForm() {
-	return (
-		<div>
-			<h2 className="text-lg font-medium text-gray-900 mb-6">
-				প্রতিষ্ঠাতার বাণী সম্পাদনা
-			</h2>
-		</div>
-	);
-}
 
-// Testimonial Section Form
-function TestimonialForm() {
-	return (
-		<div>
-			<h2 className="text-lg font-medium text-gray-900 mb-6">
-				অভিভাবকদের মতামত সম্পাদনা
-			</h2>
-			<form className="space-y-6">
-				<div className="space-y-2">
-					<Label>সেকশন টাইটেল</Label>
-					<Input
-						type="text"
-						defaultValue="আমাদের অভিভাবকদের আমাদের সম্পর্কে যা বলেন"
-					/>
-				</div>
-
-				<div className="space-y-2">
-					<Label>সাবটাইটেল</Label>
-					<Input
-						type="text"
-						defaultValue="আমাদের মূল্যবান অভিভাবকদের মতামত এবং অভিজ্ঞতা জানুন"
-					/>
-				</div>
-
-				{/* Testimonial Items */}
-				<div>
-					<h3 className="text-md font-medium text-green-500 mb-4">
-						টেস্টিমোনিয়ালস
-					</h3>
-					{[1, 2].map((item) => (
-						<div key={item} className="mb-6 p-4 border rounded-md">
-							<h4 className="font-medium mb-4">টেস্টিমোনিয়াল {item}</h4>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label>নাম</Label>
-									<Input
-										type="text"
-										defaultValue={item === 1 ? "আতাউর রহমান" : "রাহুলান হোসাইন"}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label>লোকেশন</Label>
-									<Input type="text" defaultValue="গাজীপুর" />
-								</div>
-							</div>
-							<div className="mt-4 space-y-2">
-								<Label>টেক্সট</Label>
-								<Textarea
-									rows={3}
-									defaultValue={
-										item === 1
-											? "মারকাজুত তারফিজ উইনোয়ানানাল মাদ্রাসায় আমার সন্তানকে ভর্তি করে আমরা অত্যন্ত সন্তুষ্ট..."
-											: "মারকাজুত তারফিজ ইউনোয়ানানাল মাদ্রাসার শিক্ষা পদ্ধতি অসাধারণ..."
-									}
-								/>
-							</div>
-							<div className="mt-4 space-y-2">
-								<Label>ইমেজ</Label>
-								<Input type="file" accept="image/*" />
-							</div>
-						</div>
-					))}
-				</div>
-
-				<Button type="submit">সেভ করুন</Button>
-			</form>
-		</div>
-	);
-}
-
-// Gallery Section Form
-function GalleryForm() {
-	const [galleryImages, setGalleryImages] = useState(
-		Array.from({ length: 9 }, (_, i) => ({
-			id: i + 1,
-			url: `/api/placeholder/300/200?text=Image ${i + 1}`,
-			alt: `ইভেন্ট ছবি ${i + 1}`,
-			uploaded: false,
-		}))
-	);
-
-	const handleImageUpdate = (id: number, file: File | null, alt: string) => {
-		setGalleryImages((images) =>
-			images.map((img) =>
-				img.id === id ? { ...img, alt, uploaded: !!file } : img
-			)
-		);
-	};
-
-	const handleImageDelete = (id: number) => {
-		if (confirm("আপনি কি এই ছবিটি মুছে ফেলতে চান?")) {
-			setGalleryImages((images) =>
-				images.map((img) =>
-					img.id === id
-						? {
-								...img,
-								url: `/api/placeholder/300/200?text=Deleted`,
-								alt: "",
-								uploaded: false,
-						  }
-						: img
-				)
-			);
-		}
-	};
-
-	return (
-		<div>
-			<h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
-				গ্যালারি সম্পাদনা
-			</h2>
-			<form className="space-y-6">
-				<div className="space-y-2">
-					<Label className={labelClasses}>টাইটেল</Label>
-					<Input
-						type="text"
-						defaultValue="আমাদের ফটো গ্যালারি"
-						className={inputClasses}
-					/>
-				</div>
-
-				<div className="space-y-2">
-					<Label className={labelClasses}>সাবটাইটেল</Label>
-					<Input
-						type="text"
-						defaultValue="আমাদের স্মৃতিময় মুহূর্তগুলি এখানে দেখুন"
-						className={inputClasses}
-					/>
-				</div>
-
-				{/* Gallery Images */}
-				<div>
-					<h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">
-						গ্যালারি ইমেজেস
-					</h3>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						{galleryImages.map((image) => (
-							<div
-								key={image.id}
-								className="p-4 border rounded-md space-y-3 bg-gray-50 dark:bg-gray-800"
-							>
-								{/* Image Preview */}
-								<div className="relative">
-									<img
-										src={image.url}
-										alt={image.alt}
-										className="w-full h-32 object-cover rounded border"
-									/>
-									{image.uploaded && (
-										<div className="absolute top-2 right-2 flex gap-1">
-											<button
-												onClick={() => handleImageDelete(image.id)}
-												className="bg-red-500 text-white p-1 rounded text-xs hover:bg-red-600"
-												title="ডিলিট"
-											>
-												🗑️
-											</button>
-										</div>
-									)}
-								</div>
-
-								{/* Image Controls */}
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-gray-400">
-										ইমেজ {image.id}
-									</Label>
-									<Input
-										type="file"
-										accept="image/*"
-										onChange={(e) => {
-											const file = e.target.files?.[0];
-											handleImageUpdate(image.id, file || null, image.alt);
-										}}
-										className="text-sm"
-									/>
-									<Input
-										type="text"
-										placeholder="Alt text"
-										value={image.alt}
-										onChange={(e) =>
-											handleImageUpdate(image.id, null, e.target.value)
-										}
-										className={`${inputClasses} text-sm`}
-									/>
-									{image.uploaded && (
-										<div className="text-xs text-green-600 dark:text-green-400 flex items-center">
-											✓ আপলোড সম্পন্ন
-										</div>
-									)}
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-
-				<Button type="submit" className="bg-green-600 hover:bg-green-700">
-					সেভ করুন
-				</Button>
-			</form>
-		</div>
-	);
-}
