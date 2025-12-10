@@ -1,8 +1,7 @@
-"use client";
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface CloudinaryImageUploadProps {
   label: string;
@@ -23,10 +22,12 @@ export function CloudinaryImageUpload({
 }: CloudinaryImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value || null);
+  const [hasError, setHasError] = useState(false);
 
-  // Sync preview with incoming value if it changes externally (e.g. detailed loaded)
+  // Sync preview with incoming value if it changes externally
   if (value && value !== preview) {
     setPreview(value);
+    setHasError(false); // Reset error on new value
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,13 +35,15 @@ export function CloudinaryImageUpload({
     if (!file) return;
 
     setUploading(true);
+    setHasError(false);
     try {
       const result = await uploadToCloudinary(file, folder);
       const imageUrl = result.secure_url;
       setPreview(imageUrl);
       onChange(imageUrl);
+      toast.success("✅ ছবি সফলভাবে আপলোড হয়েছে!");
     } catch (error: any) {
-      alert(`Image upload failed: ${error.message || "Unknown error"}`);
+      toast.error(`❌ ছবি আপলোড ব্যর্থ হয়েছে: ${error.message || "অজানা সমস্যা"}`);
     } finally {
       setUploading(false);
     }
@@ -64,13 +67,22 @@ export function CloudinaryImageUpload({
           </div>
         )}
         {preview && (
-          <div className="border rounded-lg p-3 bg-gray-50">
-            <p className="text-sm text-gray-600 mb-2">Preview:</p>
-            <img
-              src={preview}
-              alt="Uploaded preview"
-              className="max-w-full h-32 object-cover rounded border"
-            />
+          <div className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Preview:</p>
+            {!hasError ? (
+              <img
+                src={preview}
+                alt="Uploaded preview"
+                className="max-w-full h-32 object-cover rounded border bg-white"
+                onError={() => setHasError(true)}
+              />
+            ) : (
+              <div className="h-32 w-full bg-red-50 border border-red-200 rounded flex flex-col items-center justify-center text-red-600 p-4 text-center">
+                <span className="text-2xl mb-1">⚠️</span>
+                <span className="text-sm font-medium">ছবি পাওয়া যায়নি</span>
+                <span className="text-xs opacity-75">Cloudinary থেকে মুছে ফেলা হয়েছে?</span>
+              </div>
+            )}
             <p className="text-xs text-gray-500 mt-2 break-all">
               URL: {preview}
             </p>

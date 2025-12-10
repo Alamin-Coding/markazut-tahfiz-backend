@@ -1,42 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import Gallery from "@/lib/models/Gallery";
+import Info from "@/lib/models/Info";
 import dbConnect from "@/lib/db";
 
-// GET /api/gallery - Fetch all gallery images
+// GET /api/info - Fetch info section
 export const dynamic = "force-dynamic";
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await dbConnect();
-    const images = await Gallery.find().sort({ createdAt: -1 });
+    const info = await Info.findOne();
     const response = NextResponse.json({
       success: true,
-      data: images,
+      data: info || {},
     });
     response.headers.set("Access-Control-Allow-Origin", "*");
     return response;
   } catch (error) {
     return NextResponse.json(
-      { success: false, message: "Failed to fetch gallery" },
+      { success: false, message: "Failed to fetch info" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/gallery - Add new image
+// POST /api/info - Update info section
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
-    const galleryRecord = await Gallery.create(body);
+    const info = await Info.findOneAndUpdate({}, body, {
+      new: true,
+      upsert: true,
+    });
     const response = NextResponse.json({
       success: true,
-      data: galleryRecord,
+      data: info,
     });
     response.headers.set("Access-Control-Allow-Origin", "*");
     return response;
   } catch (error) {
     return NextResponse.json(
-      { success: false, message: "Failed to add image" },
+      { success: false, message: "Failed to update info" },
       { status: 500 }
     );
   }

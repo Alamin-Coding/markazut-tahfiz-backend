@@ -98,7 +98,7 @@ function DashboardContent() {
 		{ id: "notice", label: "নোটিশ", icon: "📢" },
 		{ id: "faq", label: "FAQ", icon: "❓" },
 		{ id: "contact", label: "যোগাযোগ", icon: "📞" },
-		{ id: "control", label: "কন্ট্রোল প্যানেল", icon: "⚙️" },
+		// { id: "control", label: "কন্ট্রোল প্যানেল", icon: "⚙️" },
 	];
 
 	const getTabsForPage = (pageId: string) => {
@@ -315,7 +315,7 @@ function DashboardContent() {
 								</button>
 								<div>
 									<h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-										{pages.find((p) => p.id === activePage)?.label}
+										{pages.find((p) => p.id === activePage)?.label || "কন্ট্রোল প্যানেল"}
 									</h2>
 									<p className="text-sm text-gray-600 mt-1">
 										কনটেন্ট পরিচালনা করুন
@@ -364,18 +364,6 @@ function DashboardContent() {
 						<div className="bg-gray-50 rounded-lg p-4 sm:p-6">
 							{activePage === "home" && activeTab === "hero" && (
 								<HomePageContent uploadToCloudinary={uploadToCloudinary} />
-							)}
-							{activePage === "home" && activeTab === "about" && (
-								<AboutForm uploadToCloudinary={uploadToCloudinary} />
-							)}
-							{activePage === "home" && activeTab === "speech" && (
-								<SpeechForm uploadToCloudinary={uploadToCloudinary} />
-							)}
-							{activePage === "home" && activeTab === "testimonial" && (
-								<TestimonialForm uploadToCloudinary={uploadToCloudinary} />
-							)}
-							{activePage === "home" && activeTab === "gallery" && (
-								<GalleryForm uploadToCloudinary={uploadToCloudinary} />
 							)}
 
 							{/* About Page Content */}

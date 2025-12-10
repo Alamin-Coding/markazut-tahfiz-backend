@@ -3,6 +3,7 @@ import Testimonial from "@/lib/models/Testimonial";
 import dbConnect from "@/lib/db";
 
 // GET /api/testimonials - Fetch all testimonials
+export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await dbConnect();
