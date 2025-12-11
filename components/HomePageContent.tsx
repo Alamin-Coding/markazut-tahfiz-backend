@@ -549,7 +549,7 @@ const InfoForm = ({
             }
             uploadToCloudinary={uploadToCloudinary}
           />
-        <div className="space-y-8">
+        <div className=" grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Info Box 1 */}
           <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-4">

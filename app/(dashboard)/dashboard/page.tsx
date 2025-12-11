@@ -2812,7 +2812,7 @@ function AdmissionApplicationsForm() {
 		{
 			id: 3,
 			nameBangla: "আব্দুল্লাহ আল মামুন",
-			nameEnglish: "Abdullah Al Mamun",
+			nameEnglish: "Al-Amin",
 			fatherName: "মামুনুর রশিদ",
 			motherName: "সালমা বেগম",
 			presentAddress: "চাঁদপুর কলেজ রোড",

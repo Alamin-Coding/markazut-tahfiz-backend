@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PipelineStage } from "mongoose";
 import dbConnect from "@/lib/db";
 import Income from "@/lib/models/Income";
 import Expense from "@/lib/models/Expense";
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
 			if (to) (dateMatch.date as Record<string, Date>).$lte = new Date(to);
 		}
 
-		const buildPipeline = () => {
+		const buildPipeline = (): PipelineStage[] => {
 			const projectStage =
 				groupBy === "year"
 					? { year: { $year: "$date" } }
