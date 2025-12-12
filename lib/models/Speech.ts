@@ -5,6 +5,9 @@ export interface ISpeech extends Document {
   role: string;
   message: string;
   image: string;
+  subtitle: string;
+  arabic: string;
+  bengaliGreeting: string;
 }
 
 const SpeechSchema: Schema<ISpeech> = new Schema(
@@ -13,11 +16,18 @@ const SpeechSchema: Schema<ISpeech> = new Schema(
     role: { type: String, required: true },
     message: { type: String, required: true },
     image: { type: String },
+    subtitle: { type: String, default: "মারকাজুত তারফিজ উইনোয়ানানাল মাদ্রাসা" },
+    arabic: { type: String, default: "بسم الله الرحمن الرحيم" },
+    bengaliGreeting: { type: String, default: "আলাহামদুলিল্লাহ" },
   },
   { timestamps: true }
 );
 
-const Speech: Model<ISpeech> =
-  mongoose.models.Speech || mongoose.model<ISpeech>("Speech", SpeechSchema);
+// Prevent model caching issues in development
+if (mongoose.models.Speech) {
+  delete mongoose.models.Speech;
+}
+
+const Speech: Model<ISpeech> = mongoose.model<ISpeech>("Speech", SpeechSchema);
 
 export default Speech;

@@ -25,6 +25,7 @@ export async function GET() {
 			{
 				success: false,
 				message: "Failed to fetch notices",
+				error: error instanceof Error ? error.message : String(error),
 			},
 			{ status: 500 }
 		);

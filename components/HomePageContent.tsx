@@ -7,6 +7,13 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { CloudinaryImageUpload } from "@/components/CloudinaryImageUpload";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Reusing styles from page.tsx (duplicated here to be independent)
 const inputClasses =
@@ -170,6 +177,12 @@ const AboutForm = ({
     image2: "",
     image3: "",
     image4: "",
+    steps: [
+      { number: "01", title: "আধুনিক ক্যাম্পাস", icon: "School" },
+      { number: "02", title: "অভিজ্ঞ ওস্তাদ", icon: "NotebookPen" },
+      { number: "03", title: "দক্ষ ব্যবস্থাপনা", icon: "MonitorCog" },
+      { number: "04", title: "আধুনিক পাঠ্যক্রম", icon: "BookOpenText" },
+    ],
   });
   const [loading, setLoading] = useState(false);
 
@@ -207,6 +220,12 @@ const AboutForm = ({
           image2: data.data.image2 || "",
           image3: data.data.image3 || "",
           image4: data.data.image4 || "",
+          steps: data.data.steps && data.data.steps.length > 0 ? data.data.steps : [
+            { number: "01", title: "আধুনিক ক্যাম্পাস", icon: "School" },
+            { number: "02", title: "অভিজ্ঞ ওস্তাদ", icon: "NotebookPen" },
+            { number: "03", title: "দক্ষ ব্যবস্থাপনা", icon: "MonitorCog" },
+            { number: "04", title: "আধুনিক পাঠ্যক্রম", icon: "BookOpenText" },
+          ],
         });
       }
     } catch (error) {
@@ -220,6 +239,12 @@ const AboutForm = ({
   ) => {
     const { id, value } = e.target;
     setParams((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleStepChange = (index: number, field: string, value: string) => {
+    const newSteps = [...params.steps];
+    newSteps[index] = { ...newSteps[index], [field]: value };
+    setParams((prev) => ({ ...prev, steps: newSteps }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -250,6 +275,53 @@ const AboutForm = ({
         আমাদের সেবা সেকশন
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
+         {/* Steps Section */}
+        <div className="space-y-4 pt-6 border-t border-gray-200">
+          <h3 className="text-md font-medium text-gray-900 dark:text-white">ধাপসমূহ (Steps)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {params.steps.map((step, index) => (
+              <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-3">
+                 <div className="flex gap-4">
+                    <div className="w-1/3">
+                      <Label className={labelClasses}>নম্বর</Label>
+                      <Input
+                        value={step.number}
+                        onChange={(e) => handleStepChange(index, "number", e.target.value)}
+                        className={inputClasses}
+                      />
+                    </div>
+                     <div className="w-2/3">
+                      <Label className={labelClasses}>আইকন</Label>
+                       <Select 
+                          value={step.icon} 
+                          onValueChange={(value) => handleStepChange(index, "icon", value)}
+                        >
+                          <SelectTrigger className={inputClasses}>
+                            <SelectValue placeholder="Icon" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="School">School</SelectItem>
+                            <SelectItem value="NotebookPen">NotebookPen</SelectItem>
+                            <SelectItem value="MonitorCog">MonitorCog</SelectItem>
+                            <SelectItem value="BookOpenText">BookOpenText</SelectItem>
+                            <SelectItem value="Phone">Phone</SelectItem>
+                            <SelectItem value="ArrowRight">ArrowRight</SelectItem>
+                          </SelectContent>
+                        </Select>
+                    </div>
+                 </div>
+                 <div>
+                    <Label className={labelClasses}>শিরোনাম</Label>
+                    <Input
+                      value={step.title}
+                      onChange={(e) => handleStepChange(index, "title", e.target.value)}
+                      className={inputClasses}
+                    />
+                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title" className={labelClasses}>
@@ -319,6 +391,8 @@ const AboutForm = ({
           </div>
         </div>
 
+       
+
         <Button type="submit" disabled={loading}>
           {loading ? "Updating..." : "সেভ করুন"}
         </Button>
@@ -338,6 +412,9 @@ const SpeechForm = ({
     role: "",
     message: "",
     image: "",
+    subtitle: "মারকাজুত তারফিজ উইনোয়ানানাল মাদ্রাসা",
+    arabic: "بسم الله الرحمن الرحيم",
+    bengaliGreeting: "আলাহামদুলিল্লাহ",
   });
   const [loading, setLoading] = useState(false);
 
@@ -355,6 +432,9 @@ const SpeechForm = ({
           role: data.data.role || "",
           message: data.data.message || "",
           image: data.data.image || "",
+          subtitle: data.data.subtitle || "মারকাজুত তারফিজ উইনোয়ানানাল মাদ্রাসা",
+          arabic: data.data.arabic || "بسم الله الرحمن الرحيم",
+          bengaliGreeting: data.data.bengaliGreeting || "আলাহামদুলিল্লাহ",
         });
       }
     } catch (error) {
@@ -421,6 +501,40 @@ const SpeechForm = ({
                 className={inputClasses}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="subtitle" className={labelClasses}>
+                প্রতিষ্ঠান (Subtitle)
+              </Label>
+              <Input
+                id="subtitle"
+                value={params.subtitle}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="arabic" className={labelClasses}>
+                আরবি হেডিং (Arabic)
+              </Label>
+              <Input
+                id="arabic"
+                value={params.arabic}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="bengaliGreeting" className={labelClasses}>
+              শুভেচ্ছা বার্তা (Greeting)
+            </Label>
+            <Input
+              id="bengaliGreeting"
+              value={params.bengaliGreeting}
+              onChange={handleChange}
+              className={inputClasses}
+            />
           </div>
 
           <div className="space-y-2">

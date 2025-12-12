@@ -26,9 +26,11 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
+    console.log("Updating speech with data:", body);
     const speech = await Speech.findOneAndUpdate({}, body, {
       new: true,
       upsert: true,
+      strict: false // Allow new fields even if schema is stale
     });
     const response = NextResponse.json({
       success: true,

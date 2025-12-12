@@ -20,6 +20,13 @@ This document lists all API endpoints for the Markazut Tahfiz backend applicatio
 | POST   | `/api/auth/forgot-password` | Request password reset    | Public                    |
 | POST   | `/api/auth/reset-password`  | Reset password with token | Public (with reset token) |
 
+### About
+
+| Method | Endpoint                        | Description                                      | Access |
+| ------ | ------------------------------- | ------------------------------------------------ | ------ |
+| GET    | `/api/about`                    | Fetch about page content                         | Public |
+| POST   | `/api/about`                    | Create or update about page content              | Admin  |
+
 ### Admission
 
 | Method | Endpoint              | Description                                               | Access |
