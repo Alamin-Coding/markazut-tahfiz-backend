@@ -33,6 +33,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import HomePageContent from "@/components/HomePageContent";
 import AboutPageContent from "@/components/AboutPageContent";
+import DepartmentsContent from "@/components/DepartmentsContent";
 
 
 // Theme Context
@@ -93,12 +94,12 @@ function DashboardContent() {
 	const pages = [
 		{ id: "home", label: "হোম পেজ", icon: "🏠" },
 		{ id: "about", label: "আমাদের সম্পর্কে", icon: "📖" },
-		{ id: "admission", label: "ভর্তি", icon: "📝" },
-		{ id: "departments", label: "বিভাগসমূহ", icon: "🏫" },
-		{ id: "result", label: "ফলাফল", icon: "📊" },
 		{ id: "notice", label: "নোটিশ", icon: "📢" },
-		{ id: "faq", label: "FAQ", icon: "❓" },
+		{ id: "departments", label: "বিভাগসমূহ", icon: "🏫" },
+		{ id: "admission", label: "ভর্তি", icon: "📝" },
 		{ id: "contact", label: "যোগাযোগ", icon: "📞" },
+		{ id: "result", label: "ফলাফল", icon: "📊" },
+		{ id: "faq", label: "FAQ", icon: "❓" },
 		// { id: "control", label: "কন্ট্রোল প্যানেল", icon: "⚙️" },
 	];
 
@@ -387,11 +388,8 @@ function DashboardContent() {
 							)}
 
 							{/* Departments Page Content */}
-							{activePage === "departments" && activeTab === "list" && (
-								<DepartmentsListForm />
-							)}
-							{activePage === "departments" && activeTab === "details" && (
-								<DepartmentsDetailsForm />
+							{activePage === "departments" && (
+								<DepartmentsContent />
 							)}
 
 							{/* Notice Page Content */}
