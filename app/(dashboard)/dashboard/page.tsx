@@ -35,6 +35,8 @@ import HomePageContent from "@/components/HomePageContent";
 import AboutPageContent from "@/components/AboutPageContent";
 import DepartmentsContent from "@/components/DepartmentsContent";
 import AdmissionPageContent from "@/components/AdmissionPageContent";
+import ContactPageContent from "@/components/ContactPageContent";
+import ContactMessages from "@/components/ContactMessages";
 
 
 
@@ -90,6 +92,7 @@ function DashboardContent() {
 	const [activePage, setActivePage] = useState("home");
 	const [activeTab, setActiveTab] = useState("hero");
 	const [newApplicationsCount, setNewApplicationsCount] = useState(0);
+    const [newMessagesCount, setNewMessagesCount] = useState(0);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const { theme, toggleTheme } = useTheme();
 
@@ -108,45 +111,27 @@ function DashboardContent() {
 	const getTabsForPage = (pageId: string) => {
 		switch (pageId) {
 			case "home":
-				return [
-					{ id: "hero", label: "হিরো সেকশন" },
-					{ id: "about", label: "আমাদের সম্পর্কে" },
-					{ id: "speech", label: "প্রতিষ্ঠাতার বাণী" },
-					{ id: "testimonial", label: "অভিভাবকদের মতামত" },
-					{ id: "gallery", label: "গ্যালারি" },
-				];
+				return [];
 			case "about":
-				return [
-					{ id: "hero", label: "হিরো সেকশন" },
-					{ id: "content", label: "মূল কনটেন্ট" },
-					{ id: "features", label: "বৈশিষ্ট্যসমূহ" },
-				];
+				return [];
 			case "admission":
 				return [
 					{ id: "page-content", label: "পেজ কনটেন্ট" },
 					{ id: "form", label: "ভর্তি ফর্ম (সেটিংস)" },
-					{ id: "requirements", label: "যোগ্যতা (পুরানো)" },
-					{ id: "process", label: "প্রক্রিয়া (পুরানো)" },
 					{ id: "applications", label: "ভর্তি আবেদনসমূহ" },
 				];
 			case "departments":
-				return [
-					{ id: "list", label: "বিভাগ তালিকা" },
-					{ id: "details", label: "বিস্তারিত" },
-				];
+				return [];
 			case "folafol":
-				return [
-					{ id: "manage", label: "ফলাফল পরিচালনা" },
-					{ id: "analytics", label: "অ্যানালিটিক্স" },
-					{ id: "communication", label: "যোগাযোগ" },
-				];
+				return [];
 			case "notice":
 				return [];
 			case "faq":
 				return [];
 			case "contact":
 				return [
-					{ id: "info", label: "যোগাযোগ তথ্য" },
+					{ id: "page-content", label: "পেজ কনটেন্ট" },
+					{ id: "messages", label: "ইনবক্স (মেসেজ)" },
 					{ id: "faq", label: "FAQ" },
 				];
 			case "control":
@@ -156,9 +141,47 @@ function DashboardContent() {
 		}
 	};
 
+    // Poll for notifications
+    useEffect(() => {
+        const checkNotifications = async () => {
+             try {
+                 // Check Contact Messages
+                 const res = await fetch("/api/contact");
+                 const json = await res.json();
+                 if (json.success) {
+                     const unread = json.data.filter((m: any) => !m.read).length;
+                     setNewMessagesCount(unread);
+                 }
+             } catch (e) {
+                 console.error("Failed to check notifications", e);
+             }
+        };
+
+        checkNotifications(); // Initial check
+        const interval = setInterval(checkNotifications, 30000); // Poll every 30s
+        return () => clearInterval(interval);
+    }, []);
+
+
+	// Clear notifications when viewing the relevant tab
+    useEffect(() => {
+        if (activePage === "contact" && activeTab === "messages") {
+            // Ideally we should mark them as read in DB here, but for now we just clear the badge locally
+            // Or rely on the polling to update it after we read them (if the UI updates read status)
+            // But ContactMessages updates read status individually.
+            // So the badge will update automatically on next poll if we read them.
+            // But if we want to dismiss the "Alert" immediately? 
+            // Maybe just let real count reflect it.
+        }
+        
+        if (activePage === "admission" && activeTab === "applications") {
+            setNewApplicationsCount(0);
+        }
+    }, [activePage, activeTab]);
+
 	const tabs = getTabsForPage(activePage);
 
-	// Simulate new applications for demo purposes
+	// Simulate new applications for demo purposes (Keeping existing logic or removing? User asked for notification for MESSAGES. I will keep existing admission logic for now, or just leave it)
 	useEffect(() => {
 		const interval = setInterval(() => {
 			// Randomly add new applications (0-2 per interval)
@@ -256,10 +279,6 @@ function DashboardContent() {
 									setActivePage(page.id);
 									setActiveTab(getTabsForPage(page.id)[0]?.id || "");
 									setSidebarOpen(false); // Close sidebar on mobile
-									// Clear notification when viewing admission applications
-									if (page.id === "admission" && activeTab === "applications") {
-										setNewApplicationsCount(0);
-									}
 								}}
 								className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors relative ${
 									activePage === page.id
@@ -273,6 +292,12 @@ function DashboardContent() {
 								{page.id === "admission" && newApplicationsCount > 0 && (
 									<span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full animate-pulse">
 										{newApplicationsCount > 99 ? "99+" : newApplicationsCount}
+									</span>
+								)}
+                                {/* Notification badge for contact messages */}
+								{page.id === "contact" && newMessagesCount > 0 && (
+									<span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full animate-pulse">
+										{newMessagesCount > 99 ? "99+" : newMessagesCount}
 									</span>
 								)}
 							</button>
@@ -361,13 +386,28 @@ function DashboardContent() {
 								<nav
 									className="flex space-x-1 bg-gray-50 p-1 rounded-lg overflow-x-auto"
 									aria-label="Tabs"
-								></nav>
+								>
+									{tabs.map((tab) => (
+										<button
+											key={tab.id}
+											onClick={() => setActiveTab(tab.id)}
+											className={`${
+												activeTab === tab.id
+													? "bg-white shadow-sm text-green-700"
+													: "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+											}
+                                            flex whitespace-nowrap py-2 px-4 rounded-md text-sm font-medium transition-all duration-200`}
+										>
+											{tab.label}
+										</button>
+									))}
+								</nav>
 							</div>
 						)}
 
 						{/* Tab Content */}
 						<div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-							{activePage === "home" && activeTab === "hero" && (
+							{activePage === "home" && (
 								<HomePageContent uploadToCloudinary={uploadToCloudinary} />
 							)}
 
@@ -404,18 +444,18 @@ function DashboardContent() {
 							{/* FAQ Page Content */}
 							{activePage === "faq" && <FAQManagementForm />}
 
-							{/* Folafol Page Content */}
-							{activePage === "folafol" && activeTab === "manage" && (
+							{/* Folafol Page Content - Defaulting to Manage */}
+							{activePage === "folafol" && (
 								<ResultsManageForm />
-							)}
-							{activePage === "folafol" && activeTab === "analytics" && (
-								<ResultsAnalyticsForm />
-							)}
-							{activePage === "folafol" && activeTab === "communication" && (
-								<ResultsCommunicationForm />
 							)}
 
 							{/* Contact Page Content */}
+							{activePage === "contact" && activeTab === "page-content" && (
+								<ContactPageContent />
+							)}
+							{activePage === "contact" && activeTab === "messages" && (
+								<ContactMessages />
+							)}
 							{activePage === "contact" && activeTab === "info" && (
 								<ContactInfoForm />
 							)}

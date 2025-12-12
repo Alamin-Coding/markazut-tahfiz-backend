@@ -1,344 +1,153 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Hero, ContactInfo, Department } from "@/lib/models/Contact";
 import dbConnect from "@/lib/db";
+import ContactMessage from "@/lib/models/ContactMessage";
+import Notification from "@/lib/models/Notification";
+import nodemailer from "nodemailer";
 
-// GET /api/contact - Fetch contact information, departments, and hero data
-export async function GET() {
-	try {
-		await dbConnect();
-
-		const hero = await Hero.findOne({ isActive: true });
-
-		const contactInfo = await ContactInfo.find({ isActive: true }).sort({
-			order: 1,
-		});
-
-		const departments = await Department.find({ isActive: true }).sort({
-			order: 1,
-		});
-
-		const response = NextResponse.json({
-			success: true,
-			data: {
-				hero,
-				contactInfo,
-				departments,
-			},
-		});
-		response.headers.set("Access-Control-Allow-Origin", "*");
-		response.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-		response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-		return response;
-	} catch (error) {
-		console.error("Error fetching contact data:", error);
-		return NextResponse.json(
-			{
-				success: false,
-				message: "Failed to fetch contact data",
-			},
-			{ status: 500 }
-		);
-	}
+// GET /api/contact - List messages (for admin)
+export async function GET(request: NextRequest) {
+  try {
+    await dbConnect();
+    const messages = await ContactMessage.find().sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, data: messages });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch messages" },
+      { status: 500 }
+    );
+  }
 }
 
-// PUT /api/contact - Update hero, contact info or department
-export async function PUT(request: NextRequest) {
-	try {
-		await dbConnect();
-
-		const body = await request.json();
-		const { type, id, ...data } = body;
-
-		let result;
-		if (type === "hero") {
-			const { title, subtitle } = data;
-			if (!title || !subtitle) {
-				return NextResponse.json(
-					{
-						success: false,
-						message: "Title and subtitle are required for updating hero",
-					},
-					{ status: 400 }
-				);
-			}
-			result = await Hero.findByIdAndUpdate(
-				id,
-				{
-					title,
-					subtitle,
-				},
-				{ new: true }
-			);
-		} else if (type === "contactInfo") {
-			const { contactType, title, details, color, order = 0 } = data;
-			if (!id || !contactType || !title || !details || !color) {
-				return NextResponse.json(
-					{
-						success: false,
-						message:
-							"ID, contact type, title, details, and color are required for updating contact info",
-					},
-					{ status: 400 }
-				);
-			}
-			result = await ContactInfo.findByIdAndUpdate(
-				id,
-				{
-					type: contactType,
-					title,
-					details,
-					color,
-					order,
-				},
-				{ new: true }
-			);
-		} else if (type === "department") {
-			const { name, phone, email, order = 0 } = data;
-			if (!id || !name || !phone || !email) {
-				return NextResponse.json(
-					{
-						success: false,
-						message:
-							"ID, name, phone, and email are required for updating department",
-					},
-					{ status: 400 }
-				);
-			}
-			result = await Department.findByIdAndUpdate(
-				id,
-				{
-					name,
-					phone,
-					email,
-					order,
-				},
-				{ new: true }
-			);
-		} else {
-			return NextResponse.json(
-				{
-					success: false,
-					message:
-						"Invalid type. Must be 'hero', 'contactInfo' or 'department'",
-				},
-				{ status: 400 }
-			);
-		}
-
-		if (!result) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: `${
-						type === "hero"
-							? "Hero"
-							: type === "contactInfo"
-							? "Contact info"
-							: "Department"
-					} not found`,
-				},
-				{ status: 404 }
-			);
-		}
-
-		const response = NextResponse.json({
-			success: true,
-			data: result,
-			message: `${
-				type === "hero"
-					? "Hero"
-					: type === "contactInfo"
-					? "Contact info"
-					: "Department"
-			} updated successfully`,
-		});
-		response.headers.set("Access-Control-Allow-Origin", "*");
-		response.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-		response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-		return response;
-	} catch (error) {
-		console.error("Error updating contact data:", error);
-		return NextResponse.json(
-			{
-				success: false,
-				message: "Failed to update contact data",
-			},
-			{ status: 500 }
-		);
-	}
-}
-
-// DELETE /api/contact - Delete contact info or department
-export async function DELETE(request: NextRequest) {
-	try {
-		await dbConnect();
-
-		const { searchParams } = new URL(request.url);
-		const type = searchParams.get("type");
-		const id = searchParams.get("id");
-
-		if (!type || !id) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: "Type and ID are required for deletion",
-				},
-				{ status: 400 }
-			);
-		}
-
-		let result;
-		if (type === "hero") {
-			result = await Hero.findByIdAndDelete(id);
-		} else if (type === "contactInfo") {
-			result = await ContactInfo.findByIdAndDelete(id);
-		} else if (type === "department") {
-			result = await Department.findByIdAndDelete(id);
-		} else {
-			return NextResponse.json(
-				{
-					success: false,
-					message:
-						"Invalid type. Must be 'hero', 'contactInfo' or 'department'",
-				},
-				{ status: 400 }
-			);
-		}
-
-		if (!result) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: `${
-						type === "contactInfo" ? "Contact info" : "Department"
-					} not found`,
-				},
-				{ status: 404 }
-			);
-		}
-
-		const response = NextResponse.json({
-			success: true,
-			message: `${
-				type === "hero"
-					? "Hero"
-					: type === "contactInfo"
-					? "Contact info"
-					: "Department"
-			} deleted successfully`,
-		});
-		response.headers.set("Access-Control-Allow-Origin", "*");
-		response.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-		response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-		return response;
-	} catch (error) {
-		console.error("Error deleting contact data:", error);
-		return NextResponse.json(
-			{
-				success: false,
-				message: "Failed to delete contact data",
-			},
-			{ status: 500 }
-		);
-	}
-}
-
-// POST /api/contact - Create contact info or department
+// POST /api/contact - Submit new message
 export async function POST(request: NextRequest) {
-	try {
-		await dbConnect();
+  try {
+    await dbConnect();
+    const body = await request.json();
+    const { name, email, phone, subject, message } = body;
 
-		const body = await request.json();
-		const { type, ...data } = body;
+    // 1. Validation
+    if (!name || !email || !subject || !message) {
+      return NextResponse.json(
+        { success: false, message: "All fields are required" },
+        { status: 400 }
+      );
+    }
 
-		let result;
-		if (type === "hero") {
-			const { title, subtitle } = data;
-			if (!title || !subtitle) {
-				return NextResponse.json(
-					{
-						success: false,
-						message: "Title and subtitle are required for hero",
-					},
-					{ status: 400 }
-				);
-			}
-			result = new Hero({
-				title,
-				subtitle,
-			});
-		} else if (type === "contactInfo") {
-			const { contactType, title, details, color, order = 0 } = data;
-			if (!contactType || !title || !details || !color) {
-				return NextResponse.json(
-					{
-						success: false,
-						message:
-							"Contact type, title, details, and color are required for contact info",
-					},
-					{ status: 400 }
-				);
-			}
-			result = new ContactInfo({
-				type: contactType,
-				title,
-				details,
-				color,
-				order,
-			});
-		} else if (type === "department") {
-			const { name, phone, email, order = 0 } = data;
-			if (!name || !phone || !email) {
-				return NextResponse.json(
-					{
-						success: false,
-						message: "Name, phone, and email are required for department",
-					},
-					{ status: 400 }
-				);
-			}
-			result = new Department({
-				name,
-				phone,
-				email,
-				order,
-			});
-		} else {
-			return NextResponse.json(
-				{
-					success: false,
-					message:
-						"Invalid type. Must be 'hero', 'contactInfo' or 'department'",
-				},
-				{ status: 400 }
-			);
-		}
+    // 2. Save to Database
+    let newMessage;
+    try {
+        newMessage = new ContactMessage({
+          name,
+          email,
+          phone,
+          subject,
+          message,
+        });
+        await newMessage.save();
+    } catch (dbError: any) {
+        console.error("Database Save Error:", dbError);
+        return NextResponse.json(
+            { success: false, message: "Database Save Failed: " + dbError.message },
+            { status: 500 }
+        );
+    }
 
-		await result.save();
+    // 3. Create Dashboard Notification
+    try {
+        const notification = new Notification({
+          type: "message",
+          title: "New Contact Message",
+          message: `${name} sent a message: ${subject}`,
+          payload: { messageId: newMessage._id },
+        });
+        await notification.save();
+    } catch (notifError: any) {
+         console.error("Notification Error (ignoring):", notifError);
+    }
 
-		const response = NextResponse.json({
-			success: true,
-			data: result,
-			message: `${
-				type === "hero"
-					? "Hero"
-					: type === "contactInfo"
-					? "Contact info"
-					: "Department"
-			} created successfully`,
-		});
-		response.headers.set("Access-Control-Allow-Origin", "*");
-		response.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-		response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-		return response;
-	} catch (error) {
-		console.error("Error creating contact data:", error);
-		return NextResponse.json(
-			{
-				success: false,
-				message: "Failed to create contact data",
-			},
-			{ status: 500 }
-		);
-	}
+    // 4. Send Email to Admin
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        const mailOptions = {
+            from: `"${name}" <${email}>`,
+            to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+            subject: `New Contact Form Submission: ${subject}`,
+            html: `
+                <h3>New Message from Markazut Tahfiz Website</h3>
+                <p><strong>Name:</strong> ${name}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+                <p><strong>Subject:</strong> ${subject}</p>
+                <br/>
+                <p><strong>Message:</strong></p>
+                <p>${message}</p>
+            `
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (emailError) {
+             console.error("Email Send Error (ignoring):", emailError);
+        }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Message sent successfully",
+      data: newMessage,
+    });
+  } catch (error) {
+    console.error("Error submitting contact form:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to send message" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/contact?id=... - Delete a message
+export async function DELETE(request: NextRequest) {
+    try {
+        await dbConnect();
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
+
+        if (!id) {
+            return NextResponse.json({ success: false, message: "ID required" }, { status: 400 });
+        }
+
+        await ContactMessage.findByIdAndDelete(id);
+        return NextResponse.json({ success: true, message: "Message deleted" });
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        return NextResponse.json({ success: false, message: "Failed to delete" }, { status: 500 });
+    }
+}
+
+// PATCH /api/contact?id=... - Update status
+export async function PATCH(request: NextRequest) {
+    try {
+        await dbConnect();
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
+        const body = await request.json();
+
+        if (!id) {
+            return NextResponse.json({ success: false, message: "ID required" }, { status: 400 });
+        }
+
+        const updated = await ContactMessage.findByIdAndUpdate(id, body, { new: true });
+        return NextResponse.json({ success: true, data: updated });
+    } catch (error) {
+        console.error("Error updating message:", error);
+        return NextResponse.json({ success: false, message: "Failed to update" }, { status: 500 });
+    }
 }
