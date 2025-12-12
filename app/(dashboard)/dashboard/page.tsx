@@ -34,6 +34,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import HomePageContent from "@/components/HomePageContent";
 import AboutPageContent from "@/components/AboutPageContent";
 import DepartmentsContent from "@/components/DepartmentsContent";
+import AdmissionPageContent from "@/components/AdmissionPageContent";
+
 
 
 // Theme Context
@@ -121,9 +123,10 @@ function DashboardContent() {
 				];
 			case "admission":
 				return [
-					{ id: "form", label: "ভর্তি ফর্ম" },
-					{ id: "requirements", label: "যোগ্যতা" },
-					{ id: "process", label: "প্রক্রিয়া" },
+					{ id: "page-content", label: "পেজ কনটেন্ট" },
+					{ id: "form", label: "ভর্তি ফর্ম (সেটিংস)" },
+					{ id: "requirements", label: "যোগ্যতা (পুরানো)" },
+					{ id: "process", label: "প্রক্রিয়া (পুরানো)" },
 					{ id: "applications", label: "ভর্তি আবেদনসমূহ" },
 				];
 			case "departments":
@@ -374,6 +377,9 @@ function DashboardContent() {
 							)}
 
 							{/* Admission Page Content */}
+							{activePage === "admission" && activeTab === "page-content" && (
+								<AdmissionPageContent />
+							)}
 							{activePage === "admission" && activeTab === "form" && (
 								<AdmissionForm />
 							)}
