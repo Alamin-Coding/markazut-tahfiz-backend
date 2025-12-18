@@ -19,6 +19,10 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Provide dummy MONGODB_URI during build to avoid static generation failure
+ARG MONGODB_URI=mongodb://localhost:27017/dummy
+ENV MONGODB_URI=$MONGODB_URI
+
 RUN npm run build
 
 # Production image, copy all the files and run next
