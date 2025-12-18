@@ -38,8 +38,6 @@ import AdmissionPageContent from "@/components/AdmissionPageContent";
 import ContactPageContent from "@/components/ContactPageContent";
 import ContactMessages from "@/components/ContactMessages";
 
-
-
 // Theme Context
 const ThemeContext = React.createContext({
 	theme: "light",
@@ -86,13 +84,11 @@ export const labelClasses = "text-gray-700 dark:text-gray-300 font-medium";
 export const selectClasses =
 	"border-gray-300 dark:border-gray-600 focus:border-green-500 dark:focus:border-green-400 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white";
 
-
-
 function DashboardContent() {
 	const [activePage, setActivePage] = useState("home");
 	const [activeTab, setActiveTab] = useState("hero");
 	const [newApplicationsCount, setNewApplicationsCount] = useState(0);
-    const [newMessagesCount, setNewMessagesCount] = useState(0);
+	const [newMessagesCount, setNewMessagesCount] = useState(0);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const { theme, toggleTheme } = useTheme();
 
@@ -141,69 +137,54 @@ function DashboardContent() {
 		}
 	};
 
-    // Poll for notifications
-    useEffect(() => {
-        const checkNotifications = async () => {
-             try {
-                 // Check Contact Messages
-                 const res = await fetch("/api/contact");
-                 const json = await res.json();
-                 if (json.success) {
-                     const unread = json.data.filter((m: any) => !m.read).length;
-                     setNewMessagesCount(unread);
-                 }
-             } catch (e) {
-                 console.error("Failed to check notifications", e);
-             }
-        };
-
-        checkNotifications(); // Initial check
-        const interval = setInterval(checkNotifications, 30000); // Poll every 30s
-        return () => clearInterval(interval);
-    }, []);
-
-
-	// Clear notifications when viewing the relevant tab
-    useEffect(() => {
-        if (activePage === "contact" && activeTab === "messages") {
-            // Ideally we should mark them as read in DB here, but for now we just clear the badge locally
-            // Or rely on the polling to update it after we read them (if the UI updates read status)
-            // But ContactMessages updates read status individually.
-            // So the badge will update automatically on next poll if we read them.
-            // But if we want to dismiss the "Alert" immediately? 
-            // Maybe just let real count reflect it.
-        }
-        
-        if (activePage === "admission" && activeTab === "applications") {
-            setNewApplicationsCount(0);
-        }
-    }, [activePage, activeTab]);
-
-	const tabs = getTabsForPage(activePage);
-
-	// Simulate new applications for demo purposes (Keeping existing logic or removing? User asked for notification for MESSAGES. I will keep existing admission logic for now, or just leave it)
+	// Poll for notifications
 	useEffect(() => {
-		const interval = setInterval(() => {
-			// Randomly add new applications (0-2 per interval)
-			const newApps = Math.floor(Math.random() * 3);
-			if (newApps > 0) {
-				setNewApplicationsCount((prev) => prev + newApps);
-			}
-		}, 30000); // Check every 30 seconds
+		const checkNotifications = async () => {
+			try {
+				// Check Contact Messages
+				const res = await fetch("/api/contact");
+				const json = await res.json();
+				if (json.success) {
+					const unread = json.data.filter((m: any) => !m.read).length;
+					setNewMessagesCount(unread);
+				}
 
+				// Check Admission Applications
+				const resAdm = await fetch("/api/admission?status=pending");
+				const jsonAdm = await resAdm.json();
+				if (jsonAdm.success) {
+					setNewApplicationsCount(jsonAdm.data.length);
+				}
+			} catch (e) {
+				console.error("Failed to check notifications", e);
+			}
+		};
+
+		checkNotifications(); // Initial check
+		const interval = setInterval(checkNotifications, 30000); // Poll every 30s
 		return () => clearInterval(interval);
 	}, []);
 
-	// Function to manually add new applications for testing
-	const simulateNewApplication = () => {
-		setNewApplicationsCount((prev) => prev + 1);
-	};
+	// Clear notifications when viewing the relevant tab
+	useEffect(() => {
+		if (activePage === "contact" && activeTab === "messages") {
+			// Ideally we should mark them as read in DB here, but for now we just clear the badge locally
+			// Or rely on the polling to update it after we read them (if the UI updates read status)
+			// But ContactMessages updates read status individually.
+			// So the badge will update automatically on next poll if we read them.
+			// But if we want to dismiss the "Alert" immediately?
+			// Maybe just let real count reflect it.
+		}
+
+		if (activePage === "admission" && activeTab === "applications") {
+			setNewApplicationsCount(0);
+		}
+	}, [activePage, activeTab]);
+
+	const tabs = getTabsForPage(activePage);
 
 	// Function to upload image to Cloudinary
-	const uploadToCloudinary = async (
-		file: File,
-		folder?: string
-	) => {
+	const uploadToCloudinary = async (file: File, folder?: string) => {
 		try {
 			const formData = new FormData();
 			formData.append("files", file);
@@ -294,7 +275,7 @@ function DashboardContent() {
 										{newApplicationsCount > 99 ? "99+" : newApplicationsCount}
 									</span>
 								)}
-                                {/* Notification badge for contact messages */}
+								{/* Notification badge for contact messages */}
 								{page.id === "contact" && newMessagesCount > 0 && (
 									<span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full animate-pulse">
 										{newMessagesCount > 99 ? "99+" : newMessagesCount}
@@ -345,7 +326,8 @@ function DashboardContent() {
 								</button>
 								<div>
 									<h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-										{pages.find((p) => p.id === activePage)?.label || "কন্ট্রোল প্যানেল"}
+										{pages.find((p) => p.id === activePage)?.label ||
+											"কন্ট্রোল প্যানেল"}
 									</h2>
 									<p className="text-sm text-gray-600 mt-1">
 										কনটেন্ট পরিচালনা করুন
@@ -363,15 +345,7 @@ function DashboardContent() {
 								>
 									{theme === "light" ? "🌙" : "☀️"}
 								</button>
-								{/* Demo notification button */}
-								<Button
-									onClick={simulateNewApplication}
-									variant="outline"
-									size="sm"
-									className="text-xs hidden sm:inline-flex"
-								>
-									🔔 ডেমো নোটিফিকেশন
-								</Button>
+
 								<div className="text-xs sm:text-sm text-gray-500">
 									শেষ আপডেট: {new Date().toLocaleDateString("bn-BD")}
 								</div>
@@ -434,9 +408,7 @@ function DashboardContent() {
 							)}
 
 							{/* Departments Page Content */}
-							{activePage === "departments" && (
-								<DepartmentsContent />
-							)}
+							{activePage === "departments" && <DepartmentsContent />}
 
 							{/* Notice Page Content */}
 							{activePage === "notice" && <NoticeManagementForm />}
@@ -445,9 +417,7 @@ function DashboardContent() {
 							{activePage === "faq" && <FAQManagementForm />}
 
 							{/* Folafol Page Content - Defaulting to Manage */}
-							{activePage === "folafol" && (
-								<ResultsManageForm />
-							)}
+							{activePage === "folafol" && <ResultsManageForm />}
 
 							{/* Contact Page Content */}
 							{activePage === "contact" && activeTab === "page-content" && (
@@ -472,8 +442,6 @@ function DashboardContent() {
 }
 
 // AboutForm removed (replaced by imported component)
-
-
 
 // Admission Page Forms
 function AdmissionForm() {
@@ -1530,7 +1498,9 @@ function ResultsManageForm() {
 			{ name: "আচরণ ও শৃঙ্খলা", marks: 0, total: 100 },
 		],
 	});
-	const [examDateValue, setExamDateValue] = useState<Date | undefined>(undefined);
+	const [examDateValue, setExamDateValue] = useState<Date | undefined>(
+		undefined
+	);
 	const [resultDateValue, setResultDateValue] = useState<Date | undefined>(
 		undefined
 	);
@@ -1591,9 +1561,7 @@ function ResultsManageForm() {
 			term: formData.term,
 			totalMarks,
 			subjects: formData.subjects,
-			examDate: examDateValue
-				? examDateValue.toISOString()
-				: formData.examDate,
+			examDate: examDateValue ? examDateValue.toISOString() : formData.examDate,
 			resultDate: resultDateValue
 				? resultDateValue.toISOString()
 				: formData.resultDate,
@@ -1705,7 +1673,9 @@ function ResultsManageForm() {
 		const parsedExam = new Date(result.examDate);
 		setExamDateValue(isNaN(parsedExam.getTime()) ? undefined : parsedExam);
 		const parsedResult = new Date(result.resultDate);
-		setResultDateValue(isNaN(parsedResult.getTime()) ? undefined : parsedResult);
+		setResultDateValue(
+			isNaN(parsedResult.getTime()) ? undefined : parsedResult
+		);
 		setShowAddForm(true);
 	};
 
@@ -2779,90 +2749,84 @@ function FAQManagementForm() {
 
 // Admission Applications Viewer Form
 function AdmissionApplicationsForm() {
-	const [mockApplications, setMockApplications] = useState([
-		{
-			id: 1,
-			nameBangla: "মোহাম্মদ রহমান",
-			nameEnglish: "Mohammad Rahman",
-			fatherName: "আব্দুল করিম",
-			motherName: "ফাতেমা খাতুন",
-			presentAddress: "ধানাবাড়ি, চাঁদপুর",
-			permanentAddress: "ধানাবাড়ি, চাঁদপুর",
-			exMadrasa: "ধানাবাড়ি মাদরাসা",
-			lastClass: "পঞ্চম শ্রেণী",
-			admissionClass: "নূরানী",
-			admissionDepartment: "হিফজ",
-			guardianName: "আব্দুল করিম",
-			guardianPhone: "+8801712-054763",
-			guardianRelation: "পিতা",
-			status: "পেন্ডিং",
-			submittedAt: "2025-01-15",
-			photo: "/api/placeholder/150/200",
-		},
-		{
-			id: 2,
-			nameBangla: "ফাতেমা আক্তার",
-			nameEnglish: "Fatema Akter",
-			fatherName: "মোহাম্মদ আলী",
-			motherName: "রহিমা খাতুন",
-			presentAddress: "চাঁদপুর সদর",
-			permanentAddress: "চাঁদপুর সদর",
-			exMadrasa: "চাঁদপুর মাদরাসা",
-			lastClass: "চতুর্থ শ্রেণী",
-			admissionClass: "প্রথম শ্রেণী",
-			admissionDepartment: "আরবি",
-			guardianName: "মোহাম্মদ আলী",
-			guardianPhone: "+8801712-054764",
-			guardianRelation: "পিতা",
-			status: "অনুমোদিত",
-			submittedAt: "2025-01-14",
-			photo: "/api/placeholder/150/200",
-		},
-		{
-			id: 3,
-			nameBangla: "আব্দুল্লাহ আল মামুন",
-			nameEnglish: "Al-Amin",
-			fatherName: "মামুনুর রশিদ",
-			motherName: "সালমা বেগম",
-			presentAddress: "চাঁদপুর কলেজ রোড",
-			permanentAddress: "চাঁদপুর কলেজ রোড",
-			exMadrasa: "কেন্দ্রীয় মাদরাসা",
-			lastClass: "আলিম পরীক্ষা",
-			admissionClass: "দাখিল",
-			admissionDepartment: "ইসলামী শিক্ষা",
-			guardianName: "মামুনুর রশিদ",
-			guardianPhone: "+8801712-054765",
-			guardianRelation: "পিতা",
-			status: "পেন্ডিং",
-			submittedAt: "2025-01-13",
-			photo: "/api/placeholder/150/200",
-		},
-	]);
+	const [applications, setApplications] = useState<any[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [selectedApp, setSelectedApp] = useState<any>(null);
+
+	useEffect(() => {
+		fetchApplications();
+	}, []);
+
+	const fetchApplications = async () => {
+		try {
+			setLoading(true);
+			const res = await fetch("/api/admission");
+			const json = await res.json();
+			if (json.success) {
+				setApplications(json.data);
+			}
+		} catch (error) {
+			console.error("Failed to fetch applications", error);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
-			case "অনুমোদিত":
+			case "accepted":
 				return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-			case "পেন্ডিং":
+			case "pending":
 				return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-			case "প্রত্যাখ্যাত":
+			case "reviewing":
+				return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+			case "rejected":
 				return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
 			default:
 				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
 		}
 	};
 
-	const handleStatusChange = (id: number, newStatus: string) => {
-		setMockApplications((apps) =>
-			apps.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
-		);
+	const getStatusLabel = (status: string) => {
+		switch (status) {
+			case "accepted":
+				return "অনুমোদিত";
+			case "pending":
+				return "পেন্ডিং";
+			case "reviewing":
+				return "রিভিউ";
+			case "rejected":
+				return "প্রত্যাখ্যাত";
+			default:
+				return status;
+		}
 	};
 
-	// Excel export function
+	const handleStatusChange = async (id: string, newStatus: string) => {
+		try {
+			const res = await fetch(`/api/admission/${id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ status: newStatus }),
+			});
+			const json = await res.json();
+			if (json.success) {
+				setApplications((apps) =>
+					apps.map((app) =>
+						app._id === id ? { ...app, status: newStatus } : app
+					)
+				);
+				if (selectedApp?._id === id) {
+					setSelectedApp({ ...selectedApp, status: newStatus });
+				}
+			}
+		} catch (error) {
+			console.error("Failed to update status", error);
+		}
+	};
+
 	const exportToExcel = () => {
-		// Prepare data for Excel
-		const excelData = mockApplications.map((app) => ({
-			আইডি: app.id,
+		const excelData = applications.map((app) => ({
 			"নাম (বাংলা)": app.nameBangla,
 			"নাম (ইংরেজি)": app.nameEnglish,
 			"পিতার নাম": app.fatherName,
@@ -2876,217 +2840,323 @@ function AdmissionApplicationsForm() {
 			"অভিভাবকের নাম": app.guardianName,
 			"অভিভাবকের ফোন": app.guardianPhone,
 			সম্পর্ক: app.guardianRelation,
-			স্ট্যাটাস: app.status,
-			"আবেদন তারিখ": app.submittedAt,
+			স্ট্যাটাস: getStatusLabel(app.status),
+			"আবেদন তারিখ": new Date(app.createdAt).toLocaleDateString("bn-BD"),
 		}));
 
-		// Create workbook and worksheet
 		const wb = XLSX.utils.book_new();
 		const ws = XLSX.utils.json_to_sheet(excelData);
-
-		// Set column widths
-		const colWidths = [
-			{ wch: 8 }, // আইডি
-			{ wch: 20 }, // নাম (বাংলা)
-			{ wch: 20 }, // নাম (ইংরেজি)
-			{ wch: 15 }, // পিতার নাম
-			{ wch: 15 }, // মাতার নাম
-			{ wch: 25 }, // বর্তমান ঠিকানা
-			{ wch: 25 }, // স্থায়ী ঠিকানা
-			{ wch: 20 }, // পূর্ববর্তী মাদরাসা
-			{ wch: 15 }, // শেষ শ্রেণী
-			{ wch: 15 }, // ভর্তির শ্রেণী
-			{ wch: 15 }, // বিভাগ
-			{ wch: 18 }, // অভিভাবকের নাম
-			{ wch: 15 }, // অভিভাবকের ফোন
-			{ wch: 10 }, // সম্পর্ক
-			{ wch: 12 }, // স্ট্যাটাস
-			{ wch: 12 }, // আবেদন তারিখ
-		];
-		ws["!cols"] = colWidths;
-
-		// Add worksheet to workbook
 		XLSX.utils.book_append_sheet(wb, ws, "ভর্তি আবেদনসমূহ");
-
-		// Generate filename with current date
-		const currentDate = new Date().toISOString().split("T")[0];
-		const filename = `ভর্তি_আবেদনসমূহ_${currentDate}.xlsx`;
-
-		// Save file
+		const filename = `ভর্তি_আবেদনসমূহ_${
+			new Date().toISOString().split("T")[0]
+		}.xlsx`;
 		XLSX.writeFile(wb, filename);
 	};
 
+	if (loading)
+		return <div className="p-8 text-center text-gray-500">লোড হচ্ছে...</div>;
+
 	return (
-		<div>
-			<h2 className="text-lg font-medium text-gray-900 mb-6">
-				ভর্তি আবেদনসমূহ দেখুন
-			</h2>
+		<div className="space-y-6">
+			<div className="flex justify-between items-center mb-6">
+				<h2 className="text-lg font-medium text-gray-900 dark:text-white">
+					ভর্তি আবেদনসমূহ ({applications.length})
+				</h2>
+				<div className="flex gap-2">
+					<Button
+						onClick={fetchApplications}
+						variant="outline"
+						size="sm"
+						className="mr-2"
+					>
+						🔄 রিফ্রেশ
+					</Button>
+					<Button onClick={exportToExcel} variant="outline" size="sm">
+						📊 এক্সেল এক্সপোর্ট
+					</Button>
+				</div>
+			</div>
 
 			{/* Summary Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-				<div className="bg-white p-4 rounded-lg shadow border">
-					<div className="text-2xl font-bold text-blue-600">১২</div>
-					<div className="text-sm text-gray-600">মোট আবেদন</div>
+				<div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+					<div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+						{applications.length}
+					</div>
+					<div className="text-sm text-gray-600 dark:text-gray-400">
+						মোট আবেদন
+					</div>
 				</div>
-				<div className="bg-white p-4 rounded-lg shadow border">
-					<div className="text-2xl font-bold text-green-600">৮</div>
-					<div className="text-sm text-gray-600">অনুমোদিত</div>
+				<div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+					<div className="text-2xl font-bold text-green-600 dark:text-green-400">
+						{applications.filter((a) => a.status === "accepted").length}
+					</div>
+					<div className="text-sm text-gray-600 dark:text-gray-400">
+						অনুমোদিত
+					</div>
 				</div>
-				<div className="bg-white p-4 rounded-lg shadow border">
-					<div className="text-2xl font-bold text-yellow-600">৩</div>
-					<div className="text-sm text-gray-600">পেন্ডিং</div>
+				<div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+					<div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+						{applications.filter((a) => a.status === "pending").length}
+					</div>
+					<div className="text-sm text-gray-600 dark:text-gray-400">
+						পেন্ডিং
+					</div>
 				</div>
-				<div className="bg-white p-4 rounded-lg shadow border">
-					<div className="text-2xl font-bold text-red-600">১</div>
-					<div className="text-sm text-gray-600">প্রত্যাখ্যাত</div>
+				<div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+					<div className="text-2xl font-bold text-red-600 dark:text-red-400">
+						{applications.filter((a) => a.status === "rejected").length}
+					</div>
+					<div className="text-sm text-gray-600 dark:text-gray-400">
+						প্রত্যাখ্যাত
+					</div>
 				</div>
 			</div>
 
 			{/* Applications Table */}
-			<div className="bg-white shadow rounded-lg overflow-hidden">
-				<div className="px-6 py-4 border-b border-gray-200">
-					<h3 className="text-lg font-medium text-gray-900">
-						সাম্প্রতিক আবেদনসমূহ
-					</h3>
-				</div>
-
+			<div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
 				<div className="overflow-x-auto">
-					<table className="min-w-full divide-y divide-gray-200">
-						<thead className="bg-gray-50">
+					<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+						<thead className="bg-gray-50 dark:bg-gray-900">
 							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 									ছাত্র/ছাত্রী
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-									শ্রেণী
+								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+									শ্রেণী/বিভাগ
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-									অভিভাবক
+								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+									অভিভাবক ও ফোন
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 									স্ট্যাটাস
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-									আবেদন তারিখ
+								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+									তারিখ
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 									অ্যাকশন
 								</th>
 							</tr>
 						</thead>
-						<tbody className="bg-white divide-y divide-gray-200">
-							{mockApplications.map((app) => (
-								<tr key={app.id} className="hover:bg-gray-50">
+						<tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+							{applications.map((app) => (
+								<tr
+									key={app._id}
+									className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+								>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="flex items-center">
 											<div className="flex-shrink-0 h-10 w-10">
 												<img
-													className="h-10 w-10 rounded-full object-cover"
-													src={app.photo}
+													className="h-10 w-10 rounded-full object-cover border dark:border-gray-600"
+													src={app.photo || "/api/placeholder/150/200"}
 													alt={app.nameBangla}
 												/>
 											</div>
 											<div className="ml-4">
-												<div className="text-sm font-medium text-gray-900">
+												<div className="text-sm font-medium text-gray-900 dark:text-white">
 													{app.nameBangla}
 												</div>
-												<div className="text-sm text-gray-500">
+												<div className="text-sm text-gray-500 dark:text-gray-400">
 													{app.nameEnglish}
 												</div>
 											</div>
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<div className="text-sm text-gray-900">
-											{app.admissionClass}
-										</div>
-										<div className="text-sm text-gray-500">
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+										<div>{app.admissionClass}</div>
+										<div className="text-xs text-gray-500 dark:text-gray-400">
 											{app.admissionDepartment}
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<div className="text-sm text-gray-900">
-											{app.guardianName}
-										</div>
-										<div className="text-sm text-gray-500">
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+										<div>{app.guardianName}</div>
+										<div className="text-sm text-gray-500 dark:text-gray-400">
 											{app.guardianPhone}
 										</div>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<span
-											className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+											className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
 												app.status
 											)}`}
 										>
-											{app.status}
+											{getStatusLabel(app.status)}
 										</span>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-										{app.submittedAt}
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+										{new Date(app.createdAt).toLocaleDateString("bn-BD")}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-										<div className="flex flex-col sm:flex-row gap-2">
-											<button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-xs sm:text-sm">
-												👁️ দেখুন
-											</button>
-											<Select
-												value={app.status}
-												onValueChange={(value) =>
-													handleStatusChange(app.id, value)
-												}
-											>
-												<SelectTrigger className="w-24 h-8 text-xs">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="পেন্ডিং">পেন্ডিং</SelectItem>
-													<SelectItem value="অনুমোদিত">অনুমোদিত</SelectItem>
-													<SelectItem value="প্রত্যাখ্যাত">
-														প্রত্যাখ্যাত
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
+										<Button
+											onClick={() => setSelectedApp(app)}
+											size="sm"
+											variant="outline"
+											className="text-emerald-600 border-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-400 dark:hover:bg-emerald-900/30"
+										>
+											বিস্তারিত
+										</Button>
 									</td>
 								</tr>
 							))}
 						</tbody>
 					</table>
 				</div>
+				{applications.length === 0 && (
+					<div className="text-center py-10 text-gray-500 dark:text-gray-400">
+						কোন আবেদন পাওয়া যায়নি।
+					</div>
+				)}
+			</div>
 
-				{/* Pagination */}
-				<div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-					<div className="flex items-center justify-between">
-						<div className="text-sm text-gray-700">
-							১ থেকে ৩ পর্যন্ত দেখানো হচ্ছে (মোট ১২টি)
+			{/* Application Detail Modal */}
+			{selectedApp && (
+				<div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+					<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+						<div className="p-6 border-b dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 flex justify-between items-center z-10">
+							<h3 className="text-xl font-bold dark:text-white">
+								আবেদনকারীর বিস্তারিত তথ্য
+							</h3>
+							<button
+								onClick={() => setSelectedApp(null)}
+								className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-2xl"
+							>
+								✕
+							</button>
 						</div>
-						<div className="flex space-x-2">
-							<button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-								পূর্ববর্তী
-							</button>
-							<button className="px-3 py-1 text-sm bg-green-600 text-white border border-green-600 rounded">
-								১
-							</button>
-							<button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-								২
-							</button>
-							<button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-								পরবর্তী
-							</button>
+						<div className="p-6">
+							<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+								{/* Left column: Photo & Status */}
+								<div className="space-y-6">
+									<div className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-emerald-100 dark:border-emerald-900">
+										<img
+											src={selectedApp.photo || "/api/placeholder/300/400"}
+											alt={selectedApp.nameBangla}
+											className="w-full h-full object-cover"
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label className="dark:text-gray-300">
+											আবেদন স্ট্যাটাস পরিবর্তন করুন
+										</Label>
+										<Select
+											value={selectedApp.status}
+											onValueChange={(val) =>
+												handleStatusChange(selectedApp._id, val)
+											}
+										>
+											<SelectTrigger className="dark:bg-gray-700 dark:text-white dark:border-gray-600">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent className="dark:bg-gray-700 dark:text-white">
+												<SelectItem value="pending">পেন্ডিং</SelectItem>
+												<SelectItem value="reviewing">রিভিউ</SelectItem>
+												<SelectItem value="accepted">অনুমোদিত</SelectItem>
+												<SelectItem value="rejected">প্রত্যাখ্যাত</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
+
+								{/* Right columns: Info */}
+								<div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+									<InfoField
+										label="নাম (বাংলা)"
+										value={selectedApp.nameBangla}
+									/>
+									<InfoField
+										label="নাম (ইংরেজি)"
+										value={selectedApp.nameEnglish}
+									/>
+									<InfoField label="পিতার নাম" value={selectedApp.fatherName} />
+									<InfoField label="মাতার নাম" value={selectedApp.motherName} />
+									<InfoField
+										label="বর্তমান ঠিকানা"
+										value={selectedApp.presentAddress}
+										fullWidth
+									/>
+									<InfoField
+										label="স্থায়ী ঠিকানা"
+										value={selectedApp.permanentAddress}
+										fullWidth
+									/>
+									<InfoField
+										label="পূর্ববর্তী মাদরাস"
+										value={selectedApp.exMadrasa || "নাই"}
+									/>
+									<InfoField
+										label="শেষ শ্রেণী"
+										value={selectedApp.lastClass || "নাই"}
+									/>
+									<InfoField
+										label="ভর্তির শ্রেণী"
+										value={selectedApp.admissionClass}
+									/>
+									<InfoField
+										label="বিভাগ"
+										value={selectedApp.admissionDepartment}
+									/>
+									<InfoField
+										label="অভিভাবকের নাম"
+										value={selectedApp.guardianName}
+									/>
+									<InfoField
+										label="সম্পর্ক"
+										value={selectedApp.guardianRelation}
+									/>
+									<InfoField
+										label="ফোন নম্বর"
+										value={selectedApp.guardianPhone}
+									/>
+									<div className="md:col-span-2">
+										<p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+											আবেদন তারিখ
+										</p>
+										<p className="font-medium text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
+											{new Date(selectedApp.createdAt).toLocaleString("bn-BD")}
+										</p>
+									</div>
+									{selectedApp.notes && (
+										<InfoField
+											label="নোট"
+											value={selectedApp.notes}
+											fullWidth
+										/>
+									)}
+								</div>
+							</div>
+						</div>
+						<div className="p-6 border-t dark:border-gray-700 flex justify-end">
+							<Button
+								onClick={() => setSelectedApp(null)}
+								className="dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-700"
+							>
+								বন্ধ করুন
+							</Button>
 						</div>
 					</div>
 				</div>
-			</div>
+			)}
+		</div>
+	);
+}
 
-			{/* Export Button */}
-			<div className="mt-6">
-				<Button
-					onClick={exportToExcel}
-					className="bg-green-600 hover:bg-green-700"
-				>
-					📊 এক্সেলে এক্সপোর্ট করুন
-				</Button>
-			</div>
+function InfoField({
+	label,
+	value,
+	fullWidth = false,
+}: {
+	label: string;
+	value: string;
+	fullWidth?: boolean;
+}) {
+	return (
+		<div className={fullWidth ? "md:col-span-2" : ""}>
+			<p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+			<p className="font-medium text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
+				{value || "তথ্য নেই"}
+			</p>
 		</div>
 	);
 }
@@ -3340,6 +3410,3 @@ function ContactForm() {
 		</div>
 	);
 }
-
-
-

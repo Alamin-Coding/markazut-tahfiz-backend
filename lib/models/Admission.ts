@@ -2,14 +2,20 @@ import mongoose from "mongoose";
 
 const AdmissionSchema = new mongoose.Schema(
 	{
-		name: { type: String, required: true, trim: true },
-		email: { type: String, required: true, trim: true, lowercase: true },
-		phone: { type: String, required: true, trim: true },
-		guardianName: { type: String, trim: true },
-		guardianPhone: { type: String, trim: true },
-		class: { type: String, required: true, trim: true },
-		previousSchool: { type: String, trim: true },
-		address: { type: String, trim: true },
+		nameBangla: { type: String, required: true, trim: true },
+		nameEnglish: { type: String, required: true, trim: true },
+		fatherName: { type: String, required: true, trim: true },
+		motherName: { type: String, required: true, trim: true },
+		presentAddress: { type: String, required: true, trim: true },
+		permanentAddress: { type: String, required: true, trim: true },
+		exMadrasa: { type: String, trim: true },
+		lastClass: { type: String, trim: true },
+		admissionClass: { type: String, required: true, trim: true },
+		admissionDepartment: { type: String, required: true, trim: true },
+		guardianName: { type: String, required: true, trim: true },
+		guardianPhone: { type: String, required: true, trim: true },
+		guardianRelation: { type: String, trim: true },
+		photo: { type: String }, // URL to uploaded photo
 		status: {
 			type: String,
 			enum: ["pending", "reviewing", "accepted", "rejected"],
@@ -27,4 +33,3 @@ const Admission =
 	mongoose.models.Admission || mongoose.model("Admission", AdmissionSchema);
 
 export default Admission;
-

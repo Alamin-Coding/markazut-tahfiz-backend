@@ -30,45 +30,66 @@ export async function POST(request: NextRequest) {
 		await dbConnect();
 		const body = await request.json();
 		const {
-			name,
-			email,
-			phone,
+			nameBangla,
+			nameEnglish,
+			fatherName,
+			motherName,
+			presentAddress,
+			permanentAddress,
+			exMadrasa,
+			lastClass,
+			admissionClass,
+			admissionDepartment,
 			guardianName,
 			guardianPhone,
-			class: klass,
-			previousSchool,
-			address,
+			guardianRelation,
+			photo,
 			notes,
 		} = body;
 
-		if (!name || !email || !phone || !klass) {
+		if (
+			!nameBangla ||
+			!nameEnglish ||
+			!fatherName ||
+			!motherName ||
+			!admissionClass ||
+			!admissionDepartment ||
+			!guardianName ||
+			!guardianPhone
+		) {
 			return NextResponse.json(
 				{
 					success: false,
-					message: "name, email, phone and class are required",
+					message: "Required fields are missing",
 				},
 				{ status: 400 }
 			);
 		}
 
 		const application = new Admission({
-			name,
-			email,
-			phone,
+			nameBangla,
+			nameEnglish,
+			fatherName,
+			motherName,
+			presentAddress,
+			permanentAddress,
+			exMadrasa,
+			lastClass,
+			admissionClass,
+			admissionDepartment,
 			guardianName,
 			guardianPhone,
-			class: klass,
-			previousSchool,
-			address,
+			guardianRelation,
+			photo,
 			notes,
 		});
 		await application.save();
 
-		// Create a dashboard notification (placeholder for realtime/queue)
+		// Create a dashboard notification
 		const notification = new Notification({
 			type: "alert",
-			title: "New admission application",
-			message: `${name} applied for class ${klass}`,
+			title: "নতুন ভর্তি আবেদন",
+			message: `${nameBangla} ${admissionClass} শ্রেণীতে ভর্তির জন্য আবেদন করেছে`,
 			payload: { applicationId: application._id },
 			status: "pending",
 		});
@@ -87,4 +108,3 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
-
