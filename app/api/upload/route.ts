@@ -7,7 +7,6 @@ export async function POST(request: NextRequest) {
 		const files = formData.getAll("files") as File[];
 		const folder = (formData.get("folder") as string) || "markazut-tahfiz";
 
-
 		if (!files || files.length === 0) {
 			return NextResponse.json({ error: "No files provided" }, { status: 400 });
 		}
@@ -20,7 +19,8 @@ export async function POST(request: NextRequest) {
 		) {
 			return NextResponse.json(
 				{
-					error: "Cloudinary credentials are not configured in the backend .env file.",
+					error:
+						"Cloudinary credentials are not configured in the backend .env file.",
 				},
 				{ status: 500 }
 			);
@@ -28,13 +28,18 @@ export async function POST(request: NextRequest) {
 
 		// Convert files to base64 strings
 		const filePromises = files.map(async (file) => {
+			console.log(
+				`Processing file: ${file.name}, type: ${file.type}, size: ${file.size}`
+			);
 			const bytes = await file.arrayBuffer();
 			const buffer = Buffer.from(bytes);
 			const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+			console.log(`Base64 prepared, length: ${base64.length}`);
 			return base64;
 		});
 
 		const base64Files = await Promise.all(filePromises);
+		console.log(`Total files to upload: ${base64Files.length}`);
 
 		// Upload to Cloudinary
 		let results;
@@ -51,11 +56,20 @@ export async function POST(request: NextRequest) {
 		});
 	} catch (error: any) {
 		console.error("Upload API error:", error);
-		console.error("Upload API error message:", error.message);
+
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		} else if (typeof error === "string") {
+			errorMessage = error;
+		} else if (error && typeof error === "object") {
+			errorMessage = error.message || JSON.stringify(error);
+		}
+
 		return NextResponse.json(
 			{
 				error: "Failed to upload images",
-				details: error instanceof Error ? error.message : "Unknown error",
+				details: errorMessage,
 			},
 			{ status: 500 }
 		);

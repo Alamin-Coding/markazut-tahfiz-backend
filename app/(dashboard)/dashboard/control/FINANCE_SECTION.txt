@@ -1,0 +1,202 @@
+{activeTab === "finance" && (
+	<>
+		<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+			<Card>
+				<CardHeader>
+					<CardTitle>আয় যোগ করুন</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<form
+						className="space-y-3"
+						onSubmit={(e) => {
+							e.preventDefault();
+							handleIncomeCreate(new FormData(e.currentTarget));
+						}}
+					>
+						<div>
+							<Label>সূত্র</Label>
+							<Input name="source" required />
+						</div>
+						<div>
+							<Label>পরিমাণ</Label>
+							<Input name="amount" type="number" required />
+						</div>
+						<div>
+							<Label>তারিখ</Label>
+							<div className="space-y-2">
+								<DatePicker
+									date={incomeDate}
+									onSelect={setIncomeDate}
+									placeholder="তারিখ বাছাই করুন"
+									className="w-full"
+								/>
+								<input
+									type="hidden"
+									name="date"
+									value={incomeDate ? incomeDate.toISOString() : ""}
+								/>
+							</div>
+						</div>
+						<div>
+							<Label>ক্যাটাগরি</Label>
+							<Input name="category" placeholder="general" />
+						</div>
+						<div>
+							<Label>নোট</Label>
+							<Textarea name="notes" rows={2} />
+						</div>
+						<Button type="submit" disabled={loading}>
+							{loading ? "সংরক্ষণ হচ্ছে..." : "আয় যোগ করুন"}
+						</Button>
+					</form>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>ব্যয় যোগ করুন</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<form
+						className="space-y-3"
+						onSubmit={(e) => {
+							e.preventDefault();
+							handleExpenseCreate(new FormData(e.currentTarget));
+						}}
+					>
+						<div>
+							<Label>ক্যাটাগরি</Label>
+							<Input name="category" required />
+						</div>
+						<div>
+							<Label>পরিমাণ</Label>
+							<Input name="amount" type="number" required />
+						</div>
+						<div>
+							<Label>তারিখ</Label>
+							<div className="space-y-2">
+								<DatePicker
+									date={expenseDate}
+									onSelect={setExpenseDate}
+									placeholder="তারিখ বাছাই করুন"
+									className="w-full"
+								/>
+								<input
+									type="hidden"
+									name="date"
+									value={expenseDate ? expenseDate.toISOString() : ""}
+								/>
+							</div>
+						</div>
+						<div>
+							<Label>প্রাপক</Label>
+							<Input name="payee" />
+						</div>
+						<div>
+							<Label>নোট</Label>
+							<Textarea name="notes" rows={2} />
+						</div>
+						<Button type="submit" disabled={loading}>
+							{loading ? "সংরক্ষণ হচ্ছে..." : "ব্যয় যোগ করুন"}
+						</Button>
+					</form>
+				</CardContent>
+			</Card>
+		</div>
+
+		<Card>
+			<CardHeader>
+				<CardTitle>আয়-ব্যয় সারাংশ ফিল্টার</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+					<div>
+						<Label>ভিউ মোড</Label>
+						<select
+							value={financeViewMode}
+							onChange={(e) => setFinanceViewMode(e.target.value as "month" | "year")}
+							className={cn("border rounded-md p-2 w-full", inputClass)}
+						>
+							<option value="month">মাসিক</option>
+							<option value="year">বার্ষিক</option>
+						</select>
+					</div>
+					<div>
+						<Label>শুরুর তারিখ</Label>
+						<DatePicker
+							date={financeDateFrom}
+							onSelect={setFinanceDateFrom}
+							placeholder="শুরুর তারিখ"
+							className="w-full"
+						/>
+					</div>
+					<div>
+						<Label>শেষ তারিখ</Label>
+						<DatePicker
+							date={financeDateTo}
+							onSelect={setFinanceDateTo}
+							placeholder="শেষ তারিখ"
+							className="w-full"
+						/>
+					</div>
+					<div className="flex items-end gap-2">
+						<Button
+							onClick={handleApplyFinanceFilter}
+							className="flex-1"
+						>
+							ফিল্টার প্রয়োগ করুন
+						</Button>
+					</div>
+				</div>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+				<CardTitle>
+					{financeViewMode === "month" ? "মাসভিত্তিক" : "বার্ষিক"} আয়-ব্যয় সারাংশ
+				</CardTitle>
+				<Button
+					onClick={handleDownloadPDF}
+					variant="outline"
+					size="sm"
+				>
+					PDF ডাউনলোড করুন
+				</Button>
+			</CardHeader>
+			<CardContent className="space-y-3">
+				<div className="text-sm">
+					মোট আয়: {financeSummary?.overall?.income?.total ?? 0} | মোট
+					ব্যয়: {financeSummary?.overall?.expense?.total ?? 0} | নিট:{" "}
+					{financeSummary?.overall?.net ?? 0}
+				</div>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+					{financeIncome.map((item: any) => {
+						const exp = financeExpense.find(
+							(e: any) => e._id.month === item._id.month
+						) || { total: 0 };
+						return (
+							<div
+								key={item._id.month || item._id.year}
+								className="border rounded-md p-3"
+							>
+								<div className="font-medium">
+									{item._id.month || item._id.year}
+								</div>
+								<div className="text-sm text-green-700">
+									আয়: {item.total}
+								</div>
+								<div className="text-sm text-red-700">
+									ব্যয়: {exp.total}
+								</div>
+								<div className="text-sm font-semibold">
+									নিট: {item.total - (exp.total || 0)}
+								</div>
+							</div>
+						);
+					})}
+				</div>
+			</CardContent>
+		</Card>
+	</>
+)}
