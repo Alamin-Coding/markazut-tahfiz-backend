@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,8 @@ export interface ResultType {
 	subjects: { name: string; marks: number; total: number }[];
 	examDate: string;
 	resultDate: string;
+	examYear: string;
+	studentId: string;
 	principal: string;
 	isActive: boolean;
 	createdAt: string;
@@ -34,6 +36,7 @@ export interface ResultType {
 
 export default function ResultsManageForm() {
 	const [results, setResults] = useState<ResultType[]>([]);
+	const [students, setStudents] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +45,12 @@ export default function ResultsManageForm() {
 	const [selectedTerm, setSelectedTerm] = useState("all");
 	const [selectedDivision, setSelectedDivision] = useState("all");
 	const [selectedClass, setSelectedClass] = useState("all");
+	const [selectedYear, setSelectedYear] = useState("all");
+	const [classConfigs, setClassConfigs] = useState<any[]>([]);
+	const [availableDivisions, setAvailableDivisions] = useState<any[]>([]);
+	const [formAvailableDivisions, setFormAvailableDivisions] = useState<
+		string[]
+	>([]);
 	const [showAddForm, setShowAddForm] = useState(false);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [formData, setFormData] = useState({
@@ -50,6 +59,8 @@ export default function ResultsManageForm() {
 		division: "",
 		class: "",
 		term: "",
+		examYear: new Date().getFullYear().toString(),
+		studentId: "",
 		examDate: "",
 		resultDate: "",
 		principal: "মাওলানা মোহাম্মদ হোসাইন",
@@ -68,11 +79,34 @@ export default function ResultsManageForm() {
 		undefined
 	);
 
-	// Fetch results on component mount
+	// Fetch results and students on component mount
 	useEffect(() => {
 		fetchResults();
+		fetchStudents();
+		fetchClassConfigs();
 	}, []);
 
+	const fetchClassConfigs = async () => {
+		try {
+			const res = await fetch("/api/class-config");
+			const data = await res.json();
+			if (data.success) setClassConfigs(data.data);
+		} catch (err) {
+			console.error("Failed to load configs");
+		}
+	};
+
+	const fetchStudents = async () => {
+		try {
+			const response = await fetch("/api/students");
+			const result = await response.json();
+			if (result.success) {
+				setStudents(result.data || []);
+			}
+		} catch (error) {
+			console.error("Error fetching students:", error);
+		}
+	};
 	const fetchResults = async () => {
 		try {
 			setLoading(true);
@@ -97,10 +131,52 @@ export default function ResultsManageForm() {
 		setFormData({ ...formData, subjects: updatedSubjects });
 	};
 
+	const addSubject = () => {
+		setFormData({
+			...formData,
+			subjects: [...formData.subjects, { name: "", marks: 0, total: 100 }],
+		});
+	};
+
+	const removeSubject = (index: number) => {
+		if (formData.subjects.length <= 1) {
+			alert("অন্তত একটি বিষয় থাকা আবশ্যক");
+			return;
+		}
+		const updatedSubjects = formData.subjects.filter((_, i) => i !== index);
+		setFormData({ ...formData, subjects: updatedSubjects });
+	};
+
+	const handleAutoFill = (searchVal: string, type: "name" | "roll") => {
+		const student = students.find((s) =>
+			type === "name"
+				? s.name === searchVal
+				: s.roll === searchVal || s.studentId === searchVal
+		);
+
+		if (student) {
+			setFormData((prev) => {
+				const newData = {
+					...prev,
+					name: student.name,
+					roll: student.roll || "",
+					studentId: student.studentId || "",
+					class: student.class,
+					division: student.department,
+				};
+				// Update divisions for the select box
+				const conf = classConfigs.find((c) => c.className === student.class);
+				setFormAvailableDivisions(conf ? conf.divisions : []);
+				return newData;
+			});
+		}
+	};
+
 	const handleSave = async () => {
 		if (
 			!formData.name ||
 			!formData.roll ||
+			!formData.studentId ||
 			!formData.division ||
 			!formData.class ||
 			!formData.term ||
@@ -119,9 +195,11 @@ export default function ResultsManageForm() {
 		const payload = {
 			name: formData.name,
 			roll: formData.roll,
+			studentId: formData.studentId,
 			division: formData.division,
 			class: formData.class,
 			term: formData.term,
+			examYear: formData.examYear,
 			totalMarks,
 			subjects: formData.subjects,
 			examDate: examDateValue ? examDateValue.toISOString() : formData.examDate,
@@ -176,6 +254,8 @@ export default function ResultsManageForm() {
 			division: "",
 			class: "",
 			term: "",
+			examYear: new Date().getFullYear().toString(),
+			studentId: "",
 			examDate: "",
 			resultDate: "",
 			principal: "মাওলানা মোহাম্মদ হোসাইন",
@@ -191,11 +271,24 @@ export default function ResultsManageForm() {
 		setResultDateValue(undefined);
 	};
 
+	// Get unique student names for the name search dropdown
+	const studentNames = useMemo(() => {
+		const names = results.map((r) => r.name);
+		return Array.from(new Set(names)).sort();
+	}, [results]);
+
+	// Get unique roll numbers and names for search suggestions
+	const searchSuggestions = useMemo(() => {
+		const rolls = results.map((r) => r.roll.toString());
+		const names = results.map((r) => r.name);
+		return Array.from(new Set([...rolls, ...names])).sort();
+	}, [results]);
+
 	// Filter results based on search and filters
 	useEffect(() => {
 		let filtered = results;
 
-		if (searchTerm) {
+		if (searchTerm && searchTerm !== "all") {
 			filtered = filtered.filter(
 				(result) =>
 					result.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -217,8 +310,19 @@ export default function ResultsManageForm() {
 			filtered = filtered.filter((result) => result.class === selectedClass);
 		}
 
+		if (selectedYear !== "all") {
+			filtered = filtered.filter((result) => result.examYear === selectedYear);
+		}
+
 		setFilteredResults(filtered);
-	}, [results, searchTerm, selectedTerm, selectedDivision, selectedClass]);
+	}, [
+		results,
+		searchTerm,
+		selectedTerm,
+		selectedDivision,
+		selectedClass,
+		selectedYear,
+	]);
 
 	const handleEdit = (result: any) => {
 		setEditingId(result._id);
@@ -228,6 +332,8 @@ export default function ResultsManageForm() {
 			division: result.division,
 			class: result.class,
 			term: result.term,
+			examYear: result.examYear || new Date().getFullYear().toString(),
+			studentId: result.studentId || "",
 			examDate: result.examDate,
 			resultDate: result.resultDate,
 			principal: result.principal,
@@ -269,6 +375,7 @@ export default function ResultsManageForm() {
 		const exportData = filteredResults.map((result, index) => ({
 			"ক্রমিক নং": index + 1,
 			নাম: result.name,
+			আইডি: result.studentId || "",
 			রোল: result.roll,
 			বিভাগ: result.division,
 			শ্রেণী: result.class,
@@ -284,6 +391,7 @@ export default function ResultsManageForm() {
 		const colWidths = [
 			{ wch: 10 }, // ক্রমিক নং
 			{ wch: 25 }, // নাম
+			{ wch: 15 }, // আইডি
 			{ wch: 10 }, // রোল
 			{ wch: 15 }, // বিভাগ
 			{ wch: 15 }, // শ্রেণী
@@ -335,14 +443,20 @@ export default function ResultsManageForm() {
 				</h3>
 				<div className="grid grid-cols-1 md:grid-cols-5 gap-4">
 					<div className="space-y-2">
-						<Label className={labelClasses}>নাম অনুসন্ধান</Label>
+						<Label className={labelClasses}>রোল/নাম অনুসন্ধান</Label>
 						<Input
+							list="search-suggestions"
 							type="text"
-							placeholder="ছাত্রের নাম বা রোল"
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
+							placeholder="রোল বা নাম লিখুন"
+							value={searchTerm === "all" ? "" : searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value || "all")}
 							className={inputClasses}
 						/>
+						<datalist id="search-suggestions">
+							{searchSuggestions.map((suggestion) => (
+								<option key={suggestion} value={suggestion} />
+							))}
+						</datalist>
 					</div>
 					<div className="space-y-2">
 						<Label className={labelClasses}>পরীক্ষা</Label>
@@ -352,8 +466,34 @@ export default function ResultsManageForm() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">সব পরীক্ষা</SelectItem>
-								<SelectItem value="2024-1">১ম পরীক্ষা ২০২৫</SelectItem>
-								<SelectItem value="2024-2">২য় পরীক্ষা ২০২৫</SelectItem>
+								<SelectItem value="১ম পরীক্ষা ২০২৫">১ম পরীক্ষা ২০২৫</SelectItem>
+								<SelectItem value="২য় পরীক্ষা ২০২৫">
+									২য় পরীক্ষা ২০২৫
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-2">
+						<Label className={labelClasses}>শ্রেণী</Label>
+						<Select
+							value={selectedClass}
+							onValueChange={(val) => {
+								setSelectedClass(val);
+								setSelectedDivision("all");
+								const conf = classConfigs.find((c) => c.className === val);
+								setAvailableDivisions(conf ? conf.divisions : []);
+							}}
+						>
+							<SelectTrigger className={selectClasses}>
+								<SelectValue placeholder="সব শ্রেণী" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">সব শ্রেণী</SelectItem>
+								{classConfigs.map((c) => (
+									<SelectItem key={c._id} value={c.className}>
+										{c.className}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
@@ -368,22 +508,23 @@ export default function ResultsManageForm() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">সব বিভাগ</SelectItem>
-								<SelectItem value="A">বিভাগ ক</SelectItem>
-								<SelectItem value="B">বিভাগ খ</SelectItem>
+								{availableDivisions.map((d) => (
+									<SelectItem key={d} value={d}>
+										{d}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="space-y-2">
-						<Label className={labelClasses}>শ্রেণী</Label>
-						<Select value={selectedClass} onValueChange={setSelectedClass}>
-							<SelectTrigger className={selectClasses}>
-								<SelectValue placeholder="সব শ্রেণী" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="1">১ম শ্রেণী</SelectItem>
-								<SelectItem value="2">২য় শ্রেণী</SelectItem>
-							</SelectContent>
-						</Select>
+						<Label className={labelClasses}>বছর</Label>
+						<Input
+							type="text"
+							placeholder="বছর (যেমন: ২০২৫)"
+							value={selectedYear === "all" ? "" : selectedYear}
+							onChange={(e) => setSelectedYear(e.target.value || "all")}
+							className={inputClasses}
+						/>
 					</div>
 					<div className="flex items-end">
 						<Button
@@ -392,6 +533,7 @@ export default function ResultsManageForm() {
 								setSelectedTerm("all");
 								setSelectedDivision("all");
 								setSelectedClass("all");
+								setSelectedYear("all");
 							}}
 							variant="outline"
 						>
@@ -405,24 +547,30 @@ export default function ResultsManageForm() {
 			<div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border">
 				<div className="overflow-x-auto">
 					<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-						<thead className="bg-gray-50 dark:bg-gray-700">
+						<thead className="bg-gray-50 dark:bg-gray-900">
 							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									ছাত্র
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									আইডি
+								</th>
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									রোল
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-									বিভাগ/শ্রেণী
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									শ্রেণী/বিভাগ
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									পরীক্ষা
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									বছর
+								</th>
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									নম্বর
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								<th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
 									অ্যাকশন
 								</th>
 							</tr>
@@ -431,43 +579,46 @@ export default function ResultsManageForm() {
 							{filteredResults.map((result) => (
 								<tr
 									key={result._id}
-									className="hover:bg-gray-50 dark:hover:bg-gray-700"
+									className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
 								>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<div className="text-sm font-medium text-gray-900 dark:text-white">
-											{result.name}
-										</div>
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+										{result.name}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+									<td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-emerald-600 dark:text-emerald-400">
+										{result.studentId}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
 										{result.roll}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-										{result.division} / {result.class}
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+										{result.class} / {result.division}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
 										{result.term}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-										{result.totalMarks}/500
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+										{result.examYear}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-										<div className="flex gap-2">
-											<Button
-												size="sm"
-												variant="outline"
-												className="text-green-600 hover:text-green-800"
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+										{result.totalMarks} /{" "}
+										{result.subjects.reduce((sum, s) => sum + s.total, 0)}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-right">
+										<div className="flex justify-end gap-2">
+											<button
 												onClick={() => handleEdit(result)}
+												className="text-blue-500 hover:text-blue-700"
+												title="Edit"
 											>
-												✏️ এডিট
-											</Button>
-											<Button
-												size="sm"
-												variant="outline"
-												className="text-red-600 hover:text-red-800"
+												✎
+											</button>
+											<button
 												onClick={() => handleDelete(result._id)}
+												className="text-red-500 hover:text-red-700"
+												title="Delete"
 											>
-												🗑️ মুছুন
-											</Button>
+												🗑
+											</button>
 										</div>
 									</td>
 								</tr>
@@ -505,26 +656,42 @@ export default function ResultsManageForm() {
 								<div className="space-y-2">
 									<Label className={labelClasses}>ছাত্রের নাম *</Label>
 									<Input
+										list="student-names-list"
 										type="text"
 										value={formData.name}
-										onChange={(e) =>
-											setFormData({ ...formData, name: e.target.value })
-										}
+										onChange={(e) => {
+											const val = e.target.value;
+											setFormData({ ...formData, name: val });
+											handleAutoFill(val, "name");
+										}}
 										className={inputClasses}
 										required
 									/>
+									<datalist id="student-names-list">
+										{students.map((s) => (
+											<option key={s._id} value={s.name} />
+										))}
+									</datalist>
 								</div>
 								<div className="space-y-2">
 									<Label className={labelClasses}>রোল নম্বর *</Label>
 									<Input
+										list="student-rolls-list"
 										type="text"
 										value={formData.roll}
-										onChange={(e) =>
-											setFormData({ ...formData, roll: e.target.value })
-										}
+										onChange={(e) => {
+											const val = e.target.value;
+											setFormData({ ...formData, roll: val });
+											handleAutoFill(val, "roll");
+										}}
 										className={inputClasses}
 										required
 									/>
+									<datalist id="student-rolls-list">
+										{students.map((s) => (
+											<option key={s._id} value={s.roll} />
+										))}
+									</datalist>
 								</div>
 							</div>
 
@@ -536,14 +703,17 @@ export default function ResultsManageForm() {
 										onValueChange={(value) =>
 											setFormData({ ...formData, division: value })
 										}
+										disabled={!formData.class}
 									>
 										<SelectTrigger className={selectClasses}>
 											<SelectValue placeholder="বিভাগ নির্বাচন করুন" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="A">বিভাগ ক</SelectItem>
-											<SelectItem value="B">বিভাগ খ</SelectItem>
-											<SelectItem value="C">বিভাগ গ</SelectItem>
+											{formAvailableDivisions.map((d: any) => (
+												<SelectItem key={d} value={d}>
+													{d}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 								</div>
@@ -551,17 +721,23 @@ export default function ResultsManageForm() {
 									<Label className={labelClasses}>শ্রেণী *</Label>
 									<Select
 										value={formData.class}
-										onValueChange={(value) =>
-											setFormData({ ...formData, class: value })
-										}
+										onValueChange={(value) => {
+											setFormData({ ...formData, class: value, division: "" });
+											const conf = classConfigs.find(
+												(c: any) => c.className === value
+											);
+											setFormAvailableDivisions(conf ? conf.divisions : []);
+										}}
 									>
 										<SelectTrigger className={selectClasses}>
 											<SelectValue placeholder="শ্রেণী নির্বাচন করুন" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="1">১ম শ্রেণী</SelectItem>
-											<SelectItem value="2">২য় শ্রেণী</SelectItem>
-											<SelectItem value="3">৩য় শ্রেণী</SelectItem>
+											{classConfigs.map((c: any) => (
+												<SelectItem key={c._id} value={c.className}>
+													{c.className}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 								</div>
@@ -577,11 +753,29 @@ export default function ResultsManageForm() {
 											<SelectValue placeholder="পরীক্ষা নির্বাচন করুন" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="2024-1">১ম পরীক্ষা ২০২৫</SelectItem>
-											<SelectItem value="2024-2">২য় পরীক্ষা ২০২৫</SelectItem>
-											<SelectItem value="2025-1">১ম পরীক্ষা ২০২৬</SelectItem>
+											<SelectItem value="১ম পরীক্ষা ২০২৫">
+												১ম পরীক্ষা ২০২৫
+											</SelectItem>
+											<SelectItem value="২য় পরীক্ষা ২০২৫">
+												২য় পরীক্ষা ২০২৫
+											</SelectItem>
+											<SelectItem value="১ম পরীক্ষা ২০২৬">
+												১ম পরীক্ষা ২০২৬
+											</SelectItem>
 										</SelectContent>
 									</Select>
+								</div>
+								<div className="space-y-2">
+									<Label className={labelClasses}>পরীক্ষার বছর *</Label>
+									<Input
+										type="text"
+										placeholder="যেমন: ২০২৫"
+										value={formData.examYear}
+										onChange={(e) =>
+											setFormData({ ...formData, examYear: e.target.value })
+										}
+										className={inputClasses}
+									/>
 								</div>
 							</div>
 
@@ -619,14 +813,25 @@ export default function ResultsManageForm() {
 
 							{/* Subjects */}
 							<div>
-								<h4 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">
-									বিষয়ভিত্তিক নম্বর
-								</h4>
+								<div className="flex justify-between items-center mb-4">
+									<h4 className="text-lg font-medium text-gray-900 dark:text-white">
+										বিষয়ভিত্তিক নম্বর
+									</h4>
+									<Button
+										type="button"
+										onClick={addSubject}
+										variant="outline"
+										size="sm"
+										className="text-green-600 border-green-600 hover:bg-green-50"
+									>
+										+ নতুন বিষয় যোগ করুন
+									</Button>
+								</div>
 								<div className="space-y-4">
 									{formData.subjects.map((subject, index) => (
 										<div
 											key={index}
-											className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg dark:border-gray-700"
+											className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg dark:border-gray-700"
 										>
 											<div className="space-y-2">
 												<Label className={labelClasses}>বিষয়</Label>
@@ -642,6 +847,7 @@ export default function ResultsManageForm() {
 														});
 													}}
 													className={inputClasses}
+													placeholder="বিষয়ের নাম"
 												/>
 											</div>
 											<div className="space-y-2">
@@ -675,6 +881,17 @@ export default function ResultsManageForm() {
 													className={inputClasses}
 												/>
 											</div>
+											<div className="flex items-end justify-center pb-1">
+												<Button
+													type="button"
+													variant="ghost"
+													onClick={() => removeSubject(index)}
+													className="text-red-500 hover:text-red-700 hover:bg-red-50"
+													title="মুছে ফেলুন"
+												>
+													🗑️
+												</Button>
+											</div>
 										</div>
 									))}
 								</div>
@@ -685,7 +902,8 @@ export default function ResultsManageForm() {
 								<div className="text-lg font-medium text-gray-900 dark:text-white">
 									সম্মিলিত নম্বর:{" "}
 									{formData.subjects.reduce((sum, subj) => sum + subj.marks, 0)}
-									/500
+									/
+									{formData.subjects.reduce((sum, subj) => sum + subj.total, 0)}
 								</div>
 							</div>
 

@@ -26,6 +26,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Download } from "lucide-react";
 
 export default function FinanceContent() {
 	const [financeSummary, setFinanceSummary] = useState<any>(null);
@@ -38,8 +39,6 @@ export default function FinanceContent() {
 	const [financeDateTo, setFinanceDateTo] = useState<Date | undefined>(
 		undefined
 	);
-	const [incomeDate, setIncomeDate] = useState<Date | undefined>(undefined);
-	const [expenseDate, setExpenseDate] = useState<Date | undefined>(undefined);
 	const [loading, setLoading] = useState(false);
 	const [toast, setToast] = useState<string | null>(null);
 
@@ -47,6 +46,16 @@ export default function FinanceContent() {
 	const [expenses, setExpenses] = useState<any[]>([]);
 	const [incomeSearch, setIncomeSearch] = useState("");
 	const [expenseSearch, setExpenseSearch] = useState("");
+	const [incomeSearchDate, setIncomeSearchDate] = useState<Date | undefined>(
+		undefined
+	);
+	const [expenseSearchDate, setExpenseSearchDate] = useState<Date | undefined>(
+		undefined
+	);
+	const [incomeSortOrder, setIncomeSortOrder] = useState<"asc" | "desc">("asc");
+	const [expenseSortOrder, setExpenseSortOrder] = useState<"asc" | "desc">(
+		"asc"
+	);
 	const [editingItem, setEditingItem] = useState<any>(null);
 
 	const [incomePage, setIncomePage] = useState(1);
@@ -104,70 +113,6 @@ export default function FinanceContent() {
 			setFinanceSummary(data.data);
 		} catch (err: any) {
 			setToast(err.message);
-		}
-	};
-
-	const handleIncomeCreate = async (formData: FormData) => {
-		setLoading(true);
-		setToast(null);
-		try {
-			const payload = Object.fromEntries(formData.entries());
-			await fetch("/api/finance/income", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					source: payload.source,
-					amount: Number(payload.amount),
-					date: incomeDate
-						? incomeDate.toISOString()
-						: new Date().toISOString(),
-					category: payload.category,
-					notes: payload.notes,
-				}),
-			});
-			setToast("আয় যোগ হয়েছে");
-			await refreshFinanceSummary(
-				financeViewMode,
-				financeDateFrom,
-				financeDateTo
-			);
-			await fetchIncomes();
-		} catch (err: any) {
-			setToast(err.message);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const handleExpenseCreate = async (formData: FormData) => {
-		setLoading(true);
-		setToast(null);
-		try {
-			const payload = Object.fromEntries(formData.entries());
-			await fetch("/api/finance/expense", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					category: payload.category,
-					amount: Number(payload.amount),
-					date: expenseDate
-						? expenseDate.toISOString()
-						: new Date().toISOString(),
-					payee: payload.payee,
-					notes: payload.notes,
-				}),
-			});
-			setToast("ব্যয় যোগ হয়েছে");
-			await refreshFinanceSummary(
-				financeViewMode,
-				financeDateFrom,
-				financeDateTo
-			);
-			await fetchExpenses();
-		} catch (err: any) {
-			setToast(err.message);
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -371,114 +316,6 @@ export default function FinanceContent() {
 				</div>
 			)}
 
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-				<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border dark:border-gray-700">
-					<h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-						আয় যোগ করুন
-					</h3>
-					<form
-						className="space-y-3"
-						onSubmit={(e) => {
-							e.preventDefault();
-							handleIncomeCreate(new FormData(e.currentTarget));
-						}}
-					>
-						<div>
-							<Label className={labelClasses}>সূত্র</Label>
-							<Input name="source" required className={inputClasses} />
-						</div>
-						<div>
-							<Label className={labelClasses}>পরিমাণ</Label>
-							<Input
-								name="amount"
-								type="number"
-								required
-								className={inputClasses}
-							/>
-						</div>
-						<div>
-							<Label className={labelClasses}>তারিখ</Label>
-							<DatePicker
-								date={incomeDate}
-								onSelect={setIncomeDate}
-								placeholder="তারিখ বাছাই করুন"
-								className="w-full"
-							/>
-						</div>
-						<div>
-							<Label className={labelClasses}>ক্যাটাগরি</Label>
-							<Input
-								name="category"
-								placeholder="general"
-								className={inputClasses}
-							/>
-						</div>
-						<div>
-							<Label className={labelClasses}>নোট</Label>
-							<Textarea name="notes" rows={2} className={inputClasses} />
-						</div>
-						<Button
-							type="submit"
-							disabled={loading}
-							className="w-full sm:w-auto h-11"
-						>
-							{loading ? "সংরক্ষণ হচ্ছে..." : "আয় যোগ করুন"}
-						</Button>
-					</form>
-				</div>
-
-				<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border dark:border-gray-700">
-					<h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-						ব্যয় যোগ করুন
-					</h3>
-					<form
-						className="space-y-3"
-						onSubmit={(e) => {
-							e.preventDefault();
-							handleExpenseCreate(new FormData(e.currentTarget));
-						}}
-					>
-						<div>
-							<Label className={labelClasses}>ক্যাটাগরি</Label>
-							<Input name="category" required className={inputClasses} />
-						</div>
-						<div>
-							<Label className={labelClasses}>পরিমাণ</Label>
-							<Input
-								name="amount"
-								type="number"
-								required
-								className={inputClasses}
-							/>
-						</div>
-						<div>
-							<Label className={labelClasses}>তারিখ</Label>
-							<DatePicker
-								date={expenseDate}
-								onSelect={setExpenseDate}
-								placeholder="তারিখ বাছাই করুন"
-								className="w-full"
-							/>
-						</div>
-						<div>
-							<Label className={labelClasses}>প্রাপক</Label>
-							<Input name="payee" className={inputClasses} />
-						</div>
-						<div>
-							<Label className={labelClasses}>নোট</Label>
-							<Textarea name="notes" rows={2} className={inputClasses} />
-						</div>
-						<Button
-							type="submit"
-							disabled={loading}
-							className="w-full sm:w-auto h-11"
-						>
-							{loading ? "সংরক্ষণ হচ্ছে..." : "ব্যয় যোগ করুন"}
-						</Button>
-					</form>
-				</div>
-			</div>
-
 			<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border dark:border-gray-700">
 				<h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
 					আয়-ব্যয় সারাংশ ফিল্টার
@@ -529,10 +366,21 @@ export default function FinanceContent() {
 
 			<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border dark:border-gray-700">
 				<div className="flex justify-between items-center mb-4">
-					<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-						{financeViewMode === "month" ? "মাসভিত্তিক" : "বার্ষিক"} আয়-ব্যয়
-						সারাংশ
-					</h3>
+					<div>
+						<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+							{financeViewMode === "month" ? "মাসভিত্তিক" : "বার্ষিক"} আয়-ব্যয়
+							সারাংশ
+						</h3>
+						{(financeDateFrom || financeDateTo) && (
+							<p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+								{financeDateFrom
+									? format(financeDateFrom, "dd/MM/yyyy")
+									: "শুরু"}{" "}
+								থেকে{" "}
+								{financeDateTo ? format(financeDateTo, "dd/MM/yyyy") : "শেষ"}
+							</p>
+						)}
+					</div>
 					<Button
 						onClick={handleDownloadPDF}
 						variant="outline"
@@ -557,16 +405,28 @@ export default function FinanceContent() {
 							{financeSummary?.overall?.net ?? 0} Tk
 						</span>
 					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 						{(() => {
-							const periods = Array.from(
+							// Get all periods
+							const allPeriods = Array.from(
 								new Set([
 									...financeIncome.map((i: any) => i._id.month || i._id.year),
 									...financeExpense.map((e: any) => e._id.month || e._id.year),
 								])
 							).sort() as string[];
 
-							return periods.map((period) => {
+							// Get current month in format "YYYY-MM"
+							const currentDate = new Date();
+							const currentMonth = format(currentDate, "yyyy-MM");
+							const currentYear = format(currentDate, "yyyy");
+
+							// Filter to show only yearly and current month
+							const filteredPeriods = allPeriods.filter((period) => {
+								// Show if it's a year (4 digits) or current month
+								return period.length === 4 || period === currentMonth;
+							});
+
+							return filteredPeriods.map((period) => {
 								const inc = financeIncome.find(
 									(i: any) => (i._id.month || i._id.year) === period
 								) || { total: 0 };
@@ -574,13 +434,45 @@ export default function FinanceContent() {
 									(e: any) => (e._id.month || e._id.year) === period
 								) || { total: 0 };
 								const net = inc.total - exp.total;
+
+								// Format the period display
+								let displayPeriod = period;
+								if (period.length === 7) {
+									// YYYY-MM format
+									const [year, month] = period.split("-");
+									const monthNames = [
+										"January",
+										"February",
+										"March",
+										"April",
+										"May",
+										"June",
+										"July",
+										"August",
+										"September",
+										"October",
+										"November",
+										"December",
+									];
+									displayPeriod = `${monthNames[parseInt(month) - 1]} ${year}`;
+								}
+
 								return (
 									<div
 										key={period}
 										className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/30 hover:shadow-md transition-shadow"
 									>
 										<div className="font-bold text-gray-900 dark:text-white mb-2 border-b dark:border-gray-700 pb-1 text-lg">
-											{period}
+											{displayPeriod}{" "}
+											{period === currentMonth ? (
+												<span className="text-blue-600 font-light dark:text-blue-400">
+													(Current Month)
+												</span>
+											) : (
+												<span className="text-gray-600 font-light dark:text-gray-400">
+													(Previous Month)
+												</span>
+											)}
 										</div>
 										<div className="flex justify-between text-sm py-1">
 											<span className="text-gray-600 dark:text-gray-400">
@@ -621,34 +513,52 @@ export default function FinanceContent() {
 					{/* আয় সারাংশ */}
 					<div className="overflow-x-auto p-6">
 						<div className="flex gap-4 flex-wrap justify-between items-center mb-4">
-							<div>
-								<h3 className="text-lg font-bold text-gray-900 dark:text-white">
-									আয় সারাংশ
-								</h3>
-							</div>
-							<div className="flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 overflow-hidden max-w-xs w-full">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 192.904 192.904"
-									className="fill-gray-600 dark:fill-gray-400 mr-2 w-4 h-4"
-								>
-									<path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
-								</svg>
-								<input
-									type="text"
-									placeholder="আয় খুঁজুন..."
-									value={incomeSearch}
-									onChange={(e) => setIncomeSearch(e.target.value)}
-									className="w-full outline-none bg-transparent text-gray-900 dark:text-white text-sm"
+							<h3 className="text-lg font-bold text-gray-900 dark:text-white">
+								আয় সারাংশ
+							</h3>
+							<div className="flex-1 justify-end flex gap-2 items-center flex-wrap">
+								<div className="flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 overflow-hidden max-w-xs w-full">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 192.904 192.904"
+										className="fill-gray-600 dark:fill-gray-400 mr-2 w-4 h-4"
+									>
+										<path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
+									</svg>
+									<input
+										type="text"
+										placeholder="আয় খুঁজুন..."
+										value={incomeSearch}
+										onChange={(e) => setIncomeSearch(e.target.value)}
+										className="w-full outline-none bg-transparent text-gray-900 dark:text-white text-sm"
+									/>
+								</div>
+								<DatePicker
+									date={incomeSearchDate}
+									onSelect={setIncomeSearchDate}
+									placeholder="তারিখ দিয়ে খুঁজুন"
+									className="w-48"
 								/>
+								<button
+									type="button"
+									onClick={() =>
+										setIncomeSortOrder(
+											incomeSortOrder === "asc" ? "desc" : "asc"
+										)
+									}
+									className="text-slate-900 dark:text-gray-100 font-medium flex items-center px-3 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 cursor-pointer"
+									title={incomeSortOrder === "asc" ? "Ascending" : "Descending"}
+								>
+									{incomeSortOrder === "asc" ? "↑" : "↓"}
+								</button>
+								<button
+									type="button"
+									onClick={() => exportToExcel("income", incomes)}
+									className="text-blue-600 dark:text-gray-100 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 overflow-hidden cursor-pointer"
+								>
+									<Download className="w-4 h-4 mr-2" /> Export Excel
+								</button>
 							</div>
-							<button
-								type="button"
-								onClick={() => exportToExcel("income", incomes)}
-								className="text-slate-900 dark:text-gray-100 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 overflow-hidden cursor-pointer"
-							>
-								Export Excel
-							</button>
 						</div>
 
 						<table className="min-w-full border border-gray-200 dark:border-gray-700">
@@ -677,18 +587,38 @@ export default function FinanceContent() {
 
 							<tbody className="whitespace-nowrap divide-y divide-gray-200 dark:divide-gray-700">
 								{(() => {
-									const filtered = incomes.filter(
-										(i) =>
-											i.source
-												?.toLowerCase()
-												.includes(incomeSearch.toLowerCase()) ||
-											i.category
-												?.toLowerCase()
-												.includes(incomeSearch.toLowerCase()) ||
-											i.notes
-												?.toLowerCase()
-												.includes(incomeSearch.toLowerCase())
-									);
+									const filtered = incomes
+										.filter((i) => {
+											const searchLower = incomeSearch.toLowerCase();
+											const dateStr = i.date
+												? format(new Date(i.date), "dd-MM-yyyy")
+												: "";
+
+											// Date picker filter
+											if (incomeSearchDate) {
+												const searchDateStr = format(
+													incomeSearchDate,
+													"dd-MM-yyyy"
+												);
+												if (dateStr !== searchDateStr) return false;
+											}
+
+											// Text search filter
+											return (
+												i.source?.toLowerCase().includes(searchLower) ||
+												i.category?.toLowerCase().includes(searchLower) ||
+												i.notes?.toLowerCase().includes(searchLower) ||
+												dateStr.includes(searchLower)
+											);
+										})
+										.sort((a, b) => {
+											// Sort by date
+											const dateA = new Date(a.date || 0).getTime();
+											const dateB = new Date(b.date || 0).getTime();
+											return incomeSortOrder === "asc"
+												? dateA - dateB
+												: dateB - dateA;
+										});
 									const total = filtered.length;
 									const paginated = filtered.slice(
 										(incomePage - 1) * incomeLimit,
@@ -758,16 +688,38 @@ export default function FinanceContent() {
 
 						{/* Pagination Income */}
 						{(() => {
-							const filtered = incomes.filter(
-								(i) =>
-									i.source
-										?.toLowerCase()
-										.includes(incomeSearch.toLowerCase()) ||
-									i.category
-										?.toLowerCase()
-										.includes(incomeSearch.toLowerCase()) ||
-									i.notes?.toLowerCase().includes(incomeSearch.toLowerCase())
-							);
+							const filtered = incomes
+								.filter((i) => {
+									const searchLower = incomeSearch.toLowerCase();
+									const dateStr = i.date
+										? format(new Date(i.date), "dd-MM-yyyy")
+										: "";
+
+									// Date picker filter
+									if (incomeSearchDate) {
+										const searchDateStr = format(
+											incomeSearchDate,
+											"dd-MM-yyyy"
+										);
+										if (dateStr !== searchDateStr) return false;
+									}
+
+									// Text search filter
+									return (
+										i.source?.toLowerCase().includes(searchLower) ||
+										i.category?.toLowerCase().includes(searchLower) ||
+										i.notes?.toLowerCase().includes(searchLower) ||
+										dateStr.includes(searchLower)
+									);
+								})
+								.sort((a, b) => {
+									// Sort by date
+									const dateA = new Date(a.date || 0).getTime();
+									const dateB = new Date(b.date || 0).getTime();
+									return incomeSortOrder === "asc"
+										? dateA - dateB
+										: dateB - dateA;
+								});
 							const total = filtered.length;
 							const totalPages = Math.ceil(total / incomeLimit);
 							if (total === 0) return null;
@@ -863,34 +815,54 @@ export default function FinanceContent() {
 					{/* ব্যয় সারাংশ */}
 					<div className="overflow-x-auto p-6">
 						<div className="flex gap-4 flex-wrap justify-between items-center mb-4">
-							<div>
-								<h3 className="text-lg font-bold text-gray-900 dark:text-white">
-									ব্যয় সারাংশ
-								</h3>
-							</div>
-							<div className="flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 overflow-hidden max-w-xs w-full">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 192.904 192.904"
-									className="fill-gray-600 dark:fill-gray-400 mr-2 w-4 h-4"
-								>
-									<path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
-								</svg>
-								<input
-									type="text"
-									placeholder="ব্যয় খুঁজুন..."
-									value={expenseSearch}
-									onChange={(e) => setExpenseSearch(e.target.value)}
-									className="w-full outline-none bg-transparent text-gray-900 dark:text-white text-sm"
+							<h3 className="text-lg font-bold text-gray-900 dark:text-white">
+								ব্যয় সারাংশ
+							</h3>
+							<div className="flex-1 justify-end flex gap-2 items-center flex-wrap">
+								<div className="flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 overflow-hidden max-w-xs w-full">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 192.904 192.904"
+										className="fill-gray-600 dark:fill-gray-400 mr-2 w-4 h-4"
+									>
+										<path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
+									</svg>
+									<input
+										type="text"
+										placeholder="ব্যয় খুঁজুন..."
+										value={expenseSearch}
+										onChange={(e) => setExpenseSearch(e.target.value)}
+										className="w-full outline-none bg-transparent text-gray-900 dark:text-white text-sm"
+									/>
+								</div>
+								<DatePicker
+									date={expenseSearchDate}
+									onSelect={setExpenseSearchDate}
+									placeholder="তারিখ দিয়ে খুঁজুন"
+									className="w-48"
 								/>
+								<button
+									type="button"
+									onClick={() =>
+										setExpenseSortOrder(
+											expenseSortOrder === "asc" ? "desc" : "asc"
+										)
+									}
+									className="text-slate-900 dark:text-gray-100 font-medium flex items-center px-3 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 cursor-pointer"
+									title={
+										expenseSortOrder === "asc" ? "Ascending" : "Descending"
+									}
+								>
+									{expenseSortOrder === "asc" ? "↑" : "↓"}
+								</button>
+								<button
+									type="button"
+									onClick={() => exportToExcel("expense", expenses)}
+									className="text-blue-600 dark:text-gray-100 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 overflow-hidden cursor-pointer"
+								>
+									<Download className="w-4 h-4 mr-2" /> Export Excel
+								</button>
 							</div>
-							<button
-								type="button"
-								onClick={() => exportToExcel("expense", expenses)}
-								className="text-slate-900 dark:text-gray-100 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 overflow-hidden cursor-pointer"
-							>
-								Export Excel
-							</button>
 						</div>
 
 						<table className="min-w-full border border-gray-200 dark:border-gray-700">
@@ -919,18 +891,38 @@ export default function FinanceContent() {
 
 							<tbody className="whitespace-nowrap divide-y divide-gray-200 dark:divide-gray-700">
 								{(() => {
-									const filtered = expenses.filter(
-										(e) =>
-											e.category
-												?.toLowerCase()
-												.includes(expenseSearch.toLowerCase()) ||
-											e.payee
-												?.toLowerCase()
-												.includes(expenseSearch.toLowerCase()) ||
-											e.notes
-												?.toLowerCase()
-												.includes(expenseSearch.toLowerCase())
-									);
+									const filtered = expenses
+										.filter((e) => {
+											const searchLower = expenseSearch.toLowerCase();
+											const dateStr = e.date
+												? format(new Date(e.date), "dd-MM-yyyy")
+												: "";
+
+											// Date picker filter
+											if (expenseSearchDate) {
+												const searchDateStr = format(
+													expenseSearchDate,
+													"dd-MM-yyyy"
+												);
+												if (dateStr !== searchDateStr) return false;
+											}
+
+											// Text search filter
+											return (
+												e.category?.toLowerCase().includes(searchLower) ||
+												e.payee?.toLowerCase().includes(searchLower) ||
+												e.notes?.toLowerCase().includes(searchLower) ||
+												dateStr.includes(searchLower)
+											);
+										})
+										.sort((a, b) => {
+											// Sort by date
+											const dateA = new Date(a.date || 0).getTime();
+											const dateB = new Date(b.date || 0).getTime();
+											return expenseSortOrder === "asc"
+												? dateA - dateB
+												: dateB - dateA;
+										});
 									const total = filtered.length;
 									const paginated = filtered.slice(
 										(expensePage - 1) * expenseLimit,
@@ -1000,16 +992,38 @@ export default function FinanceContent() {
 
 						{/* Pagination Expense */}
 						{(() => {
-							const filtered = expenses.filter(
-								(e) =>
-									e.category
-										?.toLowerCase()
-										.includes(expenseSearch.toLowerCase()) ||
-									e.payee
-										?.toLowerCase()
-										.includes(expenseSearch.toLowerCase()) ||
-									e.notes?.toLowerCase().includes(expenseSearch.toLowerCase())
-							);
+							const filtered = expenses
+								.filter((e) => {
+									const searchLower = expenseSearch.toLowerCase();
+									const dateStr = e.date
+										? format(new Date(e.date), "dd-MM-yyyy")
+										: "";
+
+									// Date picker filter
+									if (expenseSearchDate) {
+										const searchDateStr = format(
+											expenseSearchDate,
+											"dd-MM-yyyy"
+										);
+										if (dateStr !== searchDateStr) return false;
+									}
+
+									// Text search filter
+									return (
+										e.category?.toLowerCase().includes(searchLower) ||
+										e.payee?.toLowerCase().includes(searchLower) ||
+										e.notes?.toLowerCase().includes(searchLower) ||
+										dateStr.includes(searchLower)
+									);
+								})
+								.sort((a, b) => {
+									// Sort by date
+									const dateA = new Date(a.date || 0).getTime();
+									const dateB = new Date(b.date || 0).getTime();
+									return expenseSortOrder === "asc"
+										? dateA - dateB
+										: dateB - dateA;
+								});
 							const total = filtered.length;
 							const totalPages = Math.ceil(total / expenseLimit);
 							if (total === 0) return null;

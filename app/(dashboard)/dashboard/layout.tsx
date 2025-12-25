@@ -23,6 +23,12 @@ const pages = [
 	{ id: "admission", label: "ভর্তি", icon: "📝", path: "/dashboard/admission" },
 	{ id: "contact", label: "যোগাযোগ", icon: "📞", path: "/dashboard/contact" },
 	{ id: "result", label: "ফলাফল", icon: "📊", path: "/dashboard/result" },
+	{
+		id: "students",
+		label: "শিক্ষার্থী",
+		icon: "👨‍🎓",
+		path: "/dashboard/students",
+	},
 	{ id: "faq", label: "FAQ", icon: "❓", path: "/dashboard/faq" },
 	{ id: "finance", label: "আয়-ব্যয়", icon: "💰", path: "/dashboard/finance" },
 ];
@@ -56,7 +62,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 		};
 
 		checkNotifications();
-		const interval = setInterval(checkNotifications, 30000);
+		const interval = setInterval(checkNotifications, 60000);
 		return () => clearInterval(interval);
 	}, []);
 

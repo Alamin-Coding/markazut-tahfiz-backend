@@ -35,8 +35,12 @@ export default function ResultsCommunicationForm() {
 									<SelectValue placeholder="পরীক্ষা বেছে নিন" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="2024-1">১ম পরীক্ষা ২০২৫</SelectItem>
-									<SelectItem value="2024-2">২য় পরীক্ষা ২০২৫</SelectItem>
+									<SelectItem value="১ম পরীক্ষা ২০২৫">
+										১ম পরীক্ষা ২০২৫
+									</SelectItem>
+									<SelectItem value="২য় পরীক্ষা ২০২৫">
+										২য় পরীক্ষা ২০২৫
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>

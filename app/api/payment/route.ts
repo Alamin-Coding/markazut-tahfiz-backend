@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 		}
 
 		const payments = await Payment.find(filter)
-			.populate("student", "name class section guardianPhone")
+			.populate("student", "name studentId class section guardianPhone")
 			.sort({ paidAt: -1 });
 
 		return NextResponse.json({ success: true, data: payments });
@@ -85,4 +85,3 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
-

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Result from "@/lib/models/Result";
+import Student from "@/lib/models/Student";
 import dbConnect from "@/lib/db";
 
 // GET /api/result - Fetch all results with optional filtering
@@ -53,6 +54,8 @@ export async function POST(request: NextRequest) {
 			division,
 			class: classParam,
 			term,
+			examYear,
+			studentId,
 			totalMarks,
 			subjects,
 			examDate,
@@ -66,6 +69,7 @@ export async function POST(request: NextRequest) {
 			!division ||
 			!classParam ||
 			!term ||
+			!examYear ||
 			totalMarks === undefined ||
 			!subjects ||
 			!examDate ||
@@ -75,18 +79,68 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json(
 				{
 					success: false,
-					message: "All fields are required",
+					message: "All fields are required (including exam year)",
 				},
 				{ status: 400 }
 			);
 		}
 
-		// Check if result already exists for this student in this term
+		// STRICT STUDENT VALIDATION
+		// Verify student exists with EXACT name, class and division (department)
+		// and matches either the provided 'roll' or 'studentId'.
+		const student = await Student.findOne({
+			name: name.trim(),
+			class: classParam.trim(),
+			department: division.trim(),
+			$or: [
+				{ roll: roll.toString().trim() },
+				{ studentId: roll.toString().trim() },
+			],
+			isActive: true,
+		});
+
+		if (!student) {
+			console.log("Result Validation Failed. Payload:", {
+				name,
+				roll,
+				class: classParam,
+				division,
+			});
+			// Log potential candidates to see what's different
+			const candidates = await Student.find({
+				$or: [
+					{ roll: roll.toString().trim() },
+					{ studentId: roll.toString().trim() },
+				],
+			});
+			console.log(
+				`Found ${candidates.length} candidates with this roll/ID:`,
+				candidates.map((c) => ({
+					name: c.name,
+					class: c.class,
+					dept: c.department,
+					roll: c.roll,
+					sid: c.studentId,
+				}))
+			);
+
+			return NextResponse.json(
+				{
+					success: false,
+					message:
+						"ছাত্রের তথ্য ডাটাবেজের সাথে মিলছে না। অনুগ্রহ করে সঠিক নাম, রোল/আইডি, শ্রেণী ও বিভাগ চেক করুন।",
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Check if result already exists for this student in this term and year
 		const existingResult = await Result.findOne({
 			roll,
 			term,
 			division,
 			class: classParam,
+			examYear,
 			isActive: true,
 		});
 
@@ -94,18 +148,20 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json(
 				{
 					success: false,
-					message: "Result already exists for this student in this term",
+					message: "এই ছাত্রের জন্য এই পরীক্ষার ফলাফল ইতিমধ্যে বিদ্যমান",
 				},
 				{ status: 400 }
 			);
 		}
 
 		const result = new Result({
-			name,
+			name: name.trim(),
 			roll,
+			studentId: student.studentId,
 			division,
 			class: classParam,
 			term,
+			examYear,
 			totalMarks,
 			subjects,
 			examDate,

@@ -7,6 +7,16 @@ const StudentSchema = new mongoose.Schema(
 			required: true,
 			trim: true,
 		},
+		studentId: {
+			type: String,
+			required: true,
+			unique: true,
+			trim: true,
+		},
+		roll: {
+			type: String,
+			trim: true,
+		},
 		email: {
 			type: String,
 			trim: true,
@@ -24,6 +34,11 @@ const StudentSchema = new mongoose.Schema(
 		admissionDate: {
 			type: Date,
 			required: true,
+		},
+		department: {
+			type: String,
+			required: true,
+			trim: true,
 		},
 		class: {
 			type: String,
@@ -54,11 +69,16 @@ const StudentSchema = new mongoose.Schema(
 	}
 );
 
+StudentSchema.index({ studentId: 1 }, { unique: true });
+StudentSchema.index({ roll: 1 });
 StudentSchema.index({ name: 1, class: 1, section: 1 });
 StudentSchema.index({ guardianPhone: 1 });
+
+if (process.env.NODE_ENV === "development") {
+	delete (mongoose.models as any).Student;
+}
 
 const Student =
 	mongoose.models.Student || mongoose.model("Student", StudentSchema);
 
 export default Student;
-

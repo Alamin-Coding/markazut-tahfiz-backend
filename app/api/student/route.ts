@@ -33,37 +33,55 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	try {
 		await dbConnect();
-
 		const body = await request.json();
+		console.log("POST /api/student (singular) body:", body);
+
 		const {
 			name,
+			studentId,
+			roll,
 			email,
 			guardianPhone,
 			guardianName,
 			admissionDate,
 			class: klass,
+			department,
 			section,
 			status = "active",
 			feePlan,
 		} = body;
 
-		if (!name || !guardianPhone || !admissionDate || !klass) {
+		if (!name || !studentId || !guardianPhone || !admissionDate || !klass) {
 			return NextResponse.json(
 				{
 					success: false,
-					message: "Name, guardian phone, admissionDate and class are required",
+					message:
+						"Name, Student ID, guardian phone, admissionDate and class are required",
 				},
 				{ status: 400 }
 			);
 		}
 
+		// Check for existing studentId
+		const existingStudent = await Student.findOne({ studentId });
+		if (existingStudent) {
+			return NextResponse.json(
+				{ success: false, message: "Student ID already exists" },
+				{ status: 400 }
+			);
+		}
+
 		const student = new Student({
+			...body,
 			name,
+			studentId,
+			roll,
 			email,
 			guardianPhone,
 			guardianName,
 			admissionDate,
 			class: klass,
+			department,
 			section,
 			status,
 			feePlan,
@@ -84,4 +102,3 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
-

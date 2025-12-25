@@ -3,8 +3,6 @@
 import React, { useState } from "react";
 import ResultsManageForm from "@/components/dashboard/ResultsManageForm";
 import ResultsAnalyticsForm from "@/components/dashboard/ResultsAnalyticsForm";
-import ResultsCommunicationForm from "@/components/dashboard/ResultsCommunicationForm";
-import FAQManagementForm from "@/components/dashboard/FAQManagementForm";
 
 export default function DashboardResultPage() {
 	const [activeTab, setActiveTab] = useState("manage");
@@ -12,8 +10,6 @@ export default function DashboardResultPage() {
 	const tabs = [
 		{ id: "manage", label: "ফলাফল ব্যবস্থাপনা" },
 		{ id: "analytics", label: "অ্যানালিটিক্স" },
-		{ id: "communication", label: "যোগাযোগ" },
-		{ id: "faq", label: "FAQ" },
 	];
 
 	return (
@@ -42,8 +38,6 @@ export default function DashboardResultPage() {
 			<div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 sm:p-6 min-h-[400px]">
 				{activeTab === "manage" && <ResultsManageForm />}
 				{activeTab === "analytics" && <ResultsAnalyticsForm />}
-				{activeTab === "communication" && <ResultsCommunicationForm />}
-				{activeTab === "faq" && <FAQManagementForm />}
 			</div>
 		</div>
 	);
