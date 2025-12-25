@@ -100,12 +100,6 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (!student) {
-			console.log("Result Validation Failed. Payload:", {
-				name,
-				roll,
-				class: classParam,
-				division,
-			});
 			// Log potential candidates to see what's different
 			const candidates = await Student.find({
 				$or: [
@@ -113,16 +107,8 @@ export async function POST(request: NextRequest) {
 					{ studentId: roll.toString().trim() },
 				],
 			});
-			console.log(
-				`Found ${candidates.length} candidates with this roll/ID:`,
-				candidates.map((c) => ({
-					name: c.name,
-					class: c.class,
-					dept: c.department,
-					roll: c.roll,
-					sid: c.studentId,
-				}))
-			);
+			// Log potential candidates to see what's different
+			const candidates = await Student.find({
 
 			return NextResponse.json(
 				{
@@ -169,7 +155,14 @@ export async function POST(request: NextRequest) {
 			principal,
 		});
 
+		console.log("FINAL RESULT OBJECT BEFORE SAVE:", {
+			name: result.name,
+			studentId: result.studentId,
+			hasStudentIdInSchema: !!result.schema.paths.studentId,
+		});
+
 		await result.save();
+		console.log("RESULT SAVED. StudentId in saved doc:", result.studentId);
 
 		return NextResponse.json({
 			success: true,

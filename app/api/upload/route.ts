@@ -28,18 +28,13 @@ export async function POST(request: NextRequest) {
 
 		// Convert files to base64 strings
 		const filePromises = files.map(async (file) => {
-			console.log(
-				`Processing file: ${file.name}, type: ${file.type}, size: ${file.size}`
-			);
 			const bytes = await file.arrayBuffer();
 			const buffer = Buffer.from(bytes);
 			const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
-			console.log(`Base64 prepared, length: ${base64.length}`);
 			return base64;
 		});
 
 		const base64Files = await Promise.all(filePromises);
-		console.log(`Total files to upload: ${base64Files.length}`);
 
 		// Upload to Cloudinary
 		let results;
