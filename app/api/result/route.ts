@@ -100,16 +100,6 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (!student) {
-			// Log potential candidates to see what's different
-			const candidates = await Student.find({
-				$or: [
-					{ roll: roll.toString().trim() },
-					{ studentId: roll.toString().trim() },
-				],
-			});
-			// Log potential candidates to see what's different
-			const candidates = await Student.find({
-
 			return NextResponse.json(
 				{
 					success: false,
