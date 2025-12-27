@@ -116,6 +116,16 @@ export default function FinanceContent() {
 		}
 	};
 
+	const clearIncomeFilters = () => {
+		setIncomeSearch("");
+		setIncomeSearchDate(undefined);
+	};
+
+	const clearExpenseFilters = () => {
+		setExpenseSearch("");
+		setExpenseSearchDate(undefined);
+	};
+
 	const handleItemDelete = async (type: "income" | "expense", id: string) => {
 		try {
 			const res = await fetch(`/api/finance/${type}/${id}`, {
@@ -553,6 +563,14 @@ export default function FinanceContent() {
 								</button>
 								<button
 									type="button"
+									onClick={clearIncomeFilters}
+									className="text-red-600 dark:text-red-400 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 cursor-pointer"
+									title="রিসেট ফিল্টার"
+								>
+									রিসেট
+								</button>
+								<button
+									type="button"
 									onClick={() => exportToExcel("income", incomes)}
 									className="text-blue-600 dark:text-gray-100 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 overflow-hidden cursor-pointer"
 								>
@@ -854,6 +872,14 @@ export default function FinanceContent() {
 									}
 								>
 									{expenseSortOrder === "asc" ? "↑" : "↓"}
+								</button>
+								<button
+									type="button"
+									onClick={clearExpenseFilters}
+									className="text-red-600 dark:text-red-400 font-medium flex items-center px-4 py-2 rounded-md bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 cursor-pointer"
+									title="রিসেট ফিল্টার"
+								>
+									রিসেট
 								</button>
 								<button
 									type="button"

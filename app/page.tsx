@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, LogIn, X } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 const Login: React.FC = () => {
 	const router = useRouter();
@@ -17,6 +18,16 @@ const Login: React.FC = () => {
 	const [forgotLoading, setForgotLoading] = useState(false);
 	const [forgotMessage, setForgotMessage] = useState("");
 	const [forgotError, setForgotError] = useState("");
+	const [rememberMe, setRememberMe] = useState(false);
+
+	// Load remembered email on mount
+	useEffect(() => {
+		const savedEmail = localStorage.getItem("rememberedEmail");
+		if (savedEmail) {
+			setEmail(savedEmail);
+			setRememberMe(true);
+		}
+	}, []);
 
 	// if user is already logged in, redirect to dashboard
 	useEffect(() => {
@@ -32,26 +43,32 @@ const Login: React.FC = () => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!email || !password) {
-			alert("অনুগ্রহ করে সব ফিল্ড পূরণ করুন");
+			toast.error("অনুগ্রহ করে সব ফিল্ড পূরণ করুন");
 			return;
 		}
 		setLoading(true);
 		try {
+			if (rememberMe) {
+				localStorage.setItem("rememberedEmail", email);
+			} else {
+				localStorage.removeItem("rememberedEmail");
+			}
+
 			const res = await fetch("/api/auth/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email, password }),
+				body: JSON.stringify({ email, password, rememberMe }),
 			});
 			const data = await res.json();
 			if (res.ok) {
-				alert("লগইন সফল!");
+				toast.success("লগইন সফল!");
 				// Redirect to dashboard
 				window.location.href = "/dashboard";
 			} else {
-				alert(data.error || "লগইন ব্যর্থ");
+				toast.error(data.error || "লগইন ব্যর্থ");
 			}
 		} catch (err) {
-			alert("একটি ত্রুটি ঘটেছে");
+			toast.error("একটি ত্রুটি ঘটেছে");
 		} finally {
 			setLoading(false);
 		}
@@ -180,6 +197,8 @@ const Login: React.FC = () => {
 							<label className="flex items-center cursor-pointer">
 								<input
 									type="checkbox"
+									checked={rememberMe}
+									onChange={(e) => setRememberMe(e.target.checked)}
 									className="w-4 h-4 text-emerald-500 rounded focus:ring-2 focus:ring-emerald-500 border-gray-300"
 								/>
 								<span className="ml-2 text-gray-700">আমাকে মনে রাখুন</span>

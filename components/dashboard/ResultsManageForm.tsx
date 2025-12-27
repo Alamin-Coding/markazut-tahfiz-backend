@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import * as XLSX from "xlsx";
 import { inputClasses, labelClasses, selectClasses } from "./Constants";
+import { toast } from "sonner";
 
 export interface ResultType {
 	_id: string;
@@ -140,7 +141,7 @@ export default function ResultsManageForm() {
 
 	const removeSubject = (index: number) => {
 		if (formData.subjects.length <= 1) {
-			alert("অন্তত একটি বিষয় থাকা আবশ্যক");
+			toast.error("অন্তত একটি বিষয় থাকা আবশ্যক");
 			return;
 		}
 		const updatedSubjects = formData.subjects.filter((_, i) => i !== index);
@@ -183,7 +184,7 @@ export default function ResultsManageForm() {
 			!(examDateValue || formData.examDate) ||
 			!(resultDateValue || formData.resultDate)
 		) {
-			alert("অনুগ্রহ করে সকল প্রয়োজনীয় তথ্য পূরণ করুন");
+			toast.error("অনুগ্রহ করে সকল প্রয়োজনীয় তথ্য পূরণ করুন");
 			return;
 		}
 
@@ -233,17 +234,17 @@ export default function ResultsManageForm() {
 
 			const result = await response.json();
 			if (result.success) {
-				alert(editingId ? "ফলাফল আপডেট হয়েছে" : "ফলাফল যোগ হয়েছে");
+				toast.success(editingId ? "ফলাফল আপডেট হয়েছে" : "ফলাফল যোগ হয়েছে");
 				fetchResults(); // Refresh the list
 				setShowAddForm(false);
 				setEditingId(null);
 				resetForm();
 			} else {
-				alert(result.message || "Failed to save result");
+				toast.error(result.message || "Failed to save result");
 			}
 		} catch (error) {
 			console.error("Error saving result:", error);
-			alert("Failed to save result");
+			toast.error("Failed to save result");
 		}
 	};
 
@@ -356,14 +357,14 @@ export default function ResultsManageForm() {
 				});
 				const result = await response.json();
 				if (result.success) {
-					alert("ফলাফল মুছে ফেলা হয়েছে");
+					toast.success("ফলাফল মুছে ফেলা হয়েছে");
 					fetchResults(); // Refresh the list
 				} else {
-					alert(result.message || "Failed to delete result");
+					toast.error(result.message || "Failed to delete result");
 				}
 			} catch (error) {
 				console.error("Error deleting result:", error);
-				alert("Failed to delete result");
+				toast.error("Failed to delete result");
 			}
 		}
 	};

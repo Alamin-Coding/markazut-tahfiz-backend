@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { inputClasses, labelClasses } from "./Constants";
+import { toast } from "sonner";
 
 export interface Notice {
 	_id: string;
@@ -119,12 +120,13 @@ export default function NoticeManagementForm() {
 					setNotices([...notices, result.data]);
 					setNewNotice({ title: "", date: new Date(), content: [""] });
 					setShowAddForm(false);
+					toast.success("নোটিশ সফলভাবে যোগ করা হয়েছে");
 				} else {
-					alert("Failed to add notice");
+					toast.error(result.message || "Failed to add notice");
 				}
 			} catch (error) {
 				console.error("Error adding notice:", error);
-				alert("Failed to add notice");
+				toast.error("Failed to add notice");
 			} finally {
 				setAdding(false);
 			}
@@ -159,12 +161,13 @@ export default function NoticeManagementForm() {
 				);
 				setEditingId(null);
 				setEditingNotice({ title: "", date: undefined, content: [""] });
+				toast.success("নোটিশ সফলভাবে আপডেট করা হয়েছে");
 			} else {
-				alert("Failed to update notice");
+				toast.error(result.message || "Failed to update notice");
 			}
 		} catch (error) {
 			console.error("Error updating notice:", error);
-			alert("Failed to update notice");
+			toast.error("Failed to update notice");
 		} finally {
 			setUpdatingId(null);
 		}
@@ -195,12 +198,13 @@ export default function NoticeManagementForm() {
 				const result = await response.json();
 				if (result.success) {
 					setNotices(notices.filter((notice) => notice._id !== id));
+					toast.success("নোটিশ মুছে ফেলা হয়েছে");
 				} else {
-					alert("Failed to delete notice");
+					toast.error(result.message || "Failed to delete notice");
 				}
 			} catch (error) {
 				console.error("Error deleting notice:", error);
-				alert("Failed to delete notice");
+				toast.error("Failed to delete notice");
 			}
 		}
 	};

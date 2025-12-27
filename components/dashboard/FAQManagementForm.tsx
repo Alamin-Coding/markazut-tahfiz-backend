@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { inputClasses, labelClasses, selectClasses } from "./Constants";
+import { toast } from "sonner";
 
 export interface FAQ {
 	_id: string;
@@ -85,12 +86,13 @@ export default function FAQManagementForm() {
 						order: 0,
 					});
 					setShowAddForm(false);
+					toast.success("FAQ সফলভাবে যোগ করা হয়েছে");
 				} else {
-					alert("Failed to add FAQ");
+					toast.error("Failed to add FAQ");
 				}
 			} catch (error) {
 				console.error("Error adding FAQ:", error);
-				alert("Failed to add FAQ");
+				toast.error("Failed to add FAQ");
 			} finally {
 				setAdding(false);
 			}
@@ -119,12 +121,13 @@ export default function FAQManagementForm() {
 					category: "general",
 					order: 0,
 				});
+				toast.success("FAQ সফলভাবে আপডেট করা হয়েছে");
 			} else {
-				alert("Failed to update FAQ");
+				toast.error("Failed to update FAQ");
 			}
 		} catch (error) {
 			console.error("Error updating FAQ:", error);
-			alert("Failed to update FAQ");
+			toast.error("Failed to update FAQ");
 		} finally {
 			setUpdatingId(null);
 		}
@@ -154,12 +157,13 @@ export default function FAQManagementForm() {
 				const result = await response.json();
 				if (result.success) {
 					setFaqs(faqs.filter((faq) => faq._id !== id));
+					toast.success("FAQ মুছে ফেলা হয়েছে");
 				} else {
-					alert("Failed to delete FAQ");
+					toast.error("Failed to delete FAQ");
 				}
 			} catch (error) {
 				console.error("Error deleting FAQ:", error);
-				alert("Failed to delete FAQ");
+				toast.error("Failed to delete FAQ");
 			}
 		}
 	};

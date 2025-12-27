@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface CloudinaryImageUploadProps {
 	label: string;
@@ -35,8 +36,9 @@ export function CloudinaryImageUpload({
 			const imageUrl = result.secure_url;
 			setPreview(imageUrl);
 			onChange(imageUrl);
+			toast.success("ছবি সফলভাবে আপলোড হয়েছে");
 		} catch (error) {
-			alert("Image upload failed. Please try again.");
+			toast.error("ছবি আপলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
 		} finally {
 			setUploading(false);
 		}

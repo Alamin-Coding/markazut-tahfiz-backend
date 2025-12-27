@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +15,7 @@ import * as XLSX from "xlsx";
 import StudentAddForm from "@/components/dashboard/StudentAddForm";
 import IncomeAddForm from "@/components/dashboard/IncomeAddForm";
 import ExpenseAddForm from "@/components/dashboard/ExpenseAddForm";
+import { toast } from "sonner";
 
 type Student = {
 	_id: string;
@@ -75,7 +76,6 @@ export default function ControlDashboardPage() {
 	const [paymentLimit, setPaymentLimit] = useState(10);
 	const [financeSummary, setFinanceSummary] = useState<any>(null);
 	const [loading, setLoading] = useState(false);
-	const [toast, setToast] = useState<string | null>(null);
 	const [studentAdmissionDate, setStudentAdmissionDate] = useState<
 		Date | undefined
 	>(undefined);
@@ -113,7 +113,7 @@ export default function ControlDashboardPage() {
 			const res = await jsonFetch("/api/class-config");
 			setClassConfigs(res.data || []);
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -136,9 +136,9 @@ export default function ControlDashboardPage() {
 			setNewDivisions("");
 			setEditingClassId(null);
 			refreshClassConfigs();
-			setToast("শ্রেণী সফলভাবে সংরক্ষিত হয়েছে");
+			toast.success("শ্রেণী সফলভাবে সংরক্ষিত হয়েছে");
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -147,9 +147,9 @@ export default function ControlDashboardPage() {
 		try {
 			await jsonFetch(`/api/class-config?id=${id}`, { method: "DELETE" });
 			refreshClassConfigs();
-			setToast("শ্রেণী মুছে ফেলা হয়েছে");
+			toast.success("শ্রেণী মুছে ফেলা হয়েছে");
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -164,7 +164,7 @@ export default function ControlDashboardPage() {
 			const res = await jsonFetch("/api/students");
 			setStudents(res.data || []);
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -173,7 +173,7 @@ export default function ControlDashboardPage() {
 			const res = await jsonFetch("/api/admission");
 			setAdmissions(res.data || []);
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -182,7 +182,7 @@ export default function ControlDashboardPage() {
 			const res = await jsonFetch("/api/payment/summary?groupBy=month");
 			setPaymentSummary(res.data);
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -191,7 +191,7 @@ export default function ControlDashboardPage() {
 			const res = await jsonFetch("/api/payment");
 			setPayments(res.data || []);
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
@@ -234,13 +234,13 @@ export default function ControlDashboardPage() {
 			const res = await jsonFetch(`/api/finance/summary?${params.toString()}`);
 			setFinanceSummary(res.data);
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		}
 	};
 
 	const handleStudentCreate = async (formData: FormData) => {
 		setLoading(true);
-		setToast(null);
+		// toast cleared;
 		try {
 			const payload: any = Object.fromEntries(formData.entries());
 			if (studentAdmissionDate) {
@@ -253,10 +253,10 @@ export default function ControlDashboardPage() {
 				method: "POST",
 				body: JSON.stringify(payload),
 			});
-			setToast("ছাত্র যোগ হয়েছে");
+			toast.success("ছাত্র যোগ হয়েছে");
 			await refreshStudents();
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		} finally {
 			setLoading(false);
 		}
@@ -264,7 +264,7 @@ export default function ControlDashboardPage() {
 
 	const handlePaymentCreate = async (formData: FormData) => {
 		setLoading(true);
-		setToast(null);
+		// toast cleared;
 		try {
 			const payload = Object.fromEntries(formData.entries());
 			const monthOf =
@@ -283,10 +283,10 @@ export default function ControlDashboardPage() {
 					notes: payload.notes,
 				}),
 			});
-			setToast("পেমেন্ট সংরক্ষণ হয়েছে");
+			toast.success("পেমেন্ট সংরক্ষণ হয়েছে");
 			await refreshPaymentSummary();
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		} finally {
 			setLoading(false);
 		}
@@ -294,16 +294,16 @@ export default function ControlDashboardPage() {
 
 	const handleAdmissionStatus = async (id: string, status: string) => {
 		setLoading(true);
-		setToast(null);
+		// toast cleared;
 		try {
 			await jsonFetch(`/api/admission/${id}`, {
 				method: "PUT",
 				body: JSON.stringify({ status }),
 			});
-			setToast("অ্যাডমিশন স্ট্যাটাস আপডেট হয়েছে");
+			toast.success("অ্যাডমিশন স্ট্যাটাস আপডেট হয়েছে");
 			await refreshAdmissions();
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		} finally {
 			setLoading(false);
 		}
@@ -311,7 +311,7 @@ export default function ControlDashboardPage() {
 
 	const handleBulkSms = async (formData: FormData) => {
 		setLoading(true);
-		setToast(null);
+		// toast cleared;
 		try {
 			const payload = Object.fromEntries(formData.entries());
 			const numbers = (payload.numbers as string)
@@ -326,9 +326,9 @@ export default function ControlDashboardPage() {
 					title: payload.title,
 				}),
 			});
-			setToast("Bulk SMS queue হয়েছে");
+			toast.success("Bulk SMS queue হয়েছে");
 		} catch (err: any) {
-			setToast(err.message);
+			toast.error(err.message);
 		} finally {
 			setLoading(false);
 		}
@@ -424,9 +424,9 @@ export default function ControlDashboardPage() {
 				"yyyy-MM-dd"
 			)}.pdf`;
 			doc.save(fileName);
-			setToast("PDF ডাউনলোড সফল হয়েছে");
+			toast.success("PDF ডাউনলোড সফল হয়েছে");
 		} catch (err: any) {
-			setToast("PDF ডাউনলোড ব্যর্থ: " + err.message);
+			toast.success("PDF ডাউনলোড ব্যর্থ: " + err.message);
 		}
 	};
 
@@ -453,7 +453,6 @@ export default function ControlDashboardPage() {
 				<h1 className="text-2xl font-semibold text-gray-900">
 					ড্যাশবোর্ড কন্ট্রোল
 				</h1>
-				{toast && <span className="text-sm text-green-600">{toast}</span>}
 			</div>
 
 			<div className="space-y-4">
