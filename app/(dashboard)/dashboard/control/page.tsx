@@ -79,6 +79,9 @@ export default function ControlDashboardPage() {
 	const [studentAdmissionDate, setStudentAdmissionDate] = useState<
 		Date | undefined
 	>(undefined);
+	const [smsBalance, setSmsBalance] = useState<number | null>(null);
+	const [smsMessage, setSmsMessage] = useState("");
+	const [smsResult, setSmsResult] = useState<any>(null);
 	const [paymentDate, setPaymentDate] = useState<Date | undefined>(undefined);
 	const [paymentMonthDate, setPaymentMonthDate] = useState<Date | undefined>(
 		undefined
@@ -309,16 +312,27 @@ export default function ControlDashboardPage() {
 		}
 	};
 
+	const fetchSmsBalance = async () => {
+		try {
+			const res = await jsonFetch("/api/notifications/sms/balance");
+			if (res.success) {
+				setSmsBalance(res.balance);
+			}
+		} catch (err: any) {
+			console.error("Failed to fetch SMS balance:", err);
+		}
+	};
+
 	const handleBulkSms = async (formData: FormData) => {
 		setLoading(true);
-		// toast cleared;
+		setSmsResult(null);
 		try {
 			const payload = Object.fromEntries(formData.entries());
 			const numbers = (payload.numbers as string)
-				.split(",")
+				.split(/[,\n]+/)
 				.map((n) => n.trim())
 				.filter(Boolean);
-			await jsonFetch("/api/notifications/sms/bulk", {
+			const result = await jsonFetch("/api/notifications/sms/bulk", {
 				method: "POST",
 				body: JSON.stringify({
 					numbers,
@@ -326,7 +340,16 @@ export default function ControlDashboardPage() {
 					title: payload.title,
 				}),
 			});
-			toast.success("Bulk SMS queue হয়েছে");
+			setSmsResult(result.data);
+			if (result.success) {
+				toast.success(result.message);
+				// Refresh balance after sending
+				await fetchSmsBalance();
+				// Clear form
+				setSmsMessage("");
+			} else {
+				toast.error(result.message);
+			}
 		} catch (err: any) {
 			toast.error(err.message);
 		} finally {
@@ -913,42 +936,131 @@ export default function ControlDashboardPage() {
 				)}
 
 				{activeTab === "sms" && (
-					<Card>
-						<CardHeader>
+				<Card>
+					<CardHeader>
+						<div className="flex items-center justify-between">
 							<CardTitle>বাল্ক SMS</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<form
-								className="space-y-3"
-								onSubmit={(e) => {
-									e.preventDefault();
-									handleBulkSms(new FormData(e.currentTarget));
-								}}
-							>
-								<div>
-									<Label>শিরোনাম</Label>
-									<Input name="title" placeholder="Notification title" />
+							{smsBalance !== null && (
+								<div className="text-sm">
+									<span className="text-gray-600">Balance:</span>{" "}
+									<span className="font-bold text-green-600">
+										{smsBalance.toFixed(2)} টাকা
+									</span>
 								</div>
-								<div>
-									<Label>ফোন নম্বর (কমা-সেপারেটেড)</Label>
-									<Textarea
-										name="numbers"
-										rows={2}
-										placeholder="017xxxxxxxx, 018xxxxxxxx"
-										required
-									/>
-								</div>
-								<div>
+							)}
+						</div>
+					</CardHeader>
+					<CardContent>
+						<form
+							className="space-y-4"
+							onSubmit={(e) => {
+								e.preventDefault();
+								handleBulkSms(new FormData(e.currentTarget));
+							}}
+						>
+							<div>
+								<Label>শিরোনাম</Label>
+								<Input name="title" placeholder="SMS শিরোনাম" />
+							</div>
+							<div>
+								<Label>
+									ফোন নম্বর (কমা বা নতুন লাইন দিয়ে আলাদা করুন)
+								</Label>
+								<Textarea
+									name="numbers"
+									rows={3}
+									placeholder={"01712345678, 01812345678\nবা\n01712345678\n01812345678"}
+									required
+									className="font-mono text-sm"
+								/>
+								<p className="text-xs text-gray-500 mt-1">
+									নম্বর 88 দিয়ে শুরু না হলে automatically যোগ হবে
+								</p>
+							</div>
+							<div>
+								<div className="flex items-center justify-between mb-1">
 									<Label>মেসেজ</Label>
-									<Textarea name="message" rows={3} required />
+									<span className="text-xs text-gray-500">
+										{smsMessage.length} অক্ষর
+										{smsMessage.length > 0 && (
+											<span className="ml-2">
+												(~{Math.ceil(smsMessage.length / 160)} SMS)
+											</span>
+										)}
+									</span>
 								</div>
+								<Textarea
+									name="message"
+									rows={4}
+									required
+									value={smsMessage}
+									onChange={(e) => setSmsMessage(e.target.value)}
+									placeholder="আপনার SMS বার্তা এখানে লিখুন..."
+								/>
+								<p className="text-xs text-gray-500 mt-1">
+									ইংরেজি: 160 অক্ষর/SMS | বাংলা: 70 অক্ষর/SMS
+								</p>
+							</div>
+
+							{smsResult && (
+								<div className="p-4 rounded-lg border bg-gray-50">
+									<h4 className="font-semibold mb-2">পাঠানোর ফলাফল:</h4>
+									<div className="grid grid-cols-2 gap-2 text-sm">
+										<div>
+											<span className="text-gray-600">সফল:</span>{" "}
+											<span className="font-bold text-green-600">
+												{smsResult.sent || 0}
+											</span>
+										</div>
+										<div>
+											<span className="text-gray-600">ব্যর্থ:</span>{" "}
+											<span className="font-bold text-red-600">
+												{smsResult.failed || 0}
+											</span>
+										</div>
+									</div>
+									{smsResult.details && smsResult.details.length > 0 && (
+										<details className="mt-3">
+											<summary className="cursor-pointer text-sm text-blue-600 hover:underline">
+												বিস্তারিত দেখুন
+											</summary>
+											<div className="mt-2 max-h-40 overflow-y-auto space-y-1">
+												{smsResult.details.map((detail: any, idx: number) => (
+													<div
+														key={idx}
+														className={`text-xs p-2 rounded ${
+															detail.status === "success"
+																? "bg-green-50 text-green-700"
+																: "bg-red-50 text-red-700"
+														}`}
+													>
+														<span className="font-mono">{detail.number}</span>:{" "}
+														{detail.message}
+													</div>
+												))}
+											</div>
+										</details>
+									)}
+								</div>
+							)}
+
+							<div className="flex gap-2">
 								<Button type="submit" disabled={loading}>
-									{loading ? "কিউ হচ্ছে..." : "SMS পাঠান"}
+									{loading ? "পাঠানো হচ্ছে..." : "SMS পাঠান"}
 								</Button>
-							</form>
-						</CardContent>
-					</Card>
-				)}
+								<Button
+									type="button"
+									variant="outline"
+									onClick={fetchSmsBalance}
+									disabled={loading}
+								>
+									Balance চেক করুন
+								</Button>
+							</div>
+						</form>
+					</CardContent>
+				</Card>
+			)}
 			</div>
 		</div>
 	);
