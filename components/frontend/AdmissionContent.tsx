@@ -138,7 +138,7 @@ const AdmissionContent: React.FC = () => {
 			{/* Header Banner */}
 			<Animated delay={0} className="bg-emerald-900 text-white py-12">
 				<div className="max-w-6xl mx-auto px-4">
-					<h1 className="text-4xl font-bold mb-4">{data.header.title}</h1>
+					<h1 className="text-3xl font-bold mb-4">{data.header.title}</h1>
 					<p className="text-emerald-100 text-lg">{data.header.subtitle}</p>
 				</div>
 			</Animated>

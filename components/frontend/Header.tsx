@@ -13,7 +13,7 @@ const Header: React.FC = () => {
 						</span>
 					</span>
 				</div>
-				<div className="flex flex-wrap gap-6">
+				<div className="flex flex-wrap gap-3 md:gap-6">
 					<div className="flex items-center gap-2">
 						<MapPin size={16} />
 						<span>মিরপুর ১০, ঢাকা, বাংলাদেশ </span>

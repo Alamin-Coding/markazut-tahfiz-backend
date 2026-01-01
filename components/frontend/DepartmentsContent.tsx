@@ -83,7 +83,7 @@ const DepartmentsContent: React.FC = () => {
 			{/* Header */}
 			<div className="bg-linear-to-r from-button to-green-600 text-white py-12 px-4">
 				<div className="max-w-6xl mx-auto">
-					<h1 className="text-4xl md:text-5xl font-bold mb-4">
+					<h1 className="text-3xl md:text-5xl font-bold mb-4">
 						{pageData.header?.title}
 					</h1>
 					<p className="text-lg text-green-100">{pageData.header?.subtitle1}</p>

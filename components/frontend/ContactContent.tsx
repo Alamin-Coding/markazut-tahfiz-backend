@@ -204,7 +204,7 @@ const ContactContent: React.FC = () => {
 			{/* Header Banner */}
 			<div className="bg-linear-to-r from-button to-green-700 text-white py-12">
 				<div className="max-w-6xl mx-auto px-4">
-					<h1 className="text-4xl font-bold mb-4">{pageData.header.title}</h1>
+					<h1 className="text-3xl font-bold mb-4">{pageData.header.title}</h1>
 					<p className="text-green-100 text-lg">{pageData.header.subtitle}</p>
 				</div>
 			</div>

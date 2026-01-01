@@ -198,7 +198,7 @@ const AdmissionForm: React.FC = () => {
 			{/* Header Banner */}
 			<Animated delay={0} className="bg-emerald-900 text-white py-12">
 				<div className="max-w-4xl mx-auto px-4">
-					<h1 className="text-4xl font-bold mb-4">শিক্ষার্থী ভর্তি ফর্ম</h1>
+					<h1 className="text-3xl font-bold mb-4">শিক্ষার্থী ভর্তি ফর্ম</h1>
 					<p className="text-emerald-100 text-lg">
 						মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসা
 					</p>

@@ -115,7 +115,7 @@ const AboutContent: React.FC = () => {
 					</div>
 				)}
 				<div className="max-w-6xl mx-auto px-4 relative z-10">
-					<h1 className="text-4xl font-bold mb-4">{data.hero.title}</h1>
+					<h1 className="text-3xl font-bold mb-4">{data.hero.title}</h1>
 					<p className="text-green-100 text-lg">{data.hero.subtitle}</p>
 				</div>
 			</div>

@@ -70,7 +70,7 @@ const Hero: React.FC = () => {
 			{/* Content */}
 			<div className="relative w-full flex items-center justify-center container mx-auto px-4 py-12 md:py-20">
 				<div className="max-w-4xl mx-auto text-center text-white">
-					<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+					<h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
 						{title}
 					</h1>
 

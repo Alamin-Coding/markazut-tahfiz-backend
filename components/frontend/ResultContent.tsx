@@ -233,7 +233,7 @@ const ResultContent: React.FC = () => {
 							/>
 						</div>
 					</div>
-					<h1 className="text-4xl font-bold text-emerald-900 mb-2">
+					<h1 className="text-3xl lg:text-4xl font-bold text-emerald-900 mb-2">
 						মারকাজুত তাহফীজ
 					</h1>
 					<p className="text-gray-600">পরীক্ষার ফলাফল</p>

@@ -30,7 +30,7 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({
 						<span>📚</span>
 						<span className="underline underline-offset-8">গ্যা লা রি</span>
 					</p>
-					<h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-3 mt-3">
+					<h2 className="text-3xl md:text-5xl font-bold text-gray-800 mb-3 mt-3">
 						{title}
 					</h2>
 					<p className="text-gray-600 text-base">{subtitle}</p>

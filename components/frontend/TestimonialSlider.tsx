@@ -73,7 +73,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
 						👥 <span className="font-semibold">প্রশংসা পত্র</span>
 					</p>
 
-					<h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+					<h2 className="text-3xl md:text-5xl font-bold text-gray-800 mb-4">
 						{title}
 					</h2>
 
@@ -85,7 +85,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
 				</div>
 
 				{/* Slider */}
-				<div className="relative px-10">
+				<div className="relative lg:px-10">
 					<Slider {...settings}>
 						{testimonials.map((t) => (
 							<div key={t.id} className="px-3">
@@ -116,19 +116,19 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
 									</div>
 
 									{/* Author */}
-									<div className="flex items-center gap-4 w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-dashed border-green-600">
-										<img
-											style={{
-												objectFit: "cover",
-												borderRadius: "50%",
-												width: "100%",
-												height: "100%",
-											}}
-											src={t.image}
-											alt={t.name}
-											loading="lazy"
-											className="w-full h-full"
-										/>
+									<div className="flex items-center gap-4">
+										<div className="w-16 h-16 rounded-full border-4 border-dashed border-green-600">
+											<img
+												style={{
+													objectFit: "cover",
+													borderRadius: "50%",
+												}}
+												src={t.image}
+												alt={t.name}
+												loading="lazy"
+												className="w-full h-full"
+											/>
+										</div>
 
 										<div>
 											<h3 className="font-bold text-gray-800">{t.name}</h3>

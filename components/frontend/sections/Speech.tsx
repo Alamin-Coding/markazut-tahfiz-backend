@@ -34,7 +34,7 @@ const SpeechBlock: React.FC<TestimonialCardProps> = ({
 						<span>📚</span>
 						<span className="underline underline-offset-8">বাণী</span>
 					</div>
-					<h1 className="text-4xl font-bold text-gray-800">
+					<h1 className="text-3xl font-bold text-gray-800">
 						প্রতিষ্ঠাতা ও প্রিন্সিপালের এর{" "}
 						<span className="text-green-600">বাণী</span>
 					</h1>

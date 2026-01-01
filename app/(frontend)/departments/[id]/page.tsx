@@ -90,7 +90,7 @@ export default function DepartmentDetailsPage() {
 							{department.icon}
 						</div>
 						<div>
-							<h1 className="text-4xl md:text-5xl font-bold mb-3">
+							<h1 className="text-3xl md:text-5xl font-bold mb-3">
 								{department.name}
 							</h1>
 							<p className="text-xl opacity-90">{department.description}</p>
