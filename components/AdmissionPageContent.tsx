@@ -33,6 +33,7 @@ interface IAdmissionPageData {
 		};
 	};
 	classes: Array<{
+		department: string;
 		class: string;
 		duration: string;
 		fees: string;
@@ -87,12 +88,14 @@ const defaultData: IAdmissionPageData = {
 	},
 	classes: [
 		{
+			department: "হিফজ",
 			class: "নূরানী",
 			duration: "৩ বছর",
 			fees: "৩,০০০ টাকা",
 			capacity: "৬০ জন",
 		},
 		{
+			department: "কিতাব",
 			class: "প্রথম শ্রেণী",
 			duration: "১০ বছর",
 			fees: "২,০০০ টাকা",
@@ -385,6 +388,15 @@ export default function AdmissionPageContent() {
 					{data.classes.map((cls, i) => (
 						<div key={i} className="flex gap-4 items-end border-b pb-4">
 							<div className="flex-1 space-y-1">
+								<Label>বিভাগ</Label>
+								<Input
+									value={cls.department}
+									onChange={(e) =>
+										update("classes", null, e.target.value, i, "department")
+									}
+								/>
+							</div>
+							<div className="flex-1 space-y-1">
 								<Label>শ্রেণী</Label>
 								<Input
 									value={cls.class}
@@ -435,6 +447,7 @@ export default function AdmissionPageContent() {
 					variant="outline"
 					onClick={() =>
 						addArrayItem("classes", {
+							department: "",
 							class: "নতুন শ্রেণী",
 							duration: "",
 							fees: "",

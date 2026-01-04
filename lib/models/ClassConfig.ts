@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const ClassConfigSchema = new mongoose.Schema(
 	{
-		className: {
+		department: {
 			type: String,
 			required: true,
 			unique: true,
 			trim: true,
 		},
-		divisions: {
+		classes: {
 			type: [String],
 			default: [],
 		},

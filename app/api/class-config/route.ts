@@ -21,17 +21,17 @@ export async function POST(request: NextRequest) {
 	try {
 		await dbConnect();
 		const body = await request.json();
-		const { id, className, divisions } = body;
+		const { id, department, classes } = body;
 
 		if (id) {
 			const updated = await ClassConfig.findByIdAndUpdate(
 				id,
-				{ className, divisions },
+				{ department, classes },
 				{ new: true }
 			);
 			return NextResponse.json({ success: true, data: updated });
 		} else {
-			const created = await ClassConfig.create({ className, divisions });
+			const created = await ClassConfig.create({ department, classes });
 			return NextResponse.json({ success: true, data: created });
 		}
 	} catch (error: any) {

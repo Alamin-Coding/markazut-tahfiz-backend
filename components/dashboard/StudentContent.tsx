@@ -25,15 +25,16 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { EditIcon, TrashIcon } from "lucide-react";
 
 export default function StudentContent() {
 	const [students, setStudents] = useState<any[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [search, setSearch] = useState("");
-	const [selectedClass, setSelectedClass] = useState("all");
 	const [selectedDept, setSelectedDept] = useState("all");
+	const [selectedClass, setSelectedClass] = useState("all");
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
-	const [availableDivisions, setAvailableDivisions] = useState<string[]>([]);
+	const [availableClasses, setAvailableClasses] = useState<string[]>([]);
 	const [editingItem, setEditingItem] = useState<any>(null);
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const [admissionDate, setAdmissionDate] = useState<Date | undefined>(
@@ -136,37 +137,37 @@ export default function StudentContent() {
 					<div className="flex flex-wrap gap-2 w-full md:w-auto">
 						<div className="w-full md:w-40">
 							<Select
-								value={selectedClass}
+								value={selectedDept}
 								onValueChange={(val) => {
-									setSelectedClass(val);
-									setSelectedDept("all");
-									const conf = classConfigs.find((c) => c.className === val);
-									setAvailableDivisions(conf ? conf.divisions : []);
+									setSelectedDept(val);
+									setSelectedClass("all");
+									const conf = classConfigs.find((c) => c.department === val);
+									setAvailableClasses(conf ? conf.classes : []);
 								}}
 							>
 								<SelectTrigger className={selectClasses}>
-									<SelectValue placeholder="শ্রেণী" />
+									<SelectValue placeholder="বিভাগ" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="all">সব শ্রেণী</SelectItem>
+									<SelectItem value="all">সব বিভাগ</SelectItem>
 									{classConfigs.map((c) => (
-										<SelectItem key={c._id} value={c.className}>
-											{c.className}
+										<SelectItem key={c._id} value={c.department}>
+											{c.department}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 						</div>
 						<div className="w-full md:w-40">
-							<Select value={selectedDept} onValueChange={setSelectedDept}>
+							<Select value={selectedClass} onValueChange={setSelectedClass}>
 								<SelectTrigger className={selectClasses}>
-									<SelectValue placeholder="বিভাগ" />
+									<SelectValue placeholder="শ্রেণী" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="all">সব বিভাগ</SelectItem>
-									{availableDivisions.map((d) => (
-										<SelectItem key={d} value={d}>
-											{d}
+									<SelectItem value="all">সব শ্রেণী</SelectItem>
+									{availableClasses.map((cl) => (
+										<SelectItem key={cl} value={cl}>
+											{cl}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -229,20 +230,20 @@ export default function StudentContent() {
 										{student.guardianPhone}
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-										<div className="flex justify-end gap-2">
+										<div className="flex justify-end gap-3">
 											<button
 												onClick={() => setEditingItem(student)}
-												className="text-blue-500 hover:text-blue-700"
+												className="text-blue-500 hover:text-blue-700 cursor-pointer"
 												title="Edit"
 											>
-												✎
+												<EditIcon />
 											</button>
 											<button
 												onClick={() => setItemToDelete(student._id)}
-												className="text-red-500 hover:text-red-700"
+												className="text-red-500 hover:text-red-700 cursor-pointer"
 												title="Delete"
 											>
-												🗑
+												<TrashIcon />
 											</button>
 										</div>
 									</td>

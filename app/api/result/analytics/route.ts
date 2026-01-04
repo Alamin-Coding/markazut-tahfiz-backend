@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 		const uniqueStudents = new Set(results.map((r) => `${r.roll}-${r.term}`))
 			.size;
 		const uniqueTerms = new Set(results.map((r) => r.term)).size;
-		const uniqueDivisions = new Set(results.map((r) => r.division)).size;
+		const uniqueDepartments = new Set(results.map((r) => r.department)).size;
 		const uniqueClasses = new Set(results.map((r) => r.class)).size;
 
 		// Calculate average marks
@@ -63,22 +63,22 @@ export async function GET(request: NextRequest) {
 			F: results.filter((r) => r.totalMarks < 50).length,
 		};
 
-		// Division-wise performance
-		const divisionPerformance = results.reduce(
+		// Department-wise performance
+		const departmentPerformance = results.reduce(
 			(acc: Record<string, { total: number; count: number }>, result) => {
-				if (!acc[result.division]) {
-					acc[result.division] = { total: 0, count: 0 };
+				if (!acc[result.department]) {
+					acc[result.department] = { total: 0, count: 0 };
 				}
-				acc[result.division].total += result.totalMarks;
-				acc[result.division].count += 1;
+				acc[result.department].total += result.totalMarks;
+				acc[result.department].count += 1;
 				return acc;
 			},
 			{}
 		);
 
-		const divisionPerformanceData = Object.entries(divisionPerformance).map(
-			([division, data]) => ({
-				division,
+		const departmentPerformanceData = Object.entries(departmentPerformance).map(
+			([department, data]) => ({
+				department,
 				average: data.count > 0 ? data.total / data.count : 0,
 			})
 		);
@@ -128,13 +128,13 @@ export async function GET(request: NextRequest) {
 					totalResults,
 					uniqueStudents,
 					uniqueTerms,
-					uniqueDivisions,
+					uniqueDepartments,
 					uniqueClasses,
 					averageMarks: Math.round(averageMarks * 100) / 100,
 				},
 				subjectPerformance: subjectPerformanceData,
 				gradeDistribution,
-				divisionPerformance: divisionPerformanceData,
+				departmentPerformance: departmentPerformanceData,
 				classPerformance: classPerformanceData,
 				termTrends: termTrendsData,
 			},

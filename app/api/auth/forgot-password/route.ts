@@ -40,7 +40,9 @@ export async function POST(request: NextRequest) {
 			},
 		});
 
-		const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
+		// const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
+		// We use NEXT_PUBLIC_APP_URL now
+		const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
 
 		const mailOptions = {
 			from: process.env.EMAIL_FROM,

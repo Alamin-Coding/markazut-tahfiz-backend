@@ -86,7 +86,7 @@ export interface Subject {
 export interface StudentResult {
 	name: string;
 	roll: string | number;
-	division: string;
+	department: string;
 	class: string;
 	term: string;
 	totalMarks: number;

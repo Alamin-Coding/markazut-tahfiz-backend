@@ -41,6 +41,7 @@ interface AdmissionPageData {
 		};
 	};
 	classes: Array<{
+		department: string;
 		class: string;
 		duration: string;
 		fees: string;
@@ -215,6 +216,9 @@ const AdmissionContent: React.FC = () => {
 							<thead>
 								<tr className="bg-emerald-50">
 									<th className="px-4 py-3 text-left text-gray-800 font-semibold">
+										বিভাগ
+									</th>
+									<th className="px-4 py-3 text-left text-gray-800 font-semibold">
 										শ্রেণী
 									</th>
 									<th className="px-4 py-3 text-left text-gray-800 font-semibold">
@@ -234,6 +238,9 @@ const AdmissionContent: React.FC = () => {
 										key={idx}
 										className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
 									>
+										<td className="px-4 py-3 text-gray-700 font-medium">
+											{item.department}
+										</td>
 										<td className="px-4 py-3 text-gray-700 font-medium">
 											{item.class}
 										</td>

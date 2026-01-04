@@ -16,7 +16,7 @@ export async function PUT(
 		const {
 			name,
 			roll,
-			division,
+			department,
 			class: classParam,
 			term,
 			examYear,
@@ -29,12 +29,12 @@ export async function PUT(
 		} = body;
 
 		// STRICT STUDENT VALIDATION
-		// Verify student exists with EXACT name, class and division (department)
+		// Verify student exists with EXACT name, class and department
 		// and matches either the provided 'roll' or 'studentId'.
 		const student = await Student.findOne({
 			name: name.trim(),
 			class: classParam.trim(),
-			department: division.trim(),
+			department: department.trim(),
 			$or: [
 				{ roll: roll.toString().trim() },
 				{ studentId: roll.toString().trim() },
@@ -64,7 +64,7 @@ export async function PUT(
 				name: name.trim(),
 				roll,
 				studentId: student.studentId,
-				division,
+				department,
 				class: classParam,
 				term,
 				examYear,

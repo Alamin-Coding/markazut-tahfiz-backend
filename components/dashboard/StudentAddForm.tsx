@@ -26,9 +26,9 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 		undefined
 	);
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
+	const [selectedDepartment, setSelectedDepartment] = useState("");
+	const [availableClasses, setAvailableClasses] = useState<string[]>([]);
 	const [selectedClass, setSelectedClass] = useState("");
-	const [availableDivisions, setAvailableDivisions] = useState<string[]>([]);
-	const [selectedDivision, setSelectedDivision] = useState("");
 
 	useEffect(() => {
 		fetchClassConfigs();
@@ -55,9 +55,9 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 				? admissionDate.toISOString()
 				: new Date().toISOString();
 
-			// Manually add class and division from state
+			// Manually add class and department from state
+			payload.department = selectedDepartment;
 			payload.class = selectedClass;
-			payload.department = selectedDivision;
 			payload.roll = formData.get("roll")?.toString() || ""; // Ensure string
 
 			const res = await fetch("/api/students", {
@@ -81,8 +81,8 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 				toast.success("শিক্ষার্থী সফলভাবে যুক্ত হয়েছে");
 				form.reset();
 				setAdmissionDate(undefined);
+				setSelectedDepartment("");
 				setSelectedClass("");
-				setSelectedDivision("");
 				if (onSuccess) onSuccess();
 			} else {
 				toast.error(data.message || "শিক্ষার্থী যুক্ত করতে ব্যর্থ হয়েছে");
@@ -132,46 +132,46 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 				</div>
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
-						<Label className={labelClasses}>শ্রেণী *</Label>
+						<Label className={labelClasses}>বিভাগ *</Label>
 						<Select
-							name="class"
-							value={selectedClass}
+							name="department"
+							value={selectedDepartment}
 							onValueChange={(val) => {
-								setSelectedClass(val);
-								setSelectedDivision("");
-								const conf = classConfigs.find((c) => c.className === val);
-								setAvailableDivisions(conf ? conf.divisions : []);
+								setSelectedDepartment(val);
+								setSelectedClass("");
+								const conf = classConfigs.find((c) => c.department === val);
+								setAvailableClasses(conf ? conf.classes : []);
 							}}
 							required
 						>
 							<SelectTrigger className={selectClasses}>
-								<SelectValue placeholder="শ্রেণী বেছে নিন" />
+								<SelectValue placeholder="বিভাগ বেছে নিন" />
 							</SelectTrigger>
 							<SelectContent>
 								{classConfigs.map((c) => (
-									<SelectItem key={c._id} value={c.className}>
-										{c.className}
+									<SelectItem key={c._id} value={c.department}>
+										{c.department}
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="space-y-2">
-						<Label className={labelClasses}>বিভাগ *</Label>
+						<Label className={labelClasses}>শ্রেণী *</Label>
 						<Select
-							name="department"
-							value={selectedDivision}
-							onValueChange={setSelectedDivision}
+							name="class"
+							value={selectedClass}
+							onValueChange={setSelectedClass}
 							required
-							disabled={!selectedClass}
+							disabled={!selectedDepartment}
 						>
 							<SelectTrigger className={selectClasses}>
-								<SelectValue placeholder="বিভাগ বেছে নিন" />
+								<SelectValue placeholder="শ্রেণী বেছে নিন" />
 							</SelectTrigger>
 							<SelectContent>
-								{availableDivisions.map((d) => (
-									<SelectItem key={d} value={d}>
-										{d}
+								{availableClasses.map((cl) => (
+									<SelectItem key={cl} value={cl}>
+										{cl}
 									</SelectItem>
 								))}
 							</SelectContent>

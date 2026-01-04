@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
 		const { searchParams } = new URL(request.url);
 		const term = searchParams.get("term");
-		const division = searchParams.get("division");
+		const department = searchParams.get("department");
 		const classParam = searchParams.get("class");
 		const roll = searchParams.get("roll");
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 		const filter: Record<string, any> = { isActive: true };
 
 		if (term) filter.term = term;
-		if (division) filter.division = division;
+		if (department) filter.department = department;
 		if (classParam) filter.class = classParam;
 		if (roll) filter.roll = roll;
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 		const {
 			name,
 			roll,
-			division,
+			department,
 			class: classParam,
 			term,
 			examYear,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 		if (
 			!name ||
 			!roll ||
-			!division ||
+			!department ||
 			!classParam ||
 			!term ||
 			!examYear ||
@@ -86,12 +86,12 @@ export async function POST(request: NextRequest) {
 		}
 
 		// STRICT STUDENT VALIDATION
-		// Verify student exists with EXACT name, class and division (department)
+		// Verify student exists with EXACT name, class and department
 		// and matches either the provided 'roll' or 'studentId'.
 		const student = await Student.findOne({
 			name: name.trim(),
 			class: classParam.trim(),
-			department: division.trim(),
+			department: department.trim(),
 			$or: [
 				{ roll: roll.toString().trim() },
 				{ studentId: roll.toString().trim() },
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 		const existingResult = await Result.findOne({
 			roll,
 			term,
-			division,
+			department,
 			class: classParam,
 			examYear,
 			isActive: true,
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 			name: name.trim(),
 			roll,
 			studentId: student.studentId,
-			division,
+			department,
 			class: classParam,
 			term,
 			examYear,

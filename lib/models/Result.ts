@@ -33,7 +33,7 @@ const ResultSchema = new mongoose.Schema(
 			type: String,
 			trim: true,
 		},
-		division: {
+		department: {
 			type: String,
 			required: true,
 			trim: true,
@@ -83,7 +83,7 @@ const ResultSchema = new mongoose.Schema(
 );
 
 // Add indexes for better query performance
-ResultSchema.index({ term: 1, division: 1, class: 1, roll: 1, examYear: 1 });
+ResultSchema.index({ term: 1, department: 1, class: 1, roll: 1, examYear: 1 });
 ResultSchema.index({ createdAt: -1 });
 
 if (process.env.NODE_ENV === "development") {

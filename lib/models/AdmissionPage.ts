@@ -25,6 +25,7 @@ export interface IAdmissionPage extends Document {
 		};
 	};
 	classes: Array<{
+		department: string;
 		class: string;
 		duration: string;
 		fees: string;
@@ -76,6 +77,7 @@ const AdmissionPageSchema = new Schema<any>(
 		},
 		classes: [
 			{
+				department: String,
 				class: String,
 				duration: String,
 				fees: String,

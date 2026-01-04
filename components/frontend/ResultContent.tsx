@@ -14,7 +14,7 @@ import { env } from "../../lib/frontend/env";
 
 const ResultContent: React.FC = () => {
 	const [selectedTerm, setSelectedTerm] = useState<string>("");
-	const [selectedDivision, setSelectedDivision] = useState<string>("");
+	const [selectedDepartment, setSelectedDepartment] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedYear, setSelectedYear] = useState<string>("");
 	const [selectedRoll, setSelectedRoll] = useState<string>("");
@@ -22,13 +22,13 @@ const ResultContent: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [options, setOptions] = useState<{
 		terms: string[];
-		divisions: string[];
+		departments: string[];
 		classes: string[];
 		years: string[];
 		rolls: string[];
 	}>({
 		terms: [],
-		divisions: [],
+		departments: [],
 		classes: [],
 		years: [],
 		rolls: [],
@@ -55,7 +55,7 @@ const ResultContent: React.FC = () => {
 		if (
 			!selectedYear ||
 			!selectedTerm ||
-			!selectedDivision ||
+			!selectedDepartment ||
 			!selectedClass ||
 			!selectedRoll
 		) {
@@ -70,7 +70,7 @@ const ResultContent: React.FC = () => {
 			const params = new URLSearchParams({
 				year: selectedYear,
 				term: selectedTerm,
-				division: selectedDivision,
+				department: selectedDepartment,
 				class: selectedClass,
 				roll: selectedRoll,
 			});
@@ -146,7 +146,7 @@ const ResultContent: React.FC = () => {
           <div class="info-row">
             <div class="info-item">
               <span class="info-label">বিভাগ:</span>
-              <span>${resultData.division}</span>
+              <span>${resultData.department}</span>
             </div>
             <div class="info-item">
               <span class="info-label">শ্রেণী:</span>
@@ -285,7 +285,7 @@ const ResultContent: React.FC = () => {
 							</div>
 						</div>
 
-						{/* Division Select */}
+						{/* Department Select */}
 						<div>
 							<label className="block text-sm font-medium text-gray-700 mb-3">
 								<BookOpen className="inline h-4 w-4 mr-2 text-emerald-600" />
@@ -293,14 +293,14 @@ const ResultContent: React.FC = () => {
 							</label>
 							<div className="relative">
 								<select
-									value={selectedDivision}
-									onChange={(e) => setSelectedDivision(e.target.value)}
+									value={selectedDepartment}
+									onChange={(e) => setSelectedDepartment(e.target.value)}
 									className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none bg-white cursor-pointer"
 								>
 									<option value="">-- বিভাগ বেছে নিন --</option>
-									{options.divisions.map((division: string) => (
-										<option key={division} value={division}>
-											{division}
+									{options.departments.map((dept: string) => (
+										<option key={dept} value={dept}>
+											{dept}
 										</option>
 									))}
 								</select>
@@ -396,7 +396,7 @@ const ResultContent: React.FC = () => {
 								<div className="bg-emerald-50 rounded-lg p-4">
 									<p className="text-sm text-gray-600 mb-1">বিভাগ</p>
 									<p className="text-lg font-bold text-emerald-900">
-										{resultData.division}
+										{resultData.department}
 									</p>
 								</div>
 								<div className="bg-emerald-50 rounded-lg p-4">

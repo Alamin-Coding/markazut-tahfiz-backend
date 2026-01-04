@@ -7,12 +7,12 @@ export async function GET(request: NextRequest) {
 		await dbConnect();
 		const { searchParams } = new URL(request.url);
 		const term = searchParams.get("term");
-		const division = searchParams.get("division");
+		const department = searchParams.get("department");
 		const class_ = searchParams.get("class");
 		const roll = searchParams.get("roll");
 		const year = searchParams.get("year");
 
-		if (!term || !division || !class_ || !roll || !year) {
+		if (!term || !department || !class_ || !roll || !year) {
 			return NextResponse.json(
 				{ success: false, message: "Missing search parameters" },
 				{ status: 400 }
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
 		const result = await Result.findOne({
 			term,
-			division,
+			department,
 			class: class_,
 			roll,
 			examYear: year,

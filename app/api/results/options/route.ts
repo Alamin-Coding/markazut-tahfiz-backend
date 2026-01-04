@@ -6,9 +6,9 @@ export async function GET(request: NextRequest) {
 	try {
 		await dbConnect();
 
-		const [terms, divisions, classes, years, rolls] = await Promise.all([
+		const [terms, departments, classes, years, rolls] = await Promise.all([
 			Result.distinct("term", { isActive: true }),
-			Result.distinct("division", { isActive: true }),
+			Result.distinct("department", { isActive: true }),
 			Result.distinct("class", { isActive: true }),
 			Result.distinct("examYear", { isActive: true }),
 			Result.distinct("roll", { isActive: true }),
@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
 			success: true,
 			data: {
 				terms: terms.sort(),
-				divisions: divisions.sort(),
+				departments: departments.sort(),
 				classes: classes.sort(),
 				years: years.sort(),
-				rolls: rolls.sort((a, b) => Number(a) - Number(b)),
+				rolls: rolls.sort((a, b: any) => Number(a) - Number(b)),
 			},
 		});
 	} catch (error: any) {

@@ -20,7 +20,7 @@ export interface ResultType {
 	_id: string;
 	name: string;
 	roll: string | number;
-	division: string;
+	department: string;
 	class: string;
 	term: string;
 	totalMarks: number;
@@ -44,20 +44,20 @@ export default function ResultsManageForm() {
 	const [filteredResults, setFilteredResults] = useState(results);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [selectedTerm, setSelectedTerm] = useState("all");
-	const [selectedDivision, setSelectedDivision] = useState("all");
+	const [selectedDepartment, setSelectedDepartment] = useState("all");
 	const [selectedClass, setSelectedClass] = useState("all");
 	const [selectedYear, setSelectedYear] = useState("all");
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
-	const [availableDivisions, setAvailableDivisions] = useState<any[]>([]);
-	const [formAvailableDivisions, setFormAvailableDivisions] = useState<
-		string[]
-	>([]);
+	const [availableClasses, setAvailableClasses] = useState<any[]>([]);
+	const [formAvailableClasses, setFormAvailableClasses] = useState<string[]>(
+		[]
+	);
 	const [showAddForm, setShowAddForm] = useState(false);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [formData, setFormData] = useState({
 		name: "",
 		roll: "",
-		division: "",
+		department: "",
 		class: "",
 		term: "",
 		examYear: new Date().getFullYear().toString(),
@@ -163,11 +163,13 @@ export default function ResultsManageForm() {
 					roll: student.roll || "",
 					studentId: student.studentId || "",
 					class: student.class,
-					division: student.department,
+					department: student.department,
 				};
-				// Update divisions for the select box
-				const conf = classConfigs.find((c) => c.className === student.class);
-				setFormAvailableDivisions(conf ? conf.divisions : []);
+				// Update classes for the select box
+				const conf = classConfigs.find(
+					(c) => c.department === student.department
+				);
+				setFormAvailableClasses(conf ? conf.classes : []);
 				return newData;
 			});
 		}
@@ -178,7 +180,7 @@ export default function ResultsManageForm() {
 			!formData.name ||
 			!formData.roll ||
 			!formData.studentId ||
-			!formData.division ||
+			!formData.department ||
 			!formData.class ||
 			!formData.term ||
 			!(examDateValue || formData.examDate) ||
@@ -197,7 +199,7 @@ export default function ResultsManageForm() {
 			name: formData.name,
 			roll: formData.roll,
 			studentId: formData.studentId,
-			division: formData.division,
+			department: formData.department,
 			class: formData.class,
 			term: formData.term,
 			examYear: formData.examYear,
@@ -252,7 +254,7 @@ export default function ResultsManageForm() {
 		setFormData({
 			name: "",
 			roll: "",
-			division: "",
+			department: "",
 			class: "",
 			term: "",
 			examYear: new Date().getFullYear().toString(),
@@ -301,9 +303,9 @@ export default function ResultsManageForm() {
 			filtered = filtered.filter((result) => result.term === selectedTerm);
 		}
 
-		if (selectedDivision !== "all") {
+		if (selectedDepartment !== "all") {
 			filtered = filtered.filter(
-				(result) => result.division === selectedDivision
+				(result) => result.department === selectedDepartment
 			);
 		}
 
@@ -320,7 +322,7 @@ export default function ResultsManageForm() {
 		results,
 		searchTerm,
 		selectedTerm,
-		selectedDivision,
+		selectedDepartment,
 		selectedClass,
 		selectedYear,
 	]);
@@ -330,7 +332,7 @@ export default function ResultsManageForm() {
 		setFormData({
 			name: result.name,
 			roll: result.roll,
-			division: result.division,
+			department: result.department,
 			class: result.class,
 			term: result.term,
 			examYear: result.examYear || new Date().getFullYear().toString(),
@@ -378,7 +380,7 @@ export default function ResultsManageForm() {
 			নাম: result.name,
 			আইডি: result.studentId || "",
 			রোল: result.roll,
-			বিভাগ: result.division,
+			বিভাগ: result.department,
 			শ্রেণী: result.class,
 			পরীক্ষা: result.term,
 			"সম্মিলিত নম্বর": result.totalMarks,
@@ -475,43 +477,40 @@ export default function ResultsManageForm() {
 						</Select>
 					</div>
 					<div className="space-y-2">
-						<Label className={labelClasses}>শ্রেণী</Label>
-						<Select
-							value={selectedClass}
-							onValueChange={(val) => {
-								setSelectedClass(val);
-								setSelectedDivision("all");
-								const conf = classConfigs.find((c) => c.className === val);
-								setAvailableDivisions(conf ? conf.divisions : []);
-							}}
-						>
-							<SelectTrigger className={selectClasses}>
-								<SelectValue placeholder="সব শ্রেণী" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">সব শ্রেণী</SelectItem>
-								{classConfigs.map((c) => (
-									<SelectItem key={c._id} value={c.className}>
-										{c.className}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="space-y-2">
 						<Label className={labelClasses}>বিভাগ</Label>
 						<Select
-							value={selectedDivision}
-							onValueChange={setSelectedDivision}
+							value={selectedDepartment}
+							onValueChange={(val) => {
+								setSelectedDepartment(val);
+								setSelectedClass("all");
+								const conf = classConfigs.find((c) => c.department === val);
+								setAvailableClasses(conf ? conf.classes : []);
+							}}
 						>
 							<SelectTrigger className={selectClasses}>
 								<SelectValue placeholder="সব বিভাগ" />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">সব বিভাগ</SelectItem>
-								{availableDivisions.map((d) => (
-									<SelectItem key={d} value={d}>
-										{d}
+								{classConfigs.map((c) => (
+									<SelectItem key={c._id} value={c.department}>
+										{c.department}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-2">
+						<Label className={labelClasses}>শ্রেণী</Label>
+						<Select value={selectedClass} onValueChange={setSelectedClass}>
+							<SelectTrigger className={selectClasses}>
+								<SelectValue placeholder="সব শ্রেণী" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">সব শ্রেণী</SelectItem>
+								{availableClasses.map((cl) => (
+									<SelectItem key={cl} value={cl}>
+										{cl}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -532,7 +531,7 @@ export default function ResultsManageForm() {
 							onClick={() => {
 								setSearchTerm("");
 								setSelectedTerm("all");
-								setSelectedDivision("all");
+								setSelectedDepartment("all");
 								setSelectedClass("all");
 								setSelectedYear("all");
 							}}
@@ -592,7 +591,7 @@ export default function ResultsManageForm() {
 										{result.roll}
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-										{result.class} / {result.division}
+										{result.class} / {result.department}
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
 										{result.term}
@@ -700,19 +699,26 @@ export default function ResultsManageForm() {
 								<div className="space-y-2">
 									<Label className={labelClasses}>বিভাগ *</Label>
 									<Select
-										value={formData.division}
-										onValueChange={(value) =>
-											setFormData({ ...formData, division: value })
-										}
-										disabled={!formData.class}
+										value={formData.department}
+										onValueChange={(value) => {
+											setFormData({
+												...formData,
+												department: value,
+												class: "",
+											});
+											const conf = classConfigs.find(
+												(c: any) => c.department === value
+											);
+											setFormAvailableClasses(conf ? conf.classes : []);
+										}}
 									>
 										<SelectTrigger className={selectClasses}>
 											<SelectValue placeholder="বিভাগ নির্বাচন করুন" />
 										</SelectTrigger>
 										<SelectContent>
-											{formAvailableDivisions.map((d: any) => (
-												<SelectItem key={d} value={d}>
-													{d}
+											{classConfigs.map((c: any) => (
+												<SelectItem key={c._id} value={c.department}>
+													{c.department}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -722,21 +728,18 @@ export default function ResultsManageForm() {
 									<Label className={labelClasses}>শ্রেণী *</Label>
 									<Select
 										value={formData.class}
-										onValueChange={(value) => {
-											setFormData({ ...formData, class: value, division: "" });
-											const conf = classConfigs.find(
-												(c: any) => c.className === value
-											);
-											setFormAvailableDivisions(conf ? conf.divisions : []);
-										}}
+										onValueChange={(value) =>
+											setFormData({ ...formData, class: value })
+										}
+										disabled={!formData.department}
 									>
 										<SelectTrigger className={selectClasses}>
 											<SelectValue placeholder="শ্রেণী নির্বাচন করুন" />
 										</SelectTrigger>
 										<SelectContent>
-											{classConfigs.map((c: any) => (
-												<SelectItem key={c._id} value={c.className}>
-													{c.className}
+											{formAvailableClasses.map((cl: any) => (
+												<SelectItem key={cl} value={cl}>
+													{cl}
 												</SelectItem>
 											))}
 										</SelectContent>

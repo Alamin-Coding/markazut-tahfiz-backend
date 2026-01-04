@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Upload, CheckCircle, AlertCircle } from "lucide-react";
 import Animated from "./Animated";
 import { env } from "../../lib/frontend/env";
@@ -50,6 +50,21 @@ const AdmissionForm: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [submitted, setSubmitted] = useState<boolean>(false);
 	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+	const [classConfigs, setClassConfigs] = useState<any[]>([]);
+	const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+
+	useEffect(() => {
+		const fetchConfigs = async () => {
+			try {
+				const res = await fetch(`${env.apiUrl}/api/class-config`);
+				const json = await res.json();
+				if (json.success) setClassConfigs(json.data);
+			} catch (err) {
+				console.error("Failed to load configs", err);
+			}
+		};
+		fetchConfigs();
+	}, []);
 
 	const handleChange = (e: InputEvent) => {
 		const { name, value } = e.target;
@@ -179,19 +194,6 @@ const AdmissionForm: React.FC = () => {
 			setLoading(false);
 		}
 	};
-
-	const admissionClasses = [
-		"নূরানী",
-		"প্রথম শ্রেণী",
-		"দ্বিতীয় শ্রেণী",
-		"তৃতীয় শ্রেণী",
-		"চতুর্থ শ্রেণী",
-		"পঞ্চম শ্রেণী",
-		"দাখিল",
-		"আলিম",
-	];
-
-	const departments = ["হিফজ", "আরবি", "ইসলামী শিক্ষা", "কুরআন তিলাওয়াত"];
 
 	return (
 		<div className="bg-gray-50 min-h-screen">
@@ -382,18 +384,27 @@ const AdmissionForm: React.FC = () => {
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div>
 								<label className="block text-gray-700 font-semibold mb-2">
-									ভর্তির শ্রেণী <span className="text-red-600">*</span>
+									বিভাগ <span className="text-red-600">*</span>
 								</label>
 								<select
-									name="admissionClass"
-									value={formData.admissionClass}
-									onChange={handleChange}
+									name="admissionDepartment"
+									value={formData.admissionDepartment}
+									onChange={(e) => {
+										const val = e.target.value;
+										setFormData((prev) => ({
+											...prev,
+											admissionDepartment: val,
+											admissionClass: "",
+										}));
+										const conf = classConfigs.find((c) => c.department === val);
+										setAvailableClasses(conf ? conf.classes : []);
+									}}
 									className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600"
 								>
-									<option value="">-- শ্রেণী নির্বাচন করুন --</option>
-									{admissionClasses.map((cls, idx) => (
-										<option key={idx} value={cls}>
-											{cls}
+									<option value="">-- বিভাগ নির্বাচন করুন --</option>
+									{classConfigs.map((c, idx) => (
+										<option key={idx} value={c.department}>
+											{c.department}
 										</option>
 									))}
 								</select>
@@ -401,18 +412,19 @@ const AdmissionForm: React.FC = () => {
 
 							<div>
 								<label className="block text-gray-700 font-semibold mb-2">
-									বিভাগ <span className="text-red-600">*</span>
+									ভর্তির শ্রেণী <span className="text-red-600">*</span>
 								</label>
 								<select
-									name="admissionDepartment"
-									value={formData.admissionDepartment}
+									name="admissionClass"
+									value={formData.admissionClass}
 									onChange={handleChange}
-									className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600"
+									disabled={!formData.admissionDepartment}
+									className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 disabled:bg-gray-100"
 								>
-									<option value="">-- বিভাগ নির্বাচন করুন --</option>
-									{departments.map((dept, idx) => (
-										<option key={idx} value={dept}>
-											{dept}
+									<option value="">-- শ্রেণী নির্বাচন করুন --</option>
+									{availableClasses.map((cls, idx) => (
+										<option key={idx} value={cls}>
+											{cls}
 										</option>
 									))}
 								</select>

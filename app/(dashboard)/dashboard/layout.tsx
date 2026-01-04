@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
+import { LogOutIcon } from "lucide-react";
 
 const pages = [
 	{ id: "home", label: "হোম পেজ", icon: "🏠", path: "/dashboard/home" },
@@ -155,7 +156,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 							}}
 							className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl transition font-medium flex items-center justify-center"
 						>
-							<span className="mr-2">🚪</span> Logout
+							<span className="mr-2">
+								<LogOutIcon />
+							</span>
+							Logout
 						</button>
 					</div>
 				</nav>
