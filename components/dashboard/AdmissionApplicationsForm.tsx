@@ -10,7 +10,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Users, FileText, AlertCircle, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { toast } from "sonner";
 
 function InfoField({
 	label,
@@ -105,6 +107,29 @@ export default function AdmissionApplicationsForm() {
 			}
 		} catch (error) {
 			console.error("Failed to update status", error);
+		}
+	};
+
+	const handleDelete = async (id: string) => {
+		if (!window.confirm("আপনি কি নিশ্চিতভাবে এই আবেদনটি মুছে ফেলতে চান?")) {
+			return;
+		}
+
+		try {
+			const res = await fetch(`/api/admission/${id}`, {
+				method: "DELETE",
+			});
+			const json = await res.json();
+			if (json.success) {
+				setApplications((apps) => apps.filter((app) => app._id !== id));
+				setSelectedApp(null);
+				toast.success("আবেদনটি সফলভাবে মুছে ফেলা হয়েছে");
+			} else {
+				toast.error(json.message || "মুছে ফেলতে ব্যর্থ হয়েছে");
+			}
+		} catch (error) {
+			console.error("Failed to delete application", error);
+			toast.error("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
 		}
 	};
 
@@ -410,7 +435,15 @@ export default function AdmissionApplicationsForm() {
 								</div>
 							</div>
 						</div>
-						<div className="p-6 border-t dark:border-gray-700 flex justify-end">
+						<div className="p-6 border-t dark:border-gray-700 flex justify-between items-center">
+							<Button
+								onClick={() => handleDelete(selectedApp._id)}
+								variant="destructive"
+								className="bg-red-600 hover:bg-red-700 text-white"
+							>
+								<Trash2 className="w-4 h-4 mr-2" />
+								আবেদন মুছুন
+							</Button>
 							<Button
 								onClick={() => setSelectedApp(null)}
 								className="dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-700"

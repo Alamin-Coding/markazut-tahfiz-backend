@@ -63,7 +63,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 		};
 
 		checkNotifications();
-		const interval = setInterval(checkNotifications, 60000);
+		const interval = setInterval(checkNotifications, 300000);
 		return () => clearInterval(interval);
 	}, []);
 

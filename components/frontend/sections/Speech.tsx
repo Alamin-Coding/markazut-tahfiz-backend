@@ -1,8 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { Loader2, AlertCircle } from "lucide-react";
-import { env } from "../../../lib/frontend/env";
+import { AlertCircle } from "lucide-react";
 
 interface TestimonialCardProps {
 	image: string;
@@ -99,37 +95,22 @@ const SpeechBlock: React.FC<TestimonialCardProps> = ({
 	);
 };
 
-export default function Speech() {
-	const [speechData, setSpeechData] = useState<any>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
+interface SpeechData {
+	name: string;
+	role: string;
+	message: string;
+	image: string;
+	subtitle: string;
+	arabic: string;
+	bengaliGreeting: string;
+}
 
-	useEffect(() => {
-		fetch(`${env.apiUrl}/api/speech`)
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.success) {
-					setSpeechData(data.data);
-				} else {
-					setError(true);
-				}
-			})
-			.catch((err) => {
-				console.error("Failed to fetch speech data", err);
-				setError(true);
-			})
-			.finally(() => setLoading(false));
-	}, []);
+interface SpeechProps {
+	data: SpeechData | null;
+}
 
-	if (loading) {
-		return (
-			<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-				<Loader2 className="w-10 h-10 text-green-600 animate-spin" />
-			</div>
-		);
-	}
-
-	if (error || !speechData) {
+export default function Speech({ data }: SpeechProps) {
+	if (!data) {
 		return (
 			<div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 text-gray-800">
 				<AlertCircle className="w-16 h-16 text-red-500 mb-4" />
@@ -137,26 +118,20 @@ export default function Speech() {
 				<p className="text-gray-600 text-center mb-6">
 					দুঃখিত, বর্তমানে সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না।
 				</p>
-				<button
-					onClick={() => window.location.reload()}
-					className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-				>
-					রিফ্রেশ করুন
-				</button>
 			</div>
 		);
 	}
 
-	const data: TestimonialCardProps = {
-		image: speechData.image,
-		name: speechData.name,
-		title: speechData.role,
-		subtitle: speechData.subtitle,
-		arabic: speechData.arabic,
-		bengaliGreeting: speechData.bengaliGreeting,
-		testimonialText: speechData.message ? speechData.message.split("\n") : [],
+	const speechProps: TestimonialCardProps = {
+		image: data.image,
+		name: data.name,
+		title: data.role,
+		subtitle: data.subtitle,
+		arabic: data.arabic,
+		bengaliGreeting: data.bengaliGreeting,
+		testimonialText: data.message ? data.message.split("\n") : [],
 		rating: 99,
 	};
 
-	return <SpeechBlock {...data} />;
+	return <SpeechBlock {...speechProps} />;
 }

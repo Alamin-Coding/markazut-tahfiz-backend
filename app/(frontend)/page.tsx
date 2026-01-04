@@ -1,7 +1,11 @@
-"use client";
-
 import HomeContent from "@/components/frontend/HomeContent";
+import { getHomePageData } from "@/lib/services/home-data";
 
-export default function Home() {
-	return <HomeContent />;
+export const dynamic = "force-dynamic";
+export const revalidate = 60; // Revalidate every 60 seconds for fresh data
+
+export default async function Home() {
+	const data = await getHomePageData();
+
+	return <HomeContent data={data} />;
 }

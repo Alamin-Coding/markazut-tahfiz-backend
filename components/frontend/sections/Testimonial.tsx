@@ -1,42 +1,22 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import TestimonialSlider from "../TestimonialSlider";
-import { Loader2, AlertCircle } from "lucide-react";
-import { env } from "../../../lib/frontend/env";
+import { AlertCircle } from "lucide-react";
 
-export default function Testimonial() {
-	const [data, setData] = useState<any[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
+interface TestimonialItem {
+	_id: string;
+	name: string;
+	location: string;
+	message: string;
+	image: string;
+	rating: number;
+}
 
-	useEffect(() => {
-		fetch(`${env.apiUrl}/api/testimonials`)
-			.then((res) => res.json())
-			.then((resData) => {
-				if (resData.success) {
-					setData(resData.data);
-				} else {
-					setError(true);
-				}
-			})
-			.catch((err) => {
-				console.error(err);
-				setError(true);
-			})
-			.finally(() => setLoading(false));
-	}, []);
+interface TestimonialProps {
+	data: TestimonialItem[];
+}
 
-	if (loading) {
-		return (
-			<div className="py-20 bg-gray-50 flex items-center justify-center">
-				<Loader2 className="w-10 h-10 text-green-600 animate-spin" />
-			</div>
-		);
-	}
-
+export default function Testimonial({ data }: TestimonialProps) {
 	// Server connection error
-	if (error) {
+	if (!data) {
 		return (
 			<div className="py-20 bg-gray-50 flex flex-col items-center justify-center text-gray-800">
 				<AlertCircle className="w-16 h-16 text-red-500 mb-4" />
@@ -76,7 +56,7 @@ export default function Testimonial() {
 		);
 	}
 
-	const testimonials = data.map((item: any, index: number) => ({
+	const testimonials = data.map((item, index) => ({
 		id: item._id || index,
 		name: item.name,
 		location: item.location || "",

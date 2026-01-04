@@ -1,5 +1,3 @@
-"use client";
-
 import Info from "./Info";
 import Notice from "./Notice";
 import About from "./sections/About";
@@ -8,30 +6,35 @@ import Hero from "./sections/Hero";
 import Speech from "./sections/Speech";
 import Testimonial from "./sections/Testimonial";
 import Animated from "./Animated";
+import type { HomePageData } from "@/lib/services/home-data";
 
-const HomeContent: React.FC = () => {
+interface HomeContentProps {
+	data: HomePageData;
+}
+
+const HomeContent: React.FC<HomeContentProps> = ({ data }) => {
 	return (
 		<div className="min-h-screen bg-white">
 			<Animated>
-				<Hero />
+				<Hero data={data.hero} />
 			</Animated>
 			<Animated delay={80}>
-				<Notice />
+				<Notice data={data.notices} />
 			</Animated>
 			<Animated delay={120}>
-				<About />
+				<About data={data.about} />
 			</Animated>
 			<Animated delay={160}>
-				<Info />
+				<Info data={data.info} />
 			</Animated>
 			<Animated delay={200}>
-				<Speech />
+				<Speech data={data.speech} />
 			</Animated>
 			<Animated delay={240}>
-				<Gallery />
+				<Gallery data={data.gallery} />
 			</Animated>
 			<Animated delay={280}>
-				<Testimonial />
+				<Testimonial data={data.testimonials} />
 			</Animated>
 		</div>
 	);

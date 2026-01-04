@@ -1,101 +1,28 @@
-import { useEffect, useState } from "react";
+"use client";
+
 import Link from "next/link";
 import Animated from "./Animated";
-import { BookOpen, Loader2, AlertCircle } from "lucide-react";
+import { BookOpen, AlertCircle } from "lucide-react";
+import { AboutPageData } from "@/lib/services/about-data";
 
-interface IAboutData {
-	hero: {
-		title: string;
-		subtitle: string;
-		backgroundImage: string;
-	};
-	mission: {
-		title: string;
-		content: string;
-	};
-	vision: {
-		title: string;
-		content: string;
-	};
-	history: {
-		title: string;
-		paragraphs: string[];
-	};
-	features: Array<{
-		title: string;
-		description: string;
-		icon: string;
-	}>;
-	achievements: Array<{
-		title: string;
-		description: string;
-	}>;
-	programs: Array<{
-		title: string;
-		duration: string;
-		description: string;
-	}>;
-	values: Array<{
-		title: string;
-		description: string;
-	}>;
-	facilities: Array<{
-		title: string;
-		description: string;
-	}>;
-	cta: {
-		title: string;
-		description: string;
-		buttonText: string;
-	};
+interface AboutContentProps {
+	data: AboutPageData | null;
 }
 
-import { env } from "../../lib/frontend/env";
-
-const AboutContent: React.FC = () => {
-	const [data, setData] = useState<IAboutData | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const res = await fetch(`${env.apiUrl}/api/about`);
-				const json = await res.json();
-				if (json.success && json.data) {
-					setData(json.data);
-				}
-			} catch (error) {
-				console.error("Failed to fetch about data", error);
-				setError(true);
-			} finally {
-				setLoading(false);
-			}
-		};
-		fetchData();
-	}, []);
-
-	if (loading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<Loader2 className="animate-spin w-10 h-10 text-green-600" />
-			</div>
-		);
-	}
-
-	if (error || !data) {
+const AboutContent: React.FC<AboutContentProps> = ({ data }) => {
+	if (!data) {
 		return (
 			<div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-800 p-4">
 				<AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-				<h2 className="text-2xl font-bold mb-2">সার্ভার ত্রুটি</h2>
+				<h2 className="text-2xl font-bold mb-2">ডাটা পাওয়া যায়নি</h2>
 				<p className="text-gray-600 text-center mb-6">
-					দুঃখিত, বর্তমানে সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না। দয়া করে
-					কিছুক্ষণ পর আবার চেষ্টা করুন।
+					দুঃখিত, এই মুহূর্তে পেজের তথ্য লোড করা সম্ভব হচ্ছে না।
 				</p>
 				<button
 					onClick={() => window.location.reload()}
 					className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
 				>
-					রিফ্রেশ করুন
+					আবার চেষ্টা করুন
 				</button>
 			</div>
 		);

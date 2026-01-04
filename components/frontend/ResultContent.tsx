@@ -1,4 +1,6 @@
-﻿import { useState, useEffect } from "react";
+﻿"use client";
+
+import { useState } from "react";
 import {
 	Download,
 	Search,
@@ -10,9 +12,13 @@ import {
 } from "lucide-react";
 import type { StudentResult } from "../../types/frontend";
 import { toast } from "sonner";
-import { env } from "../../lib/frontend/env";
+import { ResultOptions } from "@/lib/services/result-data";
 
-const ResultContent: React.FC = () => {
+interface ResultContentProps {
+	initialOptions: ResultOptions;
+}
+
+const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 	const [selectedTerm, setSelectedTerm] = useState<string>("");
 	const [selectedDepartment, setSelectedDepartment] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
@@ -20,35 +26,8 @@ const ResultContent: React.FC = () => {
 	const [selectedRoll, setSelectedRoll] = useState<string>("");
 	const [showResult, setShowResult] = useState<boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
-	const [options, setOptions] = useState<{
-		terms: string[];
-		departments: string[];
-		classes: string[];
-		years: string[];
-		rolls: string[];
-	}>({
-		terms: [],
-		departments: [],
-		classes: [],
-		years: [],
-		rolls: [],
-	});
+	const [options] = useState<ResultOptions>(initialOptions);
 	const [resultData, setResultData] = useState<StudentResult | null>(null);
-
-	useEffect(() => {
-		const fetchOptions = async () => {
-			try {
-				const res = await fetch(`${env.apiUrl}/api/results/options`);
-				const json = await res.json();
-				if (json.success) {
-					setOptions(json.data);
-				}
-			} catch (err) {
-				console.error("Failed to fetch result options", err);
-			}
-		};
-		fetchOptions();
-	}, []);
 
 	const handleSearch = async (e: any) => {
 		e.preventDefault();
@@ -74,7 +53,8 @@ const ResultContent: React.FC = () => {
 				class: selectedClass,
 				roll: selectedRoll,
 			});
-			const res = await fetch(`${env.apiUrl}/api/results?${params.toString()}`);
+			// Using relative URL for production compatibility
+			const res = await fetch(`/api/results?${params.toString()}`);
 			const json = await res.json();
 			if (json.success) {
 				setResultData(json.data);

@@ -1,5 +1,3 @@
-"use client";
-
 import {
 	Phone,
 	ArrowRight,
@@ -7,11 +5,8 @@ import {
 	NotebookPen,
 	MonitorCog,
 	BookOpenText,
-	Loader2,
 	AlertCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { env } from "../../../lib/frontend/env";
 
 interface StepCardProps {
 	number: string;
@@ -62,31 +57,21 @@ const ImageSquare: React.FC<{
 	</div>
 );
 
-export default function About() {
-	const [aboutData, setAboutData] = useState<any>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
+interface AboutData {
+	title: string;
+	description: string;
+	image1: string;
+	image2: string;
+	image3: string;
+	image4: string;
+	steps: Array<{ number: string; title: string; icon: string }>;
+}
 
-	useEffect(() => {
-		fetch(`${env.apiUrl}/api/about`)
-			.then(async (res) => {
-				if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-				return res.json();
-			})
-			.then((data) => {
-				if (data.success) {
-					setAboutData(data.data);
-				} else {
-					setError(true);
-				}
-			})
-			.catch((err) => {
-				console.error("Failed to fetch about data", err);
-				setError(true);
-			})
-			.finally(() => setLoading(false));
-	}, []);
+interface AboutProps {
+	data: AboutData | null;
+}
 
+export default function About({ data }: AboutProps) {
 	// Icon mapping
 	const iconMap: { [key: string]: any } = {
 		School: <School size={30} />,
@@ -97,15 +82,7 @@ export default function About() {
 		ArrowRight: <ArrowRight size={30} />,
 	};
 
-	if (loading) {
-		return (
-			<div className="w-full min-h-[60vh] bg-gray-50 flex items-center justify-center py-20">
-				<Loader2 className="w-10 h-10 text-green-600 animate-spin" />
-			</div>
-		);
-	}
-
-	if (error || !aboutData) {
+	if (!data) {
 		return (
 			<div className="w-full min-h-[60vh] bg-gray-50 flex flex-col items-center justify-center py-20 px-4">
 				<AlertCircle className="w-16 h-16 text-red-500 mb-4" />
@@ -115,23 +92,17 @@ export default function About() {
 				<p className="text-gray-600 text-center mb-6">
 					দুঃখিত, বর্তমানে সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না।
 				</p>
-				<button
-					onClick={() => window.location.reload()}
-					className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-				>
-					রিফ্রেশ করুন
-				</button>
 			</div>
 		);
 	}
 
 	const steps =
-		aboutData.steps?.map((step: any) => ({
+		data.steps?.map((step: any) => ({
 			...step,
 			icon: iconMap[step.icon] || <School size={30} />,
 		})) || [];
 
-	const { title, description, image1, image2, image3, image4 } = aboutData;
+	const { title, description, image1, image2, image3, image4 } = data;
 
 	return (
 		<div className="w-full bg-linear-to-b from-gray-50 to-white py-12 px-4 text-gray-900">

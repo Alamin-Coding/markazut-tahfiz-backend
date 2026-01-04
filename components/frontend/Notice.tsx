@@ -1,36 +1,32 @@
-"use client";
+import { AlertCircle } from "lucide-react";
 
-import { useGetNoticesQuery } from "../../features/notice/notice-api";
-import { AlertCircle, Loader2 } from "lucide-react";
+interface NoticeItem {
+	_id: string;
+	title: string;
+	date: string;
+	content: string[];
+	type: string;
+}
 
-const Notice = () => {
-	const { data, isLoading, isError } = useGetNoticesQuery();
+interface NoticeProps {
+	data: NoticeItem[];
+}
 
-	if (isLoading) {
-		return (
-			<div className="bg-hover py-3 text-white overflow-hidden">
-				<div className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-2">
-					<Loader2 className="w-4 h-4 animate-spin" />
-					<span>লোডিং...</span>
-				</div>
-			</div>
-		);
-	}
-
-	if (isError || !data || !data.data || data.data.length === 0) {
+const Notice: React.FC<NoticeProps> = ({ data }) => {
+	if (!data || data.length === 0) {
 		return (
 			<div className="bg-red-600 py-3 text-white overflow-hidden">
 				<div className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-2">
 					<AlertCircle className="w-4 h-4" />
-					<span>নোটিশ লোড করতে সমস্যা হয়েছে</span>
+					<span>নোটিশ লোড করতে সমস্যা হয়েছে</span>
 				</div>
 			</div>
 		);
 	}
 
-	const latestNotice: string[] = Array.isArray(data.data[0].content)
-		? data.data[0].content
-		: [data.data[0].content];
+	const latestNotice: string[] = Array.isArray(data[0].content)
+		? data[0].content
+		: [data[0].content];
 
 	return (
 		<div className="bg-hover py-3 text-white overflow-hidden">

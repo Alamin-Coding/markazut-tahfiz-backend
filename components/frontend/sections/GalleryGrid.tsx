@@ -1,19 +1,15 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { fetchJSON } from "../../../lib/frontend/utils/fetchJSON";
-import { Loader2, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 interface GalleryItem {
-	id: number | string;
-	image: string;
-	alt: string;
+	_id: string;
+	title: string;
+	imageUrl: string;
 }
 
 interface GalleryGridProps {
 	title: string;
 	subtitle: string;
-	images: GalleryItem[];
+	images: Array<{ id: string; image: string; alt: string }>;
 }
 
 const GalleryGrid: React.FC<GalleryGridProps> = ({
@@ -64,43 +60,12 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({
 	);
 };
 
-// Example usage
-export default function Gallery() {
-	const [data, setData] = useState<any[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
+interface GalleryProps {
+	data: GalleryItem[];
+}
 
-	useEffect(() => {
-		const loadGallery = async () => {
-			try {
-				const resData = await fetchJSON("/api/gallery");
-				if (resData.success && Array.isArray(resData.data)) {
-					setData(resData.data);
-				} else {
-					setError(true);
-				}
-			} catch (err) {
-				console.error("Failed to load gallery:", err);
-				setError(true);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		loadGallery();
-	}, []);
-
-	if (loading) {
-		return (
-			<section className="bg-white py-16 px-4">
-				<div className="max-w-6xl mx-auto flex items-center justify-center min-h-[400px]">
-					<Loader2 className="w-10 h-10 text-green-600 animate-spin" />
-				</div>
-			</section>
-		);
-	}
-
-	if (error || data.length === 0) {
+export default function Gallery({ data }: GalleryProps) {
+	if (!data || data.length === 0) {
 		return (
 			<section className="bg-white py-16 px-4">
 				<div className="max-w-6xl mx-auto flex flex-col items-center justify-center min-h-[400px] text-gray-800">
@@ -109,18 +74,12 @@ export default function Gallery() {
 					<p className="text-gray-600 text-center mb-6">
 						দুঃখিত, বর্তমানে সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না।
 					</p>
-					<button
-						onClick={() => window.location.reload()}
-						className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-					>
-						রিফ্রেশ করুন
-					</button>
 				</div>
 			</section>
 		);
 	}
 
-	const images = data.map((item: any) => ({
+	const images = data.map((item) => ({
 		id: item._id,
 		image: item.imageUrl,
 		alt: item.title || "Gallery Image",
