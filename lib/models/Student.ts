@@ -69,7 +69,6 @@ const StudentSchema = new mongoose.Schema(
 	}
 );
 
-StudentSchema.index({ studentId: 1 }, { unique: true });
 StudentSchema.index({ roll: 1 });
 StudentSchema.index({ name: 1, class: 1, section: 1 });
 StudentSchema.index({ guardianPhone: 1 });

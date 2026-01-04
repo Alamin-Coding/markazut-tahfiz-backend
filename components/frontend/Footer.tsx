@@ -134,7 +134,7 @@ const Footer: React.FC = () => {
 						</h3>
 						<div className="rounded-xl overflow-hidden h-48 bg-emerald-900 border border-white/10">
 							<iframe
-								src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.139632832585!2d90.3546!3d23.7806!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ2JzUwLjIiTiA5MMKwMjEnMTYuNiJF!5e0!3m2!1sbn!2sbd!4v1714102600000"
+								src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.223595720905!2d90.37384899999999!3d23.8106468!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c72abbe75d93%3A0x514619aa65ef768e!2z4Kau4Ka-4Kaw4KaV4Ka-4Kac4KeB4KakIOCmpOCmvuCmueCmq-Cmv-CmnCDgpofgpqjgpp_gpr7gprDgpqjgp43gpq_gpr7gprbgpqjgpr7gprIg4KaV4KeN4Kav4Ka-4Kah4KeH4KafIOCmruCmvuCmpuCnjeCmsOCmvuCmuOCmviDgpq7gpr_gprDgpqrgp4HgprAg4Ka24Ka-4KaW4Ka-!5e0!3m2!1sen!2sbd!4v1767550870566!5m2!1sen!2sbd"
 								width="100%"
 								height="100%"
 								style={{ border: 0 }}
