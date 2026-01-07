@@ -107,7 +107,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
       </head>
       <body>
         <div class="header">
-          <div class="school-name">মারকাজুত তাহফীজ</div>
+          <div class="school-name">মারকাজুত তাহফিজ</div>
           <div class="school-motto">আন্তর্জাতিক হিফজ শিক্ষা প্রতিষ্ঠান</div>
           <div style="margin-top: 10px; font-size: 14px;">পরীক্ষার ফলাফল</div>
         </div>
@@ -214,7 +214,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 						</div>
 					</div>
 					<h1 className="text-3xl lg:text-4xl font-bold text-emerald-900 mb-2">
-						মারকাজুত তাহফীজ
+						মারকাজুত তাহফিজ
 					</h1>
 					<p className="text-gray-600">পরীক্ষার ফলাফল</p>
 				</div>

@@ -51,7 +51,7 @@ const AdmissionPageSchema = new Schema<any>(
 			title: { type: String, default: "ভর্তি তথ্য ও নির্দেশিকা" },
 			subtitle: {
 				type: String,
-				default: "মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসায় স্বাগতম",
+				default: "মারকাজুত তাহফিজ ইন্সটিটিউশনাল মাদরাসায় স্বাগতম",
 			},
 		},
 		infoCards: [

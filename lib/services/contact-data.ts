@@ -48,11 +48,31 @@ export async function getContactPageData() {
 	return {
 		pageData: pageData
 			? {
-					header: pageData.header,
-					contactInfo: pageData.contactInfo,
-					mapUrl: pageData.mapUrl,
-					departments: pageData.departments,
-					quickInfo: pageData.quickInfo,
+					header: {
+						title: pageData.header?.title || "",
+						subtitle: pageData.header?.subtitle || "",
+					},
+					contactInfo: (pageData.contactInfo || []).map((info: any) => ({
+						icon: info.icon || "",
+						title: info.title || "",
+						details: info.details || "",
+						color: info.color || "",
+					})),
+					mapUrl: pageData.mapUrl || "",
+					departments: (pageData.departments || []).map((dept: any) => ({
+						name: dept.name || "",
+						phone: dept.phone || "",
+						email: dept.email || "",
+					})),
+					quickInfo: {
+						title: pageData.quickInfo?.title || "",
+						description: pageData.quickInfo?.description || "",
+						socials: {
+							facebook: pageData.quickInfo?.socials?.facebook || "",
+							twitter: pageData.quickInfo?.socials?.twitter || "",
+							linkedin: pageData.quickInfo?.socials?.linkedin || "",
+						},
+					},
 			  }
 			: null,
 		faqs: (faqs as any[]).map((f) => ({

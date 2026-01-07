@@ -71,15 +71,16 @@ const ResetPasswordForm: React.FC = () => {
 				<div className="text-center mb-8">
 					<div className="flex size-30 mx-auto rounded-full justify-center mb-4 border">
 						<Image
-							src="/logo.png"
-							width={1000}
-							height={1000}
-							alt="logo"
-							className="rounded-full"
+							src="/logo.avif"
+							alt="Logo"
+							width={80}
+							height={80}
+							className="object-contain"
+							unoptimized={true}
 						/>
 					</div>
 					<h1 className="text-3xl font-bold text-emerald-900 mb-2">
-						মারকাজুত তাহফীজ
+						মারকাজুত তাহফিজ
 					</h1>
 					<p className="text-gray-600 text-sm">পাসওয়ার্ড রিসেট</p>
 				</div>

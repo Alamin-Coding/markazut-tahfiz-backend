@@ -55,12 +55,47 @@ export async function getAdmissionPageData(): Promise<AdmissionPageData | null> 
 	}
 
 	return {
-		header: admission.header,
-		infoCards: admission.infoCards,
-		schedule: admission.schedule,
-		classes: admission.classes,
-		requirements: admission.requirements,
-		faq: admission.faq,
-		cta: admission.cta,
+		header: {
+			title: admission.header?.title || "",
+			subtitle: admission.header?.subtitle || "",
+		},
+		infoCards: (admission.infoCards || []).map((card: any) => ({
+			icon: card.icon || "",
+			title: card.title || "",
+			subtitle: card.subtitle || "",
+		})),
+		schedule: {
+			online: {
+				title: admission.schedule?.online?.title || "",
+				start: admission.schedule?.online?.start || "",
+				end: admission.schedule?.online?.end || "",
+				status: admission.schedule?.online?.status || "",
+			},
+			exam: {
+				title: admission.schedule?.exam?.title || "",
+				date: admission.schedule?.exam?.date || "",
+				time: admission.schedule?.exam?.time || "",
+				location: admission.schedule?.exam?.location || "",
+			},
+		},
+		classes: (admission.classes || []).map((c: any) => ({
+			department: c.department || "",
+			class: c.class || "",
+			duration: c.duration || "",
+			fees: c.fees || "",
+			capacity: c.capacity || "",
+		})),
+		requirements: admission.requirements || [],
+		faq: (admission.faq || []).map((f: any) => ({
+			q: f.q || "",
+			a: f.a || "",
+		})),
+		cta: {
+			title: admission.cta?.title || "",
+			address: admission.cta?.address || "",
+			phone: admission.cta?.phone || "",
+			email: admission.cta?.email || "",
+			buttonText: admission.cta?.buttonText || "",
+		},
 	};
 }

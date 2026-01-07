@@ -145,14 +145,7 @@ export async function POST(request: NextRequest) {
 			principal,
 		});
 
-		console.log("FINAL RESULT OBJECT BEFORE SAVE:", {
-			name: result.name,
-			studentId: result.studentId,
-			hasStudentIdInSchema: !!result.schema.paths.studentId,
-		});
-
 		await result.save();
-		console.log("RESULT SAVED. StudentId in saved doc:", result.studentId);
 
 		return NextResponse.json({
 			success: true,

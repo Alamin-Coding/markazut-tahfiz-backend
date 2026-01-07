@@ -56,7 +56,7 @@ interface IDepartmentPageData {
 const defaultData: IDepartmentPageData = {
 	header: {
 		title: "আমাদের বিভাগসমূহ",
-		subtitle1: "মারকাজুত তাহফীজ ইউটিবোয়ানানাল মাদরাসা",
+		subtitle1: "মারকাজুত তাহফিজ ইউটিবোয়ানানাল মাদরাসা",
 		subtitle2: "উন্নত শিক্ষা ও ইসলামিক জ্ঞানের কেন্দ্র",
 	},
 	intro: {

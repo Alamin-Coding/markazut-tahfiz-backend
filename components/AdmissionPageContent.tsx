@@ -56,7 +56,7 @@ interface IAdmissionPageData {
 const defaultData: IAdmissionPageData = {
 	header: {
 		title: "ভর্তি তথ্য ও নির্দেশিকা",
-		subtitle: "মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসায় স্বাগতম",
+		subtitle: "মারকাজুত তাহফিজ ইন্সটিটিউশনাল মাদরাসায় স্বাগতম",
 	},
 	infoCards: [
 		{

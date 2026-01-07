@@ -34,7 +34,7 @@ const ContactPageSchema = new Schema<any>(
 			title: { type: String, default: "আমাদের সাথে যোগাযোগ করুন" },
 			subtitle: {
 				type: String,
-				default: "মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসা",
+				default: "মারকাজুত তাহফিজ ইন্সটিটিউশনাল মাদরাসা",
 			},
 		},
 		contactInfo: [

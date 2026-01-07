@@ -4,48 +4,54 @@ import dbConnect from "@/lib/db";
 
 // GET /api/about - Fetch about section
 export async function GET() {
-  try {
-    await dbConnect();
-    const about = await About.findOne();
-    const response = NextResponse.json({
-      success: true,
-      data: about || {},
-    });
-    response.headers.set("Access-Control-Allow-Origin", "*");
-    return response;
-  } catch (error) {
-    console.error("Error fetching about:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch about", error: String(error) },
-      { status: 500 }
-    );
-  }
+	try {
+		await dbConnect();
+		const about = await About.findOne();
+		const response = NextResponse.json({
+			success: true,
+			data: about || {},
+		});
+		response.headers.set("Access-Control-Allow-Origin", "*");
+		return response;
+	} catch (error) {
+		console.error("Error fetching about:", error);
+		return NextResponse.json(
+			{
+				success: false,
+				message: "Failed to fetch about",
+				error: String(error),
+			},
+			{ status: 500 }
+		);
+	}
 }
 
 // POST /api/about - Update about section
 export async function POST(request: NextRequest) {
-  try {
-    await dbConnect();
-    const body = await request.json();
-    console.log("Updating about with data:", body);
-    
-    const about = await About.findOneAndUpdate({}, body, {
-      new: true,
-      upsert: true,
-    });
-    
-    const response = NextResponse.json({
-      success: true,
-      data: about,
-    });
-    response.headers.set("Access-Control-Allow-Origin", "*");
-    return response;
-  } catch (error) {
-    console.error("Error updating about:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to update about", error: String(error) },
-      { status: 500 }
-    );
-  }
-}
+	try {
+		await dbConnect();
+		const body = await request.json();
 
+		const about = await About.findOneAndUpdate({}, body, {
+			new: true,
+			upsert: true,
+		});
+
+		const response = NextResponse.json({
+			success: true,
+			data: about,
+		});
+		response.headers.set("Access-Control-Allow-Origin", "*");
+		return response;
+	} catch (error) {
+		console.error("Error updating about:", error);
+		return NextResponse.json(
+			{
+				success: false,
+				message: "Failed to update about",
+				error: String(error),
+			},
+			{ status: 500 }
+		);
+	}
+}

@@ -44,7 +44,7 @@ const DepartmentPageSchema = new Schema<any>(
 			title: { type: String, default: "আমাদের বিভাগসমূহ" },
 			subtitle1: {
 				type: String,
-				default: "মারকাজুত তাহফীজ ইউটিবোয়ানানাল মাদরাসা",
+				default: "মারকাজুত তাহফিজ ইউটিবোয়ানানাল মাদরাসা",
 			},
 			subtitle2: {
 				type: String,

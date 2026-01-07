@@ -32,6 +32,12 @@ const pages = [
 	},
 	{ id: "faq", label: "FAQ", icon: "❓", path: "/dashboard/faq" },
 	{ id: "finance", label: "আয়-ব্যয়", icon: "💰", path: "/dashboard/finance" },
+	{
+		id: "users",
+		label: "ইউজার ম্যানেজমেন্ট",
+		icon: "👤",
+		path: "/dashboard/users",
+	},
 ];
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -40,6 +46,23 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 	const [newMessagesCount, setNewMessagesCount] = useState(0);
 	const { theme, toggleTheme } = useTheme();
 	const pathname = usePathname();
+	const [user, setUser] = useState<{ email: string } | null>(null);
+
+	// Fetch current user
+	useEffect(() => {
+		const fetchUser = async () => {
+			try {
+				const res = await fetch("/api/auth/check");
+				const json = await res.json();
+				if (json.user) {
+					setUser(json.user);
+				}
+			} catch (e) {
+				console.error("Failed to fetch user", e);
+			}
+		};
+		fetchUser();
+	}, []);
 
 	// Poll for notifications
 	useEffect(() => {
@@ -100,6 +123,23 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 							✕
 						</button>
 					</div>
+					{user && (
+						<div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+							<div className="flex items-center gap-3">
+								<div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+									{user.email[0].toUpperCase()}
+								</div>
+								<div className="min-w-0">
+									<p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
+										{user.email}
+									</p>
+									<p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-bold tracking-wider">
+										অ্যাডমিন
+									</p>
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 
 				<nav className="mt-6 flex flex-col h-[calc(100vh-140px)]">
@@ -114,7 +154,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 								key={page.id}
 								href={page.path}
 								onClick={() => setSidebarOpen(false)}
-								className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all relative ${
+								className={`flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all relative ${
 									pathname.startsWith(page.path)
 										? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 shadow-sm"
 										: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white"

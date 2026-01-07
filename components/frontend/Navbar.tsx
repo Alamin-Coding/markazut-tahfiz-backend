@@ -40,7 +40,9 @@ const Navbar: React.FC = () => {
 
 	// Check if link is active
 	const isActive = (href: string) => {
-		return pathname === href;
+		if (href === "/") return pathname === "/";
+		if (href === "/notice" && pathname === "/all-notices") return true;
+		return pathname === href || pathname.startsWith(href + "/");
 	};
 
 	return (
@@ -60,6 +62,7 @@ const Navbar: React.FC = () => {
 								width={48}
 								height={48}
 								className="w-10 h-10 object-contain"
+								unoptimized={true}
 							/>
 						</div>
 						<h3 className="font-bold text-2xl md:text-3xl lg:text-4xl font-arabic">

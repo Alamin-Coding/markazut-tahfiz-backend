@@ -32,7 +32,7 @@ export function ContactInfoForm() {
 							<Label className={labelClasses}>সাবটাইটেল</Label>
 							<Input
 								type="text"
-								defaultValue="মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসা"
+								defaultValue="মারকাজুত তাহফিজ ইন্সটিটিউশনাল মাদরাসা"
 								className={inputClasses}
 							/>
 						</div>

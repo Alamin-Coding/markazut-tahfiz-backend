@@ -27,7 +27,7 @@ export function AdmissionForm() {
 					<Label className={labelClasses}>সাবটাইটেল</Label>
 					<Input
 						type="text"
-						defaultValue="মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসায় স্বাগতম"
+						defaultValue="মারকাজুত তাহফিজ ইন্সটিটিউশনাল মাদরাসায় স্বাগতম"
 						className={inputClasses}
 					/>
 				</div>

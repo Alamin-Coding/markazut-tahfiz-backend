@@ -8,7 +8,6 @@ const NoticeContent: React.FC = () => {
 	if (!data) return;
 
 	const lastNotice = data?.data[0] || [];
-	console.log(lastNotice);
 
 	return (
 		<section className="bg-white text-white py-20">

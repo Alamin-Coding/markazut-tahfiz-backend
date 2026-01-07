@@ -150,9 +150,6 @@ class SMSService {
 			// Build API URL
 			const url = `${this.config.apiUrl}?api_key=${this.config.apiKey}&type=${type}&number=${formattedNumber}&senderid=${this.config.senderId}&message=${encodedMessage}`;
 
-			console.log("Sending SMS to:", formattedNumber);
-			console.log("URL:", url.replace(this.config.apiKey, "REDACTED"));
-
 			// Make API request
 			const response = await fetch(url, {
 				method: "GET",
@@ -162,7 +159,6 @@ class SMSService {
 			});
 
 			const responseText = await response.text();
-			console.log("SMS API raw response:", responseText);
 
 			const code = this.parseResponseCode(responseText);
 
@@ -233,10 +229,8 @@ class SMSService {
 				validNumbers.map(async (number) => {
 					const url = `${this.config.apiUrl}?api_key=${this.config.apiKey}&type=${type}&number=${number}&senderid=${this.config.senderId}&message=${encodedMessage}`;
 
-					console.log("Bulk sending SMS to:", number);
 					const response = await fetch(url, { method: "GET" });
 					const responseText = await response.text();
-					console.log(`Response for ${number}:`, responseText);
 
 					const code = this.parseResponseCode(responseText);
 
@@ -298,14 +292,11 @@ class SMSService {
 		try {
 			const url = `${this.config.balanceApiUrl}?api_key=${this.config.apiKey}`;
 
-			console.log("Checking balance at:", url);
-
 			const response = await fetch(url, {
 				method: "GET",
 			});
 
 			const responseText = await response.text();
-			console.log("Balance API response:", responseText);
 
 			// Try to parse as JSON first (new API format)
 			try {

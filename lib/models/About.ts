@@ -53,7 +53,7 @@ const AboutSchema = new Schema<any>(
 			title: { type: String, default: "আমাদের সম্পর্কে" },
 			subtitle: {
 				type: String,
-				default: "মারকাজুত তাহফীজ ইন্সটিটিউশনাল মাদরাসার ইতিহাস ও মিশন",
+				default: "মারকাজুত তাহফিজ ইন্সটিটিউশনাল মাদরাসার ইতিহাস ও মিশন",
 			},
 			backgroundImage: { type: String, default: "" },
 		},

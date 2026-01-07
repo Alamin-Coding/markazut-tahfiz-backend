@@ -7,10 +7,7 @@ import { Providers } from "@/components/Providers";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: {
-		template: "%s | মারকাজুত তাহফিজ",
-		default: "মারকাজুত তাহফিজ",
-	},
+	title: "মারকাজুত তাহফিজ",
 	description: "একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান",
 };
 

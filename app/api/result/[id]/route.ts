@@ -53,11 +53,6 @@ export async function PUT(
 			);
 		}
 
-		console.log("FINAL RESULT OBJECT BEFORE UPDATE:", {
-			name: name.trim(),
-			studentId: student.studentId,
-		});
-
 		const updatedResult = await Result.findByIdAndUpdate(
 			id,
 			{
@@ -78,10 +73,6 @@ export async function PUT(
 			{ new: true }
 		);
 
-		console.log(
-			"RESULT UPDATED. StudentId in updated doc:",
-			updatedResult?.studentId
-		);
 		if (!updatedResult) {
 			return NextResponse.json(
 				{

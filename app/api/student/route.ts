@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
 	try {
 		await dbConnect();
 		const body = await request.json();
-		console.log("POST /api/student (singular) body:", body);
 
 		const {
 			name,

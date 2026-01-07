@@ -23,11 +23,12 @@ const Footer: React.FC = () => {
 						<Link href="/" className="flex items-center gap-3">
 							<div className="w-16 h-16 bg-white rounded-full flex items-center justify-center p-2">
 								<Image
-									src="/logo.png"
+									src="/logo.avif"
 									alt="logo"
 									width={64}
 									height={64}
 									className="object-contain"
+									unoptimized={true}
 								/>
 							</div>
 							<h3 className="text-2xl font-bold font-arabic">المركز</h3>
