@@ -97,7 +97,7 @@ const Footer: React.FC = () => {
 								<div>
 									<h4 className="font-semibold text-sm mb-1">ঠিকানা</h4>
 									<p className="text-emerald-100/70 text-sm">
-										মিরপুর-১, ঢাকা, বাংলাদেশ
+										মিরপুর-১০, ঢাকা, বাংলাদেশ
 									</p>
 								</div>
 							</li>
@@ -107,9 +107,7 @@ const Footer: React.FC = () => {
 								</div>
 								<div>
 									<h4 className="font-semibold text-sm mb-1">ফোন নম্বর</h4>
-									<p className="text-emerald-100/70 text-sm">
-										+880 1712-054763
-									</p>
+									<p className="text-emerald-100/70 text-sm">+8801982-233298</p>
 								</div>
 							</li>
 							<li className="flex items-start gap-4">

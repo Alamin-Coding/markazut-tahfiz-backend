@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "মারকাজুত তাহফিজ - এডমিন ড্যাশবোর্ড",
-	description: "ইসলামী শিক্ষা প্রতিষ্ঠানের কনটেন্ট ম্যানেজমেন্ট সিস্টেম",
+	title: "মারকাজুত তাহফিজ",
+	description: "একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান",
 };
 
 export default function RootLayout({

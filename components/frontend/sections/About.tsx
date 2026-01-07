@@ -173,7 +173,7 @@ export default function About({ data }: AboutProps) {
 									যোগাযোগ
 								</p>
 								<p className="text-2xl font-bold text-green-700">
-									+8801712-054763
+									+8801982-233298
 								</p>
 							</div>
 						</div>

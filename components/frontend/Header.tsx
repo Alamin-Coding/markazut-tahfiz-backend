@@ -28,7 +28,7 @@ const Header: React.FC = () => {
 
 					<div className="flex items-center gap-2">
 						<Phone size={16} />
-						<span>+8801712-054763</span>
+						<span>+8801982-233298</span>
 					</div>
 				</div>
 			</div>

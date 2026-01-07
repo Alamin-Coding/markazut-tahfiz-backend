@@ -1,3 +1,9 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "আমাদের সম্পর্কে",
+};
+
 import AboutContent from "@/components/frontend/AboutContent";
 import { getAboutPageData } from "@/lib/services/about-data";
 

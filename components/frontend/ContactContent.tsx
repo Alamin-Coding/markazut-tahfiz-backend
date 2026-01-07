@@ -244,7 +244,7 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 										value={formData.phone}
 										onChange={handleChange}
 										className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
-										placeholder="+৮৮০১७१२-०५४७६३"
+										placeholder="+৮৮০১৯৮২-২৩৩২৯৮"
 										disabled={sending}
 									/>
 								</div>
