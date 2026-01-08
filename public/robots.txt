@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow admin dashboard
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /reset-password
+Disallow: /api/
+
+# Sitemaps
+Sitemap: https://tahfizmirpur.com/sitemap.xml

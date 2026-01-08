@@ -5,6 +5,10 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "মারকাজুত তাহফিজ - এডমিন ড্যাশবোর্ড",
 	description: "ইসলামী শিক্ষা প্রতিষ্ঠানের কনটেন্ট ম্যানেজমেন্ট সিস্টেম",
+	robots: {
+		index: false,
+		follow: false,
+	},
 };
 
 export default function DashboardLayout({

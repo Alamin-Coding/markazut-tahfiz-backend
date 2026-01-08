@@ -7,8 +7,8 @@ import { Providers } from "@/components/Providers";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "মারকাজুত তাহফিজ",
-	description: "একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান",
+	description:
+		"মিরপুর ১০ (ঢাকা)-এ অবস্থিত একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান। এখানে নূরানী, নাজেরা ও হিফজ শৃঙ্খলার সাথে উন্নত পরিবেশে পাঠদান করা হয়।",
 };
 
 export default function FrontendLayout({

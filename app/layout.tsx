@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
 	title: "মারকাজুত তাহফিজ",
-	description: "একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান",
+	description: "একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান (মিরপুর ১০, ঢাকা)",
+	other: {
+		google: "notranslate",
+	},
 };
 
 export default function RootLayout({
