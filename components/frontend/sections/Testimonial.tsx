@@ -69,7 +69,7 @@ export default function Testimonial({ data }: TestimonialProps) {
 	}));
 
 	const sliderData = {
-		title: "আমাদের অভিভাবকদের আমাদের সম্পর্কে যা বলেন",
+		title: "আমাদের অভিভাবকরা আমাদের সম্পর্কে যা বলেন",
 		subtitle: "আমাদের মূল্যবান অভিভাবকদের মতামত এবং অভিজ্ঞতা জানুন",
 		testimonials: testimonials,
 	};
