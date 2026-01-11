@@ -64,7 +64,7 @@ export default function ResultsManageForm() {
 		studentId: "",
 		examDate: "",
 		resultDate: "",
-		principal: "মাওলানা মোহাম্মদ হোসাইন",
+		principal: "মুফতী ইকরাম হুসাইন খসরু",
 		subjects: [
 			{ name: "কোরআন (হিফজ)", marks: 0, total: 100 },
 			{ name: "কোরআন (তাজবিদ)", marks: 0, total: 100 },
@@ -261,7 +261,7 @@ export default function ResultsManageForm() {
 			studentId: "",
 			examDate: "",
 			resultDate: "",
-			principal: "মাওলানা মোহাম্মদ হোসাইন",
+			principal: "মুফতী ইকরাম হুসাইন খসরু",
 			subjects: [
 				{ name: "কোরআন (হিফজ)", marks: 0, total: 100 },
 				{ name: "কোরআন (তাজবিদ)", marks: 0, total: 100 },
