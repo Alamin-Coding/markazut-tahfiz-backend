@@ -108,7 +108,7 @@ const Footer: React.FC = () => {
 								</div>
 								<div>
 									<h4 className="font-semibold text-sm mb-1">ফোন নম্বর</h4>
-									<p className="text-emerald-100/70 text-sm">+8801982-233298</p>
+									<p className="text-emerald-100/70 text-sm">+8801943-834216</p>
 								</div>
 							</li>
 							<li className="flex items-start gap-4">
