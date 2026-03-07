@@ -28,6 +28,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [options] = useState<ResultOptions>(initialOptions);
 	const [resultData, setResultData] = useState<StudentResult | null>(null);
+	const [totalPossibleMarks, setTotalPossibleMarks] = useState<number>(0);
 
 	const handleSearch = async (e: any) => {
 		e.preventDefault();
@@ -58,6 +59,11 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 			const json = await res.json();
 			if (json.success) {
 				setResultData(json.data);
+				const totalMarks = json.data.subjects.reduce(
+					(sum: number, subject: any) => sum + subject.total,
+					0
+				);
+				setTotalPossibleMarks(totalMarks);
 				setShowResult(true);
 			} else {
 				toast.error(json.message || "ফলাফল পাওয়া যায়নি");
@@ -69,6 +75,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 			setLoading(false);
 		}
 	};
+
 
 	const downloadPDF = (): void => {
 		if (!resultData) return;
@@ -86,117 +93,479 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
         <meta charset="UTF-8">
         <title>পরীক্ষার ফলাফল</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #059669; padding-bottom: 15px; }
-          .school-name { font-size: 24px; font-weight: bold; color: #059669; }
-          .school-motto { font-size: 12px; color: #666; margin-top: 5px; }
-          .student-info { margin: 20px 0; }
-          .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-          .info-item { font-size: 14px; flex: 1; }
-          .info-label { font-weight: bold; color: #059669; }
-          .subjects-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
-          .subjects-table th, .subjects-table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-          .subjects-table th { background-color: #059669; color: white; }
-          .subjects-table tr:nth-child(even) { background-color: #f0f0f0; }
-          .summary { margin: 30px 0; padding: 15px; background-color: #f0fdf4; border-left: 4px solid #059669; }
-          .summary-item { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; }
-          .summary-label { font-weight: bold; }
-          .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; }
-          .signature { margin-top: 30px; text-align: right; }
+          
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+
+          body {
+            font-family: "Noto Serif Bengali", serif;
+            background: #fff;
+          }
+
+          /* ====== HEADER ====== */
+          .header {
+            background: linear-gradient(135deg, #1a7a3c 0%, #0f5c2a 60%, #1a7a3c 100%);
+            padding: 0;
+            position: relative;
+            border-bottom: 4px solid #c8a84b;
+          }
+
+          /* Top thin red stripe */
+         
+
+          .header-inner {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px 8px 16px;
+            gap: 14px;
+            position: relative;
+          }
+
+          /* Logo circle */
+          .header-logo {
+            width: 74px;
+            height: 74px;
+            
+            background: #fff;
+            border: 3px solid #c8a84b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+          }
+
+          .header-logo img {
+            width: 58px;
+            height: 58px;
+          }
+
+          .header-content {
+            flex: 1;
+            text-align: center;
+          }
+
+          /* "১০৩ টি দেশের..." tagline */
+          .header-tagline {
+            font-size: 10px;
+            color: #f0e6a0;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
+            font-weight: 400;
+          }
+
+          /* Main Bengali name */
+          .header-bn-name {
+            font-size: 28px;
+            font-weight: 600;
+            color: #f5e96a;
+            text-shadow: 1px 2px 4px rgba(0,0,0,0.4);
+            line-height: 1.15;
+            letter-spacing: 1px;
+          }
+
+          /* Arabic text */
+          .header-arabic {
+            font-size: 18px;
+            color: #d4edba;
+            direction: rtl;
+            unicode-bidi: bidi-override;
+            margin: 2px 0;
+            letter-spacing: 1px;
+          }
+
+          /* English name */
+          .header-en-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 2px;
+          }
+
+          /* Phone numbers row */
+          .header-phones {
+            background: rgba(0,0,0,0.25);
+            text-align: center;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+            border-top: 1px solid rgba(200,168,75,0.4);
+          }
+
+          /* "মিরপুর শাখা" badge — top right corner */
+          .header-branch-badge {
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            background: #c8a84b;
+            color: #1a1a1a;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 3px;
+            border: 1px solid #a07830;
+            white-space: nowrap;
+          }
+
+          /* Divider line under Arabic row (green section) */
+          .header-divider {
+            height: 3px;
+            background: linear-gradient(to right, #c8a84b, #f5e96a, #c8a84b);
+          }
+
+          /* ====== BODY ====== */
+          .body-wrapper {
+            padding: 20px 24px;
+            min-height: 600px;
+          }
+
+          .result-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f5c2a;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #0f5c2a;
+            padding-bottom: 6px;
+            letter-spacing: 0.5px;
+          }
+
+          .student-info {
+            margin: 16px 0;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+            overflow: hidden;
+          }
+
+          .info-row {
+            display: flex;
+            border-bottom: 1px solid #e8f5e9;
+          }
+
+          .info-row:last-child { border-bottom: none; }
+
+          .info-item {
+            flex: 1;
+            padding: 7px 12px;
+            font-size: 13px;
+            border-right: 1px solid #e8f5e9;
+          }
+
+          .info-item:last-child { border-right: none; }
+
+          .info-item:nth-child(odd) { background: #f1faf4; }
+          .info-item:nth-child(even) { background: #ffffff; }
+
+          .info-label {
+            font-weight: 700;
+            color: #0f5c2a;
+            margin-right: 4px;
+          }
+
+          .subjects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+          }
+
+          .subjects-table th {
+            background: linear-gradient(135deg, #1a7a3c, #0f5c2a);
+            color: #ffffff;
+            padding: 9px 10px;
+            text-align: center;
+            font-weight: 700;
+            border: 1px solid #0d4d24;
+          }
+
+          .subjects-table td {
+            border: 1px solid #c8e6c9;
+            padding: 8px 10px;
+            text-align: center;
+          }
+
+          .subjects-table tr:nth-child(even) td { background-color: #f1faf4; }
+          .subjects-table tr:nth-child(odd) td  { background-color: #ffffff; }
+
+          .subjects-table td:first-child { text-align: left; font-weight: 600; }
+
+          .summary-box {
+            background: #f1faf4;
+            border: 1px solid #a5d6a7;
+            border-left: 5px solid #1a7a3c;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin: 10px 0 20px 0;
+          }
+
+          .summary-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin: 5px 0;
+          }
+
+          .summary-label { font-weight: 700; color: #0f5c2a; }
+
+          .signature-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 10px;
+          }
+
+          .signature-box {
+            text-align: center;
+            font-size: 12px;
+            position: relative;
+          }
+
+          .signature-image{
+            width: 200px;
+            height:200px;
+            object-fit: cover;
+            display: flex;
+            align-items:center;
+            justify-content:center;
+            position: absolute;
+            top: -100px;
+            left: 0;
+          }
+          .signature-image img{
+            width: 100%;
+            height:100%;
+          }
+
+          .signature-line {
+            width: 160px;
+            border-top: 1px solid #333;
+            margin: 30px auto 4px auto;
+          }
+
+          /* ====== FOOTER ====== */
+          .footer {
+            background: linear-gradient(135deg, #1a7a3c 0%, #0f5c2a 100%);
+            padding: 8px 16px;
+            margin-top: auto;
+            border-top: 3px solid #c8a84b;
+          }
+
+          .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+          }
+
+          .footer-branch {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            flex: 1;
+          }
+
+          .footer-branch-icon {
+            font-size: 14px;
+            margin-top: 2px;
+            flex-shrink: 0;
+          }
+
+          .footer-branch-text {
+            font-size: 10px;
+            color: #d4f5df;
+            line-height: 1.6;
+          }
+
+          .footer-branch-text strong {
+            color: #f5e96a;
+            font-size: 10.5px;
+          }
+
+          .footer-divider-v {
+            width: 1px;
+            background: rgba(200,168,75,0.5);
+            align-self: stretch;
+            min-height: 30px;
+          }
+
+          /* Top stripe of footer */
+          .footer-top-stripe {
+            background: #cc2222;
+            height: 3px;
+            width: 100%;
+            margin-bottom: 1px;
+          }
         </style>
       </head>
       <body>
+
+        <!-- ===== HEADER ===== -->
         <div class="header">
-          <div class="school-name">মারকাজুত তাহফিজ</div>
-          <div class="school-motto">আন্তর্জাতিক হিফজ শিক্ষা প্রতিষ্ঠান</div>
-          <div style="margin-top: 10px; font-size: 14px;">পরীক্ষার ফলাফল</div>
+          
+          <div class="header-inner">
+            <!-- Logo -->
+            <div class="header-logo">
+              <img src="logo.avif" alt="logo" />
+        
+            </div>
+
+            <!-- Center text content -->
+            <div class="header-content">
+              <div class="header-tagline">১০৩ টি দেশের মধ্যে কুরআন প্রতিযোগিতায় বিশ্বসেরা হিফজ মাদরাসা</div>
+              <div class="header-bn-name">মারকাজুত তাহফিজ ইন্টা. মাদরাসা</div>
+              <div class="header-arabic">مـركـز الـتـحـفـيـظ انترنـاشـيـونـال</div>
+              <div class="header-en-name">MARKAZUT TAHFIZ INT. MADRASHA</div>
+            </div>
+
+            <!-- Branch badge -->
+            <div class="header-branch-badge">মিরপুর শাখা</div>
+          </div>
+
+          <!-- Phone numbers -->
+          <div class="header-phones">
+            01943-834216, 01629-238535, 01677-272255, 01982-233298
+          </div>
+
+          <div class="header-divider"></div>
         </div>
 
-        <div class="student-info">
-          <div class="info-row">
-            <div class="info-item">
-              <span class="info-label">শিক্ষার্থী নাম:</span>
-              <span>${resultData.name}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">রোল নম্বর:</span>
-              <span>${resultData.roll}</span>
-            </div>
-          </div>
-          <div class="info-row">
-            <div class="info-item">
-              <span class="info-label">বিভাগ:</span>
-              <span>${resultData.department}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">শ্রেণী:</span>
-              <span>${resultData.class}</span>
-            </div>
-          </div>
-          <div class="info-row">
-            <div class="info-item">
-              <span class="info-label">পরীক্ষা:</span>
-              <span>${resultData.term}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">বছর:</span>
-              <span>${resultData.examYear || ""}</span>
-            </div>
-          </div>
-        </div>
+        <!-- ===== BODY ===== -->
+        <div class="body-wrapper">
+          <div class="result-title">পরীক্ষার ফলাফল</div>
 
-        <table class="subjects-table">
-          <tr>
-            <th>বিষয়</th>
-            <th>প্রাপ্ত নম্বর</th>
-            <th>মোট নম্বর</th>
-            <th>শতাংশ</th>
-          </tr>
-          ${resultData.subjects
-						.map(
-							(subject: any) => `
+          <div class="student-info">
+            <div class="info-row">
+              <div class="info-item">
+                <span class="info-label">শিক্ষার্থী নাম:</span>
+                <span>${resultData.name}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">রোল নম্বর:</span>
+                <span>${resultData.roll}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-item">
+                <span class="info-label">বিভাগ:</span>
+                <span>${resultData.department}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">শ্রেণী:</span>
+                <span>${resultData.class}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-item">
+                <span class="info-label">পরীক্ষা:</span>
+                <span>${resultData.term}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">বছর:</span>
+                <span>${resultData.examYear || ""}</span>
+              </div>
+            </div>
+          </div>
+
+          <table class="subjects-table">
             <tr>
-              <td style="text-align: left;">${subject.name}</td>
-              <td>${subject.marks}</td>
-              <td>${subject.total}</td>
-              <td>${((subject.marks / subject.total) * 100).toFixed(1)}%</td>
+              <th>বিষয়</th>
+              <th>প্রাপ্ত নম্বর</th>
+              <th>মোট নম্বর</th>
+              <th>শতকরা</th>
             </tr>
-          `
-						)
-						.join("")}
-        </table>
+            ${resultData.subjects
+              .map(
+                (subject) => `
+              <tr>
+                <td>${subject.name}</td>
+                <td>${subject.marks}</td>
+                <td>${subject.total}</td>
+                <td>${((subject.marks / subject.total) * 100).toFixed(1)}%</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </table>
 
-        <div class="summary">
-          <div class="summary-item">
-            <span class="summary-label">সম্মিলিত ফলাফল:</span>
-            <span>${resultData.totalMarks}/100</span>
+          <div class="summary-box">
+            <div class="summary-item">
+              <span class="summary-label">সম্মিলিত ফলাফল:</span>
+              <span>${resultData.totalMarks}/${totalPossibleMarks}</span>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <div class="summary-item">
+              <span class="summary-label">গড়:</span>
+              <span>${((resultData.subjects.reduce((sum, subject) => sum + (subject.marks / subject.total), 0) / resultData.subjects.length) * 100).toFixed(1)}%</span>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <div class="summary-item">
+              <span class="summary-label"> গ্রেড:</span>
+              <span>${(() => {
+                const percentage = (resultData.totalMarks / totalPossibleMarks) * 100;
+                if (percentage >= 80) return 'মুমতাজ ';
+                if (percentage >= 65) return 'জায়্যিদ জিদ্দান ';
+                if (percentage >= 50) return 'জায়্যিদ';
+                if (percentage >= 33) return 'মাকবুল ';
+                return 'রাসিব';
+              })()}</span>
+            </div>
+          </div>
+
+          <div style="font-size: 13px; color: #444; margin-top: 8px;">
+            <div><span style="font-weight:700; color:#0f5c2a;">পরীক্ষার তারিখ:</span> ${resultData.examDate}</div>
+            <div style="margin-top:4px;"><span style="font-weight:700; color:#0f5c2a;">ফলাফল প্রকাশের তারিখ:</span> ${resultData.resultDate}</div>
+          </div>
+
+          <div class="signature-area">
+            <div class="signature-box">
+              <div class="signature-image">
+              <img src="sign.png" alt="sign"/>
+              </div>
+              <div class="signature-line"></div>
+              <div style="font-size:12px; color:#333;">প্রধানের স্বাক্ষর</div>
+            </div>
           </div>
         </div>
 
+        <!-- ===== FOOTER ===== -->
         <div class="footer">
-          <div class="info-item">
-            <span class="info-label">পরীক্ষার তারিখ:</span>
-            <span>${resultData.examDate}</span>
-          </div>
-          <div class="info-item" style="margin-top: 5px;">
-            <span class="info-label">ফলাফল প্রকাশের তারিখ:</span>
-            <span>${resultData.resultDate}</span>
-          </div>
-          <div class="signature">
-            <div style="margin-bottom: 40px;">প্রধানের স্বাক্ষর</div>
-            <div>${resultData.principal}</div>
+          <div class="footer-top-stripe"></div>
+          <div class="footer-inner">
+            <div class="footer-branch">
+              <div class="footer-branch-icon">🏠</div>
+              <div class="footer-branch-text">
+                <strong>ঝুটপট্টি শাখা:</strong> বাড়ী-১০, এটি.-১, হক-সি, সেকশন-১০, মিরপুর।
+              </div>
+            </div>
+
+            <div class="footer-divider-v"></div>
+
+            <div class="footer-branch">
+              <div class="footer-branch-icon">🏠</div>
+              <div class="footer-branch-text">
+                <strong>সেনপাড়া পর্বতা শাখা:</strong> বাণিজ্যিক প্লট- ৩০, মেইন রোড-১, সেকশন-১০, সেনপাড়া পর্বতা, মিরপুর।
+              </div>
+            </div>
           </div>
         </div>
+
       </body>
       </html>
     `;
 
-		printWindow.document.write(htmlContent);
-		printWindow.document.close();
-		setTimeout(() => {
-			printWindow.print();
-		}, 250);
-	};
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
 
 	return (
 		<div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-50 py-8 px-4">
@@ -450,14 +819,41 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 						</div>
 
 						{/* Summary Section */}
+
 						<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
 							<div className="bg-linear-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border-l-4 border-emerald-500">
 								<p className="text-sm text-gray-600 mb-2">সম্মিলিত ফলাফল</p>
 								<p className="text-3xl font-bold text-emerald-900">
-									{resultData.totalMarks}/100
+									{resultData.totalMarks}/
+
+									{totalPossibleMarks}
+								</p>
+							</div>
+
+							<div className="bg-linear-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border-l-4 border-emerald-500">
+								<p className="text-sm text-gray-600 mb-2">গড়</p>
+								<p className="text-3xl font-bold text-emerald-900">
+									{((resultData.subjects.reduce((sum: number, subject: any) => sum + (subject.marks / subject.total), 0) / resultData.subjects.length) * 100).toFixed(2)}%
+								</p>
+							</div>
+
+							<div className="bg-linear-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border-l-4 border-emerald-500">
+								<p className="text-sm text-gray-600 mb-2">গ্রেড</p>
+								<p className="text-3xl font-bold text-emerald-900">
+									{(() => {
+										const percentage = (resultData.totalMarks / totalPossibleMarks) * 100;
+										if (percentage >= 80) return 'মুমতাজ ';
+										if (percentage >= 65) return 'জায়্যিদ জিদ্দান ';
+										if (percentage >= 50) return 'জায়্যিদ';
+										if (percentage >= 33) return 'মাকবুল ';
+
+										return 'রাসিব';
+									})()}
 								</p>
 							</div>
 						</div>
+
+
 
 						{/* Additional Info */}
 						<div className="bg-gray-50 rounded-lg p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
