@@ -22,10 +22,6 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({
 			<div className="max-w-6xl mx-auto">
 				{/* Header */}
 				<div className="text-center mb-12">
-					<p className="text-green-600 text-lg mb-2 flex items-center justify-center gap-2">
-						<span>📚</span>
-						<span className="underline underline-offset-8">গ্যা লা রি</span>
-					</p>
 					<h2 className="text-3xl md:text-5xl font-bold text-gray-800 mb-3 mt-3">
 						{title}
 					</h2>

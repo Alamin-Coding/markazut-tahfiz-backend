@@ -38,7 +38,7 @@ export default function StudentContent() {
 	const [editingItem, setEditingItem] = useState<any>(null);
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const [admissionDate, setAdmissionDate] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 
 	useEffect(() => {
@@ -64,7 +64,7 @@ export default function StudentContent() {
 			if (selectedClass !== "all") params.append("class", selectedClass);
 			if (selectedDept !== "all") params.append("department", selectedDept);
 
-			const res = await fetch(`/api/students?${params.toString()}`);
+			const res = await fetch(`/api/students?all=true&${params.toString()}`);
 			const data = await res.json();
 			if (data.success) setStudents(data.data);
 		} catch (err) {
@@ -105,7 +105,15 @@ export default function StudentContent() {
 		setLoading(true);
 		try {
 			const formData = new FormData(e.currentTarget);
-			const payload = Object.fromEntries(formData.entries());
+			const dataObj = Object.fromEntries(formData.entries());
+
+			// Structure the payload for nested feePlan
+			const payload = {
+				...dataObj,
+				feePlan: {
+					monthlyAmount: Number(dataObj.monthlyAmount) || 0,
+				},
+			};
 
 			const res = await fetch(`/api/students/${editingItem._id}`, {
 				method: "PUT",
@@ -201,7 +209,19 @@ export default function StudentContent() {
 									বিভাগ/শ্রেণী
 								</th>
 								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									অভিভাবক
+								</th>
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									ভর্তির তারিখ
+								</th>
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									ফোন
+								</th>
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									বেতন
+								</th>
+								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									অবস্থা
 								</th>
 								<th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
 									অ্যাকশন
@@ -227,7 +247,33 @@ export default function StudentContent() {
 										{student.department} / {student.class}
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+										{student.guardianName || "N/A"}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+										{student.admissionDate ?
+											format(new Date(student.admissionDate), "dd MMM yyyy")
+										:	"N/A"}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
 										{student.guardianPhone}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+										৳{student.feePlan?.monthlyAmount || 0}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-sm">
+										<span
+											className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
+												student.status === "active" ?
+													"bg-green-100 text-green-700"
+												: student.status === "inactive" ?
+													"bg-red-100 text-red-700"
+												: student.status === "passed" ?
+													"bg-blue-100 text-blue-700"
+												:	"bg-gray-100 text-gray-700"
+											}`}
+										>
+											{student.status || "active"}
+										</span>
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-right">
 										<div className="flex justify-end gap-3">
@@ -252,7 +298,7 @@ export default function StudentContent() {
 							{students.length === 0 && !loading && (
 								<tr>
 									<td
-										colSpan={5}
+										colSpan={10}
 										className="px-4 py-10 text-center text-gray-500"
 									>
 										কোনো শিক্ষার্থী পাওয়া যায়নি
@@ -308,12 +354,29 @@ export default function StudentContent() {
 										className={inputClasses}
 									/>
 								</div>
+								<div className="col-span-2">
+									<Label className={labelClasses}>অভিভাবকের নাম</Label>
+									<Input
+										name="guardianName"
+										defaultValue={editingItem.guardianName}
+										className={inputClasses}
+									/>
+								</div>
 								<div>
 									<Label className={labelClasses}>ফোন</Label>
 									<Input
 										name="guardianPhone"
 										defaultValue={editingItem.guardianPhone}
 										required
+										className={inputClasses}
+									/>
+								</div>
+								<div>
+									<Label className={labelClasses}>মাসিক বেতন</Label>
+									<Input
+										name="monthlyAmount"
+										type="number"
+										defaultValue={editingItem.feePlan?.monthlyAmount || 0}
 										className={inputClasses}
 									/>
 								</div>
@@ -334,6 +397,25 @@ export default function StudentContent() {
 										required
 										className={inputClasses}
 									/>
+								</div>
+								<div className="col-span-2">
+									<Label className={labelClasses}>অবস্থা (Status)</Label>
+									<Select
+										name="status"
+										defaultValue={editingItem.status || "active"}
+									>
+										<SelectTrigger className={selectClasses}>
+											<SelectValue placeholder="অবস্থা নির্বাচন করুন" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="active">Active (সক্রিয়)</SelectItem>
+											<SelectItem value="inactive">
+												Inactive (অসক্রিয়)
+											</SelectItem>
+											<SelectItem value="passed">Passed (পাশ করেছে)</SelectItem>
+											<SelectItem value="left">Left (ছেড়ে চলে গেছে)</SelectItem>
+										</SelectContent>
+									</Select>
 								</div>
 							</div>
 							<div className="flex gap-3 pt-4">

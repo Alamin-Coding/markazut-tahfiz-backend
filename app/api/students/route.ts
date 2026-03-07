@@ -9,8 +9,9 @@ export async function GET(request: NextRequest) {
 		const search = searchParams.get("search");
 		const class_ = searchParams.get("class");
 		const department = searchParams.get("department");
+		const all = searchParams.get("all") === "true";
 
-		const filter: any = { isActive: true };
+		const filter: any = all ? {} : { isActive: true };
 
 		if (search) {
 			filter.$or = [
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
 		console.error("Error fetching students:", error);
 		return NextResponse.json(
 			{ success: false, message: "Failed to fetch students" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 		) {
 			return NextResponse.json(
 				{ success: false, message: "Required fields missing" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
 		if (existingStudent) {
 			return NextResponse.json(
 				{ success: false, message: "Student ID already exists" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
 		console.error("Error creating student:", error);
 		return NextResponse.json(
 			{ success: false, message: "Failed to create student: " + error.message },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

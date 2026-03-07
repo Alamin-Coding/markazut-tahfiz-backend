@@ -172,9 +172,12 @@ export default function About({ data }: AboutProps) {
 								<p className="text-gray-600 text-xs font-medium mb-2">
 									যোগাযোগ
 								</p>
-								<p className="text-2xl font-bold text-green-700">
+								<a
+									href="tel:+8801943834216"
+									className="text-2xl font-bold text-green-700 hover:text-green-800 hover:underline transition-colors block"
+								>
 									+8801943-834216
-								</p>
+								</a>
 							</div>
 						</div>
 					</div>

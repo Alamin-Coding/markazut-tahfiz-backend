@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
-import ClassConfig from "@/lib/models/ClassConfig";
+import TermConfig from "@/lib/models/TermConfig";
 
 export async function GET() {
 	try {
 		await dbConnect();
-		const configs = await ClassConfig.find({ isActive: true }).sort({
+		const configs = await TermConfig.find({ isActive: true }).sort({
 			createdAt: 1,
 		});
 		return NextResponse.json({ success: true, data: configs });
@@ -21,17 +21,17 @@ export async function POST(request: NextRequest) {
 	try {
 		await dbConnect();
 		const body = await request.json();
-		const { id, department, classes, exams } = body;
+		const { id, name } = body;
 
 		if (id) {
-			const updated = await ClassConfig.findByIdAndUpdate(
+			const updated = await TermConfig.findByIdAndUpdate(
 				id,
-				{ department, classes, exams },
+				{ name },
 				{ new: true },
 			);
 			return NextResponse.json({ success: true, data: updated });
 		} else {
-			const created = await ClassConfig.create({ department, classes, exams });
+			const created = await TermConfig.create({ name });
 			return NextResponse.json({ success: true, data: created });
 		}
 	} catch (error: any) {
@@ -49,7 +49,7 @@ export async function DELETE(request: NextRequest) {
 		const id = searchParams.get("id");
 		if (!id) throw new Error("ID is required");
 
-		await ClassConfig.findByIdAndDelete(id);
+		await TermConfig.findByIdAndDelete(id);
 		return NextResponse.json({
 			success: true,
 			message: "Deleted successfully",

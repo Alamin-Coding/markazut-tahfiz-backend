@@ -23,7 +23,7 @@ interface StudentAddFormProps {
 export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [admissionDate, setAdmissionDate] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
 	const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -51,14 +51,18 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 		try {
 			const formData = new FormData(form);
 			const payload = Object.fromEntries(formData.entries());
-			payload.admissionDate = admissionDate
-				? admissionDate.toISOString()
-				: new Date().toISOString();
+			payload.admissionDate =
+				admissionDate ? admissionDate.toISOString() : new Date().toISOString();
 
 			// Manually add class and department from state
 			payload.department = selectedDepartment;
 			payload.class = selectedClass;
-			payload.roll = formData.get("roll")?.toString() || ""; // Ensure string
+			payload.roll = formData.get("roll")?.toString() || "";
+
+			// Handle nested feePlan
+			payload.feePlan = {
+				monthlyAmount: Number(formData.get("monthlyAmount")) || 0,
+			};
 
 			const res = await fetch("/api/students", {
 				method: "POST",
@@ -186,23 +190,50 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 						placeholder="পিতার নাম"
 					/>
 				</div>
-				<div>
-					<Label className={labelClasses}>অভিভাবকের ফোন</Label>
-					<Input
-						name="guardianPhone"
-						required
-						className={inputClasses}
-						placeholder="উদা: 017xxxxxxxx"
-					/>
+				<div className="grid grid-cols-2 gap-4">
+					<div>
+						<Label className={labelClasses}>অভিভাবকের ফোন</Label>
+						<Input
+							name="guardianPhone"
+							required
+							className={inputClasses}
+							placeholder="উদা: 017xxxxxxxx"
+						/>
+					</div>
+					<div>
+						<Label className={labelClasses}>মাসিক বেতন</Label>
+						<Input
+							name="monthlyAmount"
+							type="number"
+							className={inputClasses}
+							placeholder="বেতন লিখুন"
+						/>
+					</div>
 				</div>
-				<div>
-					<Label className={labelClasses}>ভর্তির তারিখ</Label>
-					<DatePicker
-						date={admissionDate}
-						onSelect={setAdmissionDate}
-						placeholder="তারিখ বাছাই করুন"
-						className="w-full"
-					/>
+				<div className="grid grid-cols-2 gap-4">
+					<div>
+						<Label className={labelClasses}>অবস্থা (Status)</Label>
+						<Select name="status" defaultValue="active">
+							<SelectTrigger className={selectClasses}>
+								<SelectValue placeholder="অবস্থা নির্বাচন করুন" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="active">Active (সক্রিয়)</SelectItem>
+								<SelectItem value="inactive">Inactive (অসক্রিয়)</SelectItem>
+								<SelectItem value="passed">Passed (পাশ করেছে)</SelectItem>
+								<SelectItem value="left">Left (ছেড়ে চলে গেছে)</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div>
+						<Label className={labelClasses}>ভর্তির তারিখ</Label>
+						<DatePicker
+							date={admissionDate}
+							onSelect={setAdmissionDate}
+							placeholder="তারিখ বাছাই করুন"
+							className="w-full"
+						/>
+					</div>
 				</div>
 				<Button type="submit" disabled={loading} className="w-full">
 					{loading ? "সংরক্ষণ হচ্ছে..." : "শিক্ষার্থী যোগ করুন"}

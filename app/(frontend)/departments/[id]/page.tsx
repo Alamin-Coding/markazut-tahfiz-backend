@@ -77,8 +77,16 @@ export default function DepartmentDetailsPage() {
 	return (
 		<div className="min-h-screen bg-slate-50">
 			{/* Header / Hero */}
-			<div className={`bg-emerald-900 text-white py-16 px-4`}>
-				<div className="max-w-4xl mx-auto">
+			<div className="relative bg-emerald-900 text-white py-16 px-4 overflow-hidden">
+				{/* Background Image Overlay */}
+				<div
+					className="absolute inset-0 bg-cover bg-center bg-fixed opacity-20 pointer-events-none"
+					style={{
+						backgroundImage: `url('/bg.avif')`,
+					}}
+				/>
+
+				<div className="relative max-w-4xl mx-auto z-10">
 					<Link
 						href="/departments"
 						className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
@@ -86,14 +94,16 @@ export default function DepartmentDetailsPage() {
 						<ArrowLeft className="mr-2" size={20} /> সকল বিভাগ ফিরে যান
 					</Link>
 					<div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-						<div className="text-6xl bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+						<div className="text-6xl bg-white/10 p-4 rounded-xl backdrop-blur-sm shadow-inner border border-white/20">
 							{department.icon}
 						</div>
 						<div>
-							<h1 className="text-3xl md:text-5xl font-bold mb-3">
+							<h1 className="text-3xl md:text-5xl font-bold mb-3 shadow-sm">
 								{department.name}
 							</h1>
-							<p className="text-xl opacity-90">{department.description}</p>
+							<p className="text-xl opacity-90 leading-relaxed font-arabic-custom">
+								{department.description}
+							</p>
 						</div>
 					</div>
 				</div>
@@ -121,15 +131,13 @@ export default function DepartmentDetailsPage() {
 							বৈশিষ্ট্যসমূহ
 						</h3>
 						<ul className="space-y-3">
-							{department.features && department.features.length > 0 ? (
+							{department.features && department.features.length > 0 ?
 								department.features.map((feature: string, idx: number) => (
 									<li key={idx} className="flex items-start text-slate-600">
 										<span className="mr-2 text-blue-500">•</span> {feature}
 									</li>
 								))
-							) : (
-								<li className="text-slate-500 italic">কোনো তথ্য নেই</li>
-							)}
+							:	<li className="text-slate-500 italic">কোনো তথ্য নেই</li>}
 						</ul>
 					</Animated>
 

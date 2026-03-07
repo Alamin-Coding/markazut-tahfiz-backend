@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
 	const year = new Date().getFullYear();
 
 	return (
-		<footer className="bg-button text-white pt-16 pb-8">
+		<footer className="bg-gray-800 text-white pt-16 pb-8">
 			<div className="container mx-auto px-4">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
 					{/* Logo & Info */}
@@ -108,7 +108,12 @@ const Footer: React.FC = () => {
 								</div>
 								<div>
 									<h4 className="font-semibold text-sm mb-1">ফোন নম্বর</h4>
-									<p className="text-emerald-100/70 text-sm">+8801943-834216</p>
+									<a
+										href="tel:+8801943834216"
+										className="text-emerald-100/70 text-sm hover:text-white hover:underline transition-colors block"
+									>
+										+8801943-834216
+									</a>
 								</div>
 							</li>
 							<li className="flex items-start gap-4">
@@ -117,9 +122,12 @@ const Footer: React.FC = () => {
 								</div>
 								<div>
 									<h4 className="font-semibold text-sm mb-1">ইমেইল</h4>
-									<p className="text-emerald-100/70 text-sm">
+									<a
+										href="mailto:tahfizmirpur@gmail.com"
+										className="text-emerald-100/70 text-sm hover:text-white hover:underline transition-colors block"
+									>
 										tahfizmirpur@gmail.com
-									</p>
+									</a>
 								</div>
 							</li>
 						</ul>

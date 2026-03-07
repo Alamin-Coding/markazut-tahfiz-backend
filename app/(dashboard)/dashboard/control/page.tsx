@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-import { Download, Search } from "lucide-react";
+import { Download, Search, Edit2, Trash2, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import StudentAddForm from "@/components/dashboard/StudentAddForm";
 import IncomeAddForm from "@/components/dashboard/IncomeAddForm";
@@ -67,10 +67,10 @@ export default function ControlDashboardPage() {
 	const [payments, setPayments] = useState<any[]>([]);
 	const [paymentSearch, setPaymentSearch] = useState("");
 	const [paymentSearchDate, setPaymentSearchDate] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 	const [paymentSortOrder, setPaymentSortOrder] = useState<"asc" | "desc">(
-		"desc"
+		"desc",
 	);
 	const [paymentPage, setPaymentPage] = useState(1);
 	const [paymentLimit, setPaymentLimit] = useState(10);
@@ -84,23 +84,26 @@ export default function ControlDashboardPage() {
 	const [smsResult, setSmsResult] = useState<any>(null);
 	const [paymentDate, setPaymentDate] = useState<Date | undefined>(undefined);
 	const [paymentMonthDate, setPaymentMonthDate] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 	const [financeViewMode, setFinanceViewMode] = useState<"month" | "year">(
-		"month"
+		"month",
 	);
 	const [financeDateFrom, setFinanceDateFrom] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 	const [financeDateTo, setFinanceDateTo] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 
 	// Class Management State
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
 	const [newDepartmentName, setNewDepartmentName] = useState("");
 	const [newClasses, setNewClasses] = useState("");
+	const [newExams, setNewExams] = useState("");
 	const [editingClassId, setEditingClassId] = useState<string | null>(null);
+	const [editingPayment, setEditingPayment] = useState<any>(null);
+	const [showEditPaymentModal, setShowEditPaymentModal] = useState(false);
 
 	useEffect(() => {
 		refreshStudents();
@@ -127,16 +130,22 @@ export default function ControlDashboardPage() {
 				.split(",")
 				.map((d) => d.trim())
 				.filter((d) => d);
+			const examsArr = newExams
+				.split(",")
+				.map((e) => e.trim())
+				.filter((e) => e);
 			await jsonFetch("/api/class-config", {
 				method: "POST",
 				body: JSON.stringify({
 					id: editingClassId,
 					department: newDepartmentName,
 					classes: classesArr,
+					exams: examsArr,
 				}),
 			});
 			setNewDepartmentName("");
 			setNewClasses("");
+			setNewExams("");
 			setEditingClassId(null);
 			refreshClassConfigs();
 			toast.success("বিভাগ ও শ্রেণী সফলভাবে সংরক্ষিত হয়েছে");
@@ -160,6 +169,7 @@ export default function ControlDashboardPage() {
 		setEditingClassId(conf._id);
 		setNewDepartmentName(conf.department);
 		setNewClasses(conf.classes.join(", "));
+		setNewExams((conf.exams || []).join(", "));
 	};
 
 	const refreshStudents = async () => {
@@ -206,10 +216,11 @@ export default function ControlDashboardPage() {
 					p.student?.name?.toLowerCase().includes(searchLower) ||
 					p.student?.studentId?.toLowerCase().includes(searchLower);
 
-				const matchesDate = paymentSearchDate
-					? format(new Date(p.paidAt), "dd-MM-yyyy") ===
-					  format(paymentSearchDate, "dd-MM-yyyy")
-					: true;
+				const matchesDate =
+					paymentSearchDate ?
+						format(new Date(p.paidAt), "dd-MM-yyyy") ===
+						format(paymentSearchDate, "dd-MM-yyyy")
+					:	true;
 
 				return matchesSearch && matchesDate;
 			})
@@ -228,7 +239,7 @@ export default function ControlDashboardPage() {
 	const refreshFinanceSummary = async (
 		groupBy: "month" | "year" = "month",
 		from?: Date,
-		to?: Date
+		to?: Date,
 	) => {
 		try {
 			const params = new URLSearchParams({ groupBy });
@@ -271,9 +282,9 @@ export default function ControlDashboardPage() {
 		try {
 			const payload = Object.fromEntries(formData.entries());
 			const monthOf =
-				paymentMonthDate != null
-					? format(paymentMonthDate, "yyyy-MM")
-					: payload.monthOf;
+				paymentMonthDate != null ?
+					format(paymentMonthDate, "yyyy-MM")
+				:	payload.monthOf;
 			await jsonFetch("/api/payment", {
 				method: "POST",
 				body: JSON.stringify({
@@ -287,7 +298,56 @@ export default function ControlDashboardPage() {
 				}),
 			});
 			toast.success("পেমেন্ট সংরক্ষণ হয়েছে");
+			setPaymentMonthDate(undefined);
+			setPaymentDate(undefined);
 			await refreshPaymentSummary();
+			await refreshPayments();
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleDeletePayment = async (id: string) => {
+		if (!confirm("আপনি কি নিশ্চিতভাবে এই পেমেন্টটি মুছতে চান?")) return;
+		try {
+			setLoading(true);
+			await jsonFetch(`/api/payment/${id}`, { method: "DELETE" });
+			toast.success("পেমেন্ট মুছে ফেলা হয়েছে");
+			await refreshPaymentSummary();
+			await refreshPayments();
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleUpdatePayment = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		if (!editingPayment) return;
+		setLoading(true);
+		try {
+			const formData = new FormData(e.currentTarget);
+			const payload = Object.fromEntries(formData.entries());
+
+			await jsonFetch(`/api/payment/${editingPayment._id}`, {
+				method: "PUT",
+				body: JSON.stringify({
+					amount: Number(payload.amount),
+					monthOf: payload.monthOf,
+					paidAt: payload.paidAt,
+					method: payload.method,
+					reference: payload.reference,
+					notes: payload.notes,
+				}),
+			});
+			toast.success("পেমেন্ট আপডেট হয়েছে");
+			setShowEditPaymentModal(false);
+			setEditingPayment(null);
+			await refreshPaymentSummary();
+			await refreshPayments();
 		} catch (err: any) {
 			toast.error(err.message);
 		} finally {
@@ -373,19 +433,17 @@ export default function ControlDashboardPage() {
 			doc.setFontSize(10);
 			let yPos = 30;
 			if (financeDateFrom || financeDateTo) {
-				const fromStr = financeDateFrom
-					? format(financeDateFrom, "dd/MM/yyyy")
-					: "N/A";
-				const toStr = financeDateTo
-					? format(financeDateTo, "dd/MM/yyyy")
-					: "N/A";
+				const fromStr =
+					financeDateFrom ? format(financeDateFrom, "dd/MM/yyyy") : "N/A";
+				const toStr =
+					financeDateTo ? format(financeDateTo, "dd/MM/yyyy") : "N/A";
 				doc.text(`Date Range: ${fromStr} - ${toStr}`, 14, yPos);
 				yPos += 7;
 			}
 			doc.text(
 				`View Mode: ${financeViewMode === "month" ? "Monthly" : "Yearly"}`,
 				14,
-				yPos
+				yPos,
 			);
 			yPos += 10;
 
@@ -414,7 +472,7 @@ export default function ControlDashboardPage() {
 			doc.text(
 				financeViewMode === "month" ? "Monthly Breakdown" : "Yearly Breakdown",
 				14,
-				yPos
+				yPos,
 			);
 			yPos += 7;
 
@@ -424,7 +482,7 @@ export default function ControlDashboardPage() {
 			const breakdownData = incomeData.map((item: any) => {
 				const exp = expenseData.find(
 					(e: any) =>
-						(e._id.month || e._id.year) === (item._id.month || item._id.year)
+						(e._id.month || e._id.year) === (item._id.month || item._id.year),
 				) || { total: 0 };
 				return [
 					item._id.month || item._id.year,
@@ -444,7 +502,7 @@ export default function ControlDashboardPage() {
 			// Save PDF
 			const fileName = `Income-Expense-Summary-${format(
 				new Date(),
-				"yyyy-MM-dd"
+				"yyyy-MM-dd",
 			)}.pdf`;
 			doc.save(fileName);
 			toast.success("PDF ডাউনলোড সফল হয়েছে");
@@ -459,15 +517,15 @@ export default function ControlDashboardPage() {
 
 	const monthSummary = useMemo(
 		() => paymentSummary?.summary || [],
-		[paymentSummary]
+		[paymentSummary],
 	);
 	const financeIncome = useMemo(
 		() => financeSummary?.incomeSummary || [],
-		[financeSummary]
+		[financeSummary],
 	);
 	const financeExpense = useMemo(
 		() => financeSummary?.expenseSummary || [],
-		[financeSummary]
+		[financeSummary],
 	);
 
 	return (
@@ -489,9 +547,9 @@ export default function ControlDashboardPage() {
 							onClick={() => setActiveTab(tab.id)}
 							className={cn(
 								"px-3 py-2 text-sm font-medium rounded-md transition-colors",
-								activeTab === tab.id
-									? "bg-white shadow text-green-700 border border-green-200"
-									: "text-gray-600 hover:bg-white"
+								activeTab === tab.id ?
+									"bg-white shadow text-green-700 border border-green-200"
+								:	"text-gray-600 hover:bg-white",
 							)}
 						>
 							{tab.label}
@@ -556,9 +614,9 @@ export default function ControlDashboardPage() {
 												type="hidden"
 												name="monthOf"
 												value={
-													paymentMonthDate
-														? format(paymentMonthDate, "yyyy-MM")
-														: ""
+													paymentMonthDate ?
+														format(paymentMonthDate, "yyyy-MM")
+													:	""
 												}
 											/>
 										</div>
@@ -636,7 +694,7 @@ export default function ControlDashboardPage() {
 										size="sm"
 										onClick={() =>
 											setPaymentSortOrder(
-												paymentSortOrder === "asc" ? "desc" : "asc"
+												paymentSortOrder === "asc" ? "desc" : "asc",
 											)
 										}
 										className="h-9 w-9 p-0"
@@ -656,9 +714,10 @@ export default function ControlDashboardPage() {
 												Class: p.student?.class || "",
 												Amount: p.amount,
 												Month: p.monthOf,
-												Date: p.paidAt
-													? format(new Date(p.paidAt), "dd-MM-yyyy")
-													: "",
+												Date:
+													p.paidAt ?
+														format(new Date(p.paidAt), "dd-MM-yyyy")
+													:	"",
 												Method: p.method,
 											}));
 											const wb = XLSX.utils.book_new();
@@ -698,10 +757,13 @@ export default function ControlDashboardPage() {
 													মাস
 												</th>
 												<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-													তারিখ
+													পেমেন্ট তারিখ
 												</th>
 												<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
 													মাধ্যম
+												</th>
+												<th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+													অ্যাকশন
 												</th>
 											</tr>
 										</thead>
@@ -741,22 +803,43 @@ export default function ControlDashboardPage() {
 															{p.monthOf}
 														</td>
 														<td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-															{p.paidAt
-																? format(new Date(p.paidAt), "dd-MM-yyyy")
-																: "-"}
+															{p.paidAt ?
+																format(new Date(p.paidAt), "dd-MM-yyyy")
+															:	"-"}
 														</td>
 														<td className="px-4 py-3 text-sm">
 															<span
 																className={`px-2 py-0.5 rounded-full text-[11px] font-medium uppercase ${
-																	p.method === "cash"
-																		? "bg-orange-100 text-orange-700"
-																		: p.method === "bkash"
-																		? "bg-pink-100 text-pink-700"
-																		: "bg-blue-100 text-blue-700"
+																	p.method === "cash" ?
+																		"bg-orange-100 text-orange-700"
+																	: p.method === "bkash" ?
+																		"bg-pink-100 text-pink-700"
+																	:	"bg-blue-100 text-blue-700"
 																}`}
 															>
 																{p.method}
 															</span>
+														</td>
+														<td className="px-4 py-3 text-sm text-right">
+															<div className="flex justify-end gap-5">
+																<button
+																	onClick={() => {
+																		setEditingPayment(p);
+																		setShowEditPaymentModal(true);
+																	}}
+																	className="p-1.5 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md border border-blue-100 hover:border-blue-600"
+																	title="সম্পাদনা"
+																>
+																	<Edit2 className="w-4 h-4" />
+																</button>
+																<button
+																	onClick={() => handleDeletePayment(p._id)}
+																	className="p-1.5 text-red-600 hover:bg-red-600 hover:text-white rounded-md transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md border border-red-100 hover:border-red-600"
+																	title="মুছুন"
+																>
+																	<Trash2 className="w-4 h-4" />
+																</button>
+															</div>
 														</td>
 													</tr>
 												));
@@ -772,7 +855,7 @@ export default function ControlDashboardPage() {
 											Showing {startIndex + 1} to{" "}
 											{Math.min(
 												startIndex + paymentLimit,
-												filteredPayments.length
+												filteredPayments.length,
 											)}{" "}
 											of {filteredPayments.length} entries
 										</p>
@@ -841,7 +924,7 @@ export default function ControlDashboardPage() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+								<div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
 									<div className="space-y-2">
 										<Label>বিভাগের নাম</Label>
 										<Input
@@ -858,6 +941,14 @@ export default function ControlDashboardPage() {
 											onChange={(e) => setNewClasses(e.target.value)}
 										/>
 									</div>
+									<div className="space-y-2">
+										<Label>পরীক্ষাসমূহ (কমা দিয়ে লিখুন)</Label>
+										<Input
+											placeholder="যেমন: ১ম পরীক্ষা, ২য় পরীক্ষা"
+											value={newExams}
+											onChange={(e) => setNewExams(e.target.value)}
+										/>
+									</div>
 									<div className="flex gap-2">
 										<Button onClick={handleSaveClass}>
 											{editingClassId ? "আপডেট করুন" : "যোগ করুন"}
@@ -869,6 +960,7 @@ export default function ControlDashboardPage() {
 													setEditingClassId(null);
 													setNewDepartmentName("");
 													setNewClasses("");
+													setNewExams("");
 												}}
 											>
 												বাতিল
@@ -894,6 +986,9 @@ export default function ControlDashboardPage() {
 												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
 													শ্রেণীসমূহ
 												</th>
+												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+													পরীক্ষা
+												</th>
 												<th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
 													অ্যাকশন
 												</th>
@@ -907,6 +1002,9 @@ export default function ControlDashboardPage() {
 													</td>
 													<td className="px-4 py-2 text-sm">
 														{conf.classes.join(", ")}
+													</td>
+													<td className="px-4 py-2 text-sm">
+														{(conf.exams || []).join(", ")}
 													</td>
 													<td className="px-4 py-2 text-sm text-right space-x-2">
 														<Button
@@ -1029,9 +1127,9 @@ export default function ControlDashboardPage() {
 														<div
 															key={idx}
 															className={`text-xs p-2 rounded ${
-																detail.status === "success"
-																	? "bg-green-50 text-green-700"
-																	: "bg-red-50 text-red-700"
+																detail.status === "success" ?
+																	"bg-green-50 text-green-700"
+																:	"bg-red-50 text-red-700"
 															}`}
 														>
 															<span className="font-mono">{detail.number}</span>
@@ -1062,6 +1160,109 @@ export default function ControlDashboardPage() {
 					</Card>
 				)}
 			</div>
+
+			{/* Edit Payment Modal */}
+			{showEditPaymentModal && editingPayment && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+					<Card className="w-full max-w-lg shadow-2xl">
+						<CardHeader className="flex flex-row items-center justify-between pb-2 border-b">
+							<CardTitle className="text-xl">পেমেন্ট সম্পাদনা</CardTitle>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-8 w-8 p-0"
+								onClick={() => {
+									setShowEditPaymentModal(false);
+									setEditingPayment(null);
+								}}
+							>
+								<X className="w-4 h-4" />
+							</Button>
+						</CardHeader>
+						<CardContent className="pt-6">
+							<form onSubmit={handleUpdatePayment} className="space-y-4">
+								<div className="grid grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<Label>টাকার পরিমাণ</Label>
+										<Input
+											name="amount"
+											type="number"
+											defaultValue={editingPayment.amount}
+											required
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label>মাস (YYYY-MM)</Label>
+										<Input
+											name="monthOf"
+											placeholder="YYYY-MM"
+											defaultValue={editingPayment.monthOf}
+											required
+										/>
+									</div>
+								</div>
+								<div className="grid grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<Label>তারিখ</Label>
+										<Input
+											name="paidAt"
+											type="date"
+											defaultValue={
+												editingPayment.paidAt ?
+													format(new Date(editingPayment.paidAt), "yyyy-MM-dd")
+												:	""
+											}
+											required
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label>মাধ্যম</Label>
+										<select
+											name="method"
+											defaultValue={editingPayment.method}
+											className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-transparent text-sm"
+										>
+											<option value="cash">Cash</option>
+											<option value="bkash">bKash</option>
+											<option value="nagad">Nagad</option>
+											<option value="card">Card</option>
+											<option value="bank">Bank</option>
+											<option value="other">Other</option>
+										</select>
+									</div>
+								</div>
+								<div className="space-y-2">
+									<Label>রেফারেন্স</Label>
+									<Input
+										name="reference"
+										defaultValue={editingPayment.reference}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label>নোট</Label>
+									<Textarea name="notes" defaultValue={editingPayment.notes} />
+								</div>
+								<div className="flex gap-3 pt-2">
+									<Button
+										type="button"
+										variant="outline"
+										className="flex-1"
+										onClick={() => {
+											setShowEditPaymentModal(false);
+											setEditingPayment(null);
+										}}
+									>
+										বাতিল
+									</Button>
+									<Button type="submit" className="flex-1" disabled={loading}>
+										{loading ? "আপডেট হচ্ছে..." : "আপডেট করুন"}
+									</Button>
+								</div>
+							</form>
+						</CardContent>
+					</Card>
+				</div>
+			)}
 		</div>
 	);
 }

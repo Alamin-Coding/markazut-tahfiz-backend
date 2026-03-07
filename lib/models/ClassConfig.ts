@@ -12,6 +12,10 @@ const ClassConfigSchema = new mongoose.Schema(
 			type: [String],
 			default: [],
 		},
+		exams: {
+			type: [String],
+			default: [],
+		},
 		isActive: {
 			type: Boolean,
 			default: true,
@@ -19,7 +23,7 @@ const ClassConfigSchema = new mongoose.Schema(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
 
 export default mongoose.models.ClassConfig ||

@@ -26,10 +26,6 @@ const SpeechBlock: React.FC<TestimonialCardProps> = ({
 			<div className="w-full max-w-4xl">
 				{/* Header Section */}
 				<div className="text-center mb-12">
-					<div className="text-green-600 text-lg mb-2 flex items-center justify-center gap-2">
-						<span>📚</span>
-						<span className="underline underline-offset-8">বাণী</span>
-					</div>
 					<h1 className="text-3xl font-bold text-gray-800">
 						প্রতিষ্ঠাতা ও প্রিন্সিপালের এর{" "}
 						<span className="text-green-600">বাণী</span>

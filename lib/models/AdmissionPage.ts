@@ -94,12 +94,12 @@ const AdmissionPageSchema = new Schema<any>(
 		cta: {
 			title: { type: String, default: "আমাদের সাথে যোগাযোগ করুন" },
 			address: { type: String, default: "মিরপুর ১০, ঢাকা" },
-			phone: { type: String, default: "+৮৮০১৭१२-०५४७६३" },
+			phone: { type: String, default: "+8801943-834216" },
 			email: { type: String, default: "tahfizmirpur@gmail.com" },
 			buttonText: { type: String, default: "এখনই আবেদন করুন" },
 		},
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 // Prevent model caching issues in development

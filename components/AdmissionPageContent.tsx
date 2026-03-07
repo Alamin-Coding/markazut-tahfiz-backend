@@ -113,7 +113,7 @@ const defaultData: IAdmissionPageData = {
 	cta: {
 		title: "আমাদের সাথে যোগাযোগ করুন",
 		address: "মিরপুর ১০, ঢাকা",
-		phone: "+৮৮০১৭१२-०५४७६३",
+		phone: "+8801943-834216",
 		email: "tahfizmirpur@gmail.com",
 		buttonText: "এখনই আবেদন করুন",
 	},
@@ -140,15 +140,16 @@ export default function AdmissionPageContent() {
 					...defaultData.schedule,
 					...(json.data.schedule || {}),
 				};
-				merged.infoCards = json.data.infoCards?.length
-					? json.data.infoCards
-					: defaultData.infoCards;
-				merged.classes = json.data.classes?.length
-					? json.data.classes
-					: defaultData.classes;
-				merged.requirements = json.data.requirements?.length
-					? json.data.requirements
-					: defaultData.requirements;
+				merged.infoCards =
+					json.data.infoCards?.length ?
+						json.data.infoCards
+					:	defaultData.infoCards;
+				merged.classes =
+					json.data.classes?.length ? json.data.classes : defaultData.classes;
+				merged.requirements =
+					json.data.requirements?.length ?
+						json.data.requirements
+					:	defaultData.requirements;
 				merged.faq = json.data.faq?.length ? json.data.faq : defaultData.faq;
 
 				setData(merged);
@@ -187,7 +188,7 @@ export default function AdmissionPageContent() {
 		field: string | null,
 		value: any,
 		index: number | null = null,
-		subfield: string | null = null
+		subfield: string | null = null,
 	) => {
 		setData((prev: any) => {
 			const newData = { ...prev };
@@ -224,7 +225,7 @@ export default function AdmissionPageContent() {
 
 	const removeArrayItem = (
 		section: keyof IAdmissionPageData,
-		index: number
+		index: number,
 	) => {
 		setData((prev: any) => ({
 			...prev,
@@ -244,15 +245,14 @@ export default function AdmissionPageContent() {
 			<div className="flex justify-between items-center bg-white p-4 sticky top-0 z-10 shadow-sm rounded-md">
 				<h1 className="text-2xl font-bold text-gray-800">ভর্তি পেজ এডিটর</h1>
 				<Button
+					type="button"
 					onClick={handleSave}
 					disabled={saving}
 					className="bg-green-600 hover:bg-green-700 text-white"
 				>
-					{saving ? (
+					{saving ?
 						<Loader2 className="animate-spin w-4 h-4 mr-2" />
-					) : (
-						<Save className="w-4 h-4 mr-2" />
-					)}
+					:	<Save className="w-4 h-4 mr-2" />}
 					সেভ করুন
 				</Button>
 			</div>
@@ -283,7 +283,10 @@ export default function AdmissionPageContent() {
 				</h2>
 				<div className="grid md:grid-cols-2 gap-4">
 					{data.infoCards.map((card, i) => (
-						<div key={i} className="border p-4 rounded-md space-y-2 bg-gray-50">
+						<div
+							key={`info-${i}-${card.title}`}
+							className="border p-4 rounded-md space-y-2 bg-gray-50"
+						>
 							<h4 className="font-medium text-sm text-gray-500">
 								কার্ড {i + 1} ({card.icon})
 							</h4>
@@ -386,11 +389,14 @@ export default function AdmissionPageContent() {
 				</h2>
 				<div className="space-y-4">
 					{data.classes.map((cls, i) => (
-						<div key={i} className="flex gap-4 items-end border-b pb-4">
+						<div
+							key={`class-${i}-${cls.department}-${cls.class}`}
+							className="flex gap-4 items-end border-b pb-4"
+						>
 							<div className="flex-1 space-y-1">
 								<Label>বিভাগ</Label>
 								<Input
-									value={cls.department}
+									value={cls.department || ""}
 									onChange={(e) =>
 										update("classes", null, e.target.value, i, "department")
 									}
@@ -399,7 +405,7 @@ export default function AdmissionPageContent() {
 							<div className="flex-1 space-y-1">
 								<Label>শ্রেণী</Label>
 								<Input
-									value={cls.class}
+									value={cls.class || ""}
 									onChange={(e) =>
 										update("classes", null, e.target.value, i, "class")
 									}
@@ -408,7 +414,7 @@ export default function AdmissionPageContent() {
 							<div className="flex-1 space-y-1">
 								<Label>মেয়াদ</Label>
 								<Input
-									value={cls.duration}
+									value={cls.duration || ""}
 									onChange={(e) =>
 										update("classes", null, e.target.value, i, "duration")
 									}
@@ -417,7 +423,7 @@ export default function AdmissionPageContent() {
 							<div className="flex-1 space-y-1">
 								<Label>বার্ষিক ফি</Label>
 								<Input
-									value={cls.fees}
+									value={cls.fees || ""}
 									onChange={(e) =>
 										update("classes", null, e.target.value, i, "fees")
 									}
@@ -426,13 +432,14 @@ export default function AdmissionPageContent() {
 							<div className="flex-1 space-y-1">
 								<Label>ধারণক্ষমতা</Label>
 								<Input
-									value={cls.capacity}
+									value={cls.capacity || ""}
 									onChange={(e) =>
 										update("classes", null, e.target.value, i, "capacity")
 									}
 								/>
 							</div>
 							<Button
+								type="button"
 								variant="ghost"
 								size="icon"
 								className="text-red-500 mb-1"
@@ -444,6 +451,7 @@ export default function AdmissionPageContent() {
 					))}
 				</div>
 				<Button
+					type="button"
 					variant="outline"
 					onClick={() =>
 						addArrayItem("classes", {
@@ -466,14 +474,18 @@ export default function AdmissionPageContent() {
 				</h2>
 				<div className="space-y-2">
 					{data.requirements.map((req, i) => (
-						<div key={i} className="flex gap-2">
+						<div
+							key={`req-${i}-${typeof req === "string" ? req.substring(0, 10) : ""}`}
+							className="flex gap-2"
+						>
 							<Input
-								value={req}
+								value={req || ""}
 								onChange={(e) =>
 									update("requirements", null, e.target.value, i)
 								}
 							/>
 							<Button
+								type="button"
 								variant="ghost"
 								size="icon"
 								className="text-red-500"
@@ -485,6 +497,7 @@ export default function AdmissionPageContent() {
 					))}
 				</div>
 				<Button
+					type="button"
 					variant="outline"
 					onClick={() => addArrayItem("requirements", "")}
 				>
@@ -500,10 +513,11 @@ export default function AdmissionPageContent() {
 				<div className="space-y-4">
 					{data.faq.map((item, i) => (
 						<div
-							key={i}
+							key={`faq-${i}-${item?.q ? item.q.substring(0, 10) : ""}`}
 							className="border p-4 rounded-md space-y-2 relative bg-gray-50"
 						>
 							<Button
+								type="button"
 								variant="ghost"
 								size="icon"
 								className="absolute top-2 right-2 text-red-500"
@@ -514,7 +528,7 @@ export default function AdmissionPageContent() {
 							<div className="space-y-1">
 								<Label>প্রশ্ন</Label>
 								<Input
-									value={item.q}
+									value={item.q || ""}
 									onChange={(e) => update("faq", null, e.target.value, i, "q")}
 									className="font-semibold"
 								/>
@@ -522,7 +536,7 @@ export default function AdmissionPageContent() {
 							<div className="space-y-1">
 								<Label>উত্তর</Label>
 								<Textarea
-									value={item.a}
+									value={item.a || ""}
 									onChange={(e) => update("faq", null, e.target.value, i, "a")}
 									rows={2}
 								/>
@@ -531,6 +545,7 @@ export default function AdmissionPageContent() {
 					))}
 				</div>
 				<Button
+					type="button"
 					variant="outline"
 					onClick={() =>
 						addArrayItem("faq", { q: "নতুন প্রশ্ন?", a: "উত্তর লিখুন" })

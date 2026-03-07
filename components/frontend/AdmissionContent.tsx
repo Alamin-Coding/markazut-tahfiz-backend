@@ -251,11 +251,21 @@ const AdmissionContent: React.FC<AdmissionContentProps> = ({
 						</div>
 						<div>
 							<h3 className="font-semibold text-emerald-100 mb-2">ফোন নম্বর</h3>
-							<p className="text-emerald-50">{data.cta.phone}</p>
+							<a
+								href={`tel:${data.cta.phone}`}
+								className="text-emerald-50 hover:text-white hover:underline transition-colors block"
+							>
+								{data.cta.phone}
+							</a>
 						</div>
 						<div>
 							<h3 className="font-semibold text-emerald-100 mb-2">ইমেইল</h3>
-							<p className="text-emerald-50">{data.cta.email}</p>
+							<a
+								href={`mailto:${data.cta.email}`}
+								className="text-emerald-50 hover:text-white hover:underline transition-colors block"
+							>
+								{data.cta.email}
+							</a>
 						</div>
 					</div>
 					<Link

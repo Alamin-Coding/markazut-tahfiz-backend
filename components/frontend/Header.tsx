@@ -3,7 +3,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 // Header Component
 const Header: React.FC = () => {
 	return (
-		<div className="bg-[#35374B] text-white py-3 px-4 relative z-50">
+		<div className="hidden md:block bg-[#35374B] text-white py-3 px-4 relative z-50">
 			<div className="container mx-auto flex flex-wrap justify-between items-center ">
 				<div className="flex items-center gap-2 mb-2 sm:mb-0">
 					<span>
@@ -22,13 +22,23 @@ const Header: React.FC = () => {
 					<div className="w-0.5 bg-gray-500 h-6"></div>
 					<div className="flex items-center gap-2">
 						<Mail size={16} />
-						<span>tahfizmirpur@gmail.com</span>
+						<a
+							href="mailto:tahfizmirpur@gmail.com"
+							className="hover:underline transition-all duration-300"
+						>
+							tahfizmirpur@gmail.com
+						</a>
 					</div>
 					<div className="w-0.5 bg-gray-500 h-6"></div>
 
 					<div className="flex items-center gap-2">
 						<Phone size={16} />
-						<span>+8801943-834216</span>
+						<a
+							href="tel:+8801943834216"
+							className="hover:underline transition-all duration-300"
+						>
+							+8801943-834216
+						</a>
 					</div>
 				</div>
 			</div>

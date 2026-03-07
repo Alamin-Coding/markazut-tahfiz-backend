@@ -81,7 +81,7 @@ const DepartmentsContent: React.FC = () => {
 	return (
 		<div className="min-h-screen bg-linear-to-b from-slate-50 to-slate-100">
 			{/* Header */}
-			<div className="bg-linear-to-r from-button to-green-600 text-white py-12 px-4">
+			<div className="bg-emerald-900 text-white py-12 px-4">
 				<div className="max-w-6xl mx-auto">
 					<h1 className="text-3xl md:text-5xl font-bold mb-4">
 						{pageData.header?.title}

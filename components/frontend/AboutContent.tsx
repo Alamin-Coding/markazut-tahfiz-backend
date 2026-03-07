@@ -31,7 +31,7 @@ const AboutContent: React.FC<AboutContentProps> = ({ data }) => {
 	return (
 		<div className="bg-gray-50 min-h-screen">
 			{/* Header Banner */}
-			<div className="bg-linear-to-r from-button to-green-800 text-white py-12 relative overflow-hidden">
+			<div className="bg-emerald-900 text-white py-12 relative overflow-hidden">
 				{data.hero.backgroundImage && (
 					<div className="absolute inset-0 z-0">
 						<img
@@ -96,15 +96,13 @@ const AboutContent: React.FC<AboutContentProps> = ({ data }) => {
 										className="bg-white rounded-lg shadow-md p-8 hover:shadow-lg transition flex flex-col items-center text-center"
 										delay={idx * 60}
 									>
-										{feature.icon ? (
+										{feature.icon ?
 											<img
 												src={feature.icon}
 												alt={feature.title}
 												className="w-16 h-16 mb-4 object-contain"
 											/>
-										) : (
-											<BookOpen className="w-12 h-12 text-green-600 mb-4" />
-										)}
+										:	<BookOpen className="w-12 h-12 text-green-600 mb-4" />}
 										<h3 className="text-xl font-bold text-gray-800 mb-3">
 											{feature.title}
 										</h3>
@@ -118,7 +116,7 @@ const AboutContent: React.FC<AboutContentProps> = ({ data }) => {
 
 				{/* Statistics Section */}
 				{data.achievements.length > 0 && (
-					<div className="bg-linear-to-r from-button to-green-800 rounded-lg shadow-md p-12 mb-16 text-white">
+					<div className="bg-emerald-900 rounded-lg shadow-md p-12 mb-16 text-white">
 						<h2 className="text-3xl font-bold mb-12 text-center">
 							আমাদের অর্জন
 						</h2>

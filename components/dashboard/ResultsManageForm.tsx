@@ -50,9 +50,14 @@ export default function ResultsManageForm() {
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
 	const [availableClasses, setAvailableClasses] = useState<any[]>([]);
 	const [formAvailableClasses, setFormAvailableClasses] = useState<string[]>(
-		[]
+		[],
 	);
+	const [formAvailableExams, setFormAvailableExams] = useState<string[]>([]);
+	const [availableExams, setAvailableExams] = useState<any[]>([]);
 	const [showAddForm, setShowAddForm] = useState(false);
+	const [showNameSuggestions, setShowNameSuggestions] = useState(false);
+	const [showRollSuggestions, setShowRollSuggestions] = useState(false);
+	const [studentsLoading, setStudentsLoading] = useState(false);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [formData, setFormData] = useState({
 		name: "",
@@ -74,10 +79,10 @@ export default function ResultsManageForm() {
 		],
 	});
 	const [examDateValue, setExamDateValue] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 	const [resultDateValue, setResultDateValue] = useState<Date | undefined>(
-		undefined
+		undefined,
 	);
 
 	// Fetch results and students on component mount
@@ -99,13 +104,19 @@ export default function ResultsManageForm() {
 
 	const fetchStudents = async () => {
 		try {
-			const response = await fetch("/api/students");
+			setStudentsLoading(true);
+			const response = await fetch("/api/students?all=true");
 			const result = await response.json();
 			if (result.success) {
+				console.log("Students loaded:", result.data?.length);
 				setStudents(result.data || []);
+			} else {
+				console.error("Failed to load students:", result.message);
 			}
 		} catch (error) {
 			console.error("Error fetching students:", error);
+		} finally {
+			setStudentsLoading(false);
 		}
 	};
 	const fetchResults = async () => {
@@ -150,9 +161,9 @@ export default function ResultsManageForm() {
 
 	const handleAutoFill = (searchVal: string, type: "name" | "roll") => {
 		const student = students.find((s) =>
-			type === "name"
-				? s.name === searchVal
-				: s.roll === searchVal || s.studentId === searchVal
+			type === "name" ?
+				s.name === searchVal
+			:	s.roll === searchVal || s.studentId === searchVal,
 		);
 
 		if (student) {
@@ -167,9 +178,10 @@ export default function ResultsManageForm() {
 				};
 				// Update classes for the select box
 				const conf = classConfigs.find(
-					(c) => c.department === student.department
+					(c) => c.department === student.department,
 				);
 				setFormAvailableClasses(conf ? conf.classes : []);
+				setFormAvailableExams(conf ? conf.exams || [] : []);
 				return newData;
 			});
 		}
@@ -192,7 +204,7 @@ export default function ResultsManageForm() {
 
 		const totalMarks = formData.subjects.reduce(
 			(sum, subj) => sum + subj.marks,
-			0
+			0,
 		);
 
 		const payload = {
@@ -206,9 +218,8 @@ export default function ResultsManageForm() {
 			totalMarks,
 			subjects: formData.subjects,
 			examDate: examDateValue ? examDateValue.toISOString() : formData.examDate,
-			resultDate: resultDateValue
-				? resultDateValue.toISOString()
-				: formData.resultDate,
+			resultDate:
+				resultDateValue ? resultDateValue.toISOString() : formData.resultDate,
 			principal: formData.principal,
 		};
 
@@ -295,7 +306,7 @@ export default function ResultsManageForm() {
 			filtered = filtered.filter(
 				(result) =>
 					result.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					result.roll.toString().includes(searchTerm)
+					result.roll.toString().includes(searchTerm),
 			);
 		}
 
@@ -305,7 +316,7 @@ export default function ResultsManageForm() {
 
 		if (selectedDepartment !== "all") {
 			filtered = filtered.filter(
-				(result) => result.department === selectedDepartment
+				(result) => result.department === selectedDepartment,
 			);
 		}
 
@@ -346,7 +357,7 @@ export default function ResultsManageForm() {
 		setExamDateValue(isNaN(parsedExam.getTime()) ? undefined : parsedExam);
 		const parsedResult = new Date(result.resultDate);
 		setResultDateValue(
-			isNaN(parsedResult.getTime()) ? undefined : parsedResult
+			isNaN(parsedResult.getTime()) ? undefined : parsedResult,
 		);
 		setShowAddForm(true);
 	};
@@ -469,10 +480,11 @@ export default function ResultsManageForm() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">সব পরীক্ষা</SelectItem>
-								<SelectItem value="১ম পরীক্ষা ২০২৫">১ম পরীক্ষা ২০২৫</SelectItem>
-								<SelectItem value="২য় পরীক্ষা ২০২৫">
-									২য় পরীক্ষা ২০২৫
-								</SelectItem>
+								{availableExams.map((t) => (
+									<SelectItem key={t} value={t}>
+										{t}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
@@ -483,8 +495,10 @@ export default function ResultsManageForm() {
 							onValueChange={(val) => {
 								setSelectedDepartment(val);
 								setSelectedClass("all");
+								setSelectedTerm("all");
 								const conf = classConfigs.find((c) => c.department === val);
 								setAvailableClasses(conf ? conf.classes : []);
+								setAvailableExams(conf ? conf.exams || [] : []);
 							}}
 						>
 							<SelectTrigger className={selectClasses}>
@@ -653,45 +667,178 @@ export default function ResultsManageForm() {
 						>
 							{/* Student Info */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div className="space-y-2">
+								<div className="space-y-2 relative">
 									<Label className={labelClasses}>ছাত্রের নাম *</Label>
 									<Input
-										list="student-names-list"
 										type="text"
 										value={formData.name}
+										onFocus={() => {
+											setShowNameSuggestions(true);
+											if (students.length === 0 && !studentsLoading)
+												fetchStudents();
+										}}
+										onBlur={() =>
+											setTimeout(() => setShowNameSuggestions(false), 200)
+										}
 										onChange={(e) => {
 											const val = e.target.value;
 											setFormData({ ...formData, name: val });
 											handleAutoFill(val, "name");
+											setShowNameSuggestions(true);
 										}}
 										className={inputClasses}
+										placeholder="ছাত্রের নাম লিখুন..."
 										required
+										autoComplete="off"
 									/>
-									<datalist id="student-names-list">
-										{students.map((s) => (
-											<option key={s._id} value={s.name} />
-										))}
-									</datalist>
+									{showNameSuggestions && formData.name.length > 0 && (
+										<ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto mt-1 top-full">
+											{studentsLoading ?
+												<li className="px-4 py-3 text-sm text-gray-500 text-center italic flex items-center justify-center">
+													<span className="animate-spin mr-2">⌛</span> লোড
+													হচ্ছে...
+												</li>
+											:	<>
+													{students
+														.filter((s) => {
+															const normalizedSearch = formData.name
+																.replace(/\s+/g, " ")
+																.trim()
+																.toLowerCase();
+															const normalizedName = (s.name || "")
+																.replace(/\s+/g, " ")
+																.trim()
+																.toLowerCase();
+															return normalizedName.includes(normalizedSearch);
+														})
+														.map((s) => (
+															<li
+																key={s._id}
+																className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 last:border-0"
+																onClick={() => {
+																	setFormData({ ...formData, name: s.name });
+																	handleAutoFill(s.name, "name");
+																	setShowNameSuggestions(false);
+																}}
+															>
+																<span className="font-medium">{s.name}</span>
+																{s.roll && (
+																	<span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">
+																		রোল: {s.roll}
+																	</span>
+																)}
+																{/* Show inactive status if applicable */}
+																{s.status && s.status !== "active" && (
+																	<span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1 rounded">
+																		{s.status === "inactive" ?
+																			"Inactive"
+																		:	s.status}
+																	</span>
+																)}
+															</li>
+														))}
+													{students.filter((s) => {
+														const normalizedSearch = formData.name
+															.replace(/\s+/g, " ")
+															.trim()
+															.toLowerCase();
+														const normalizedName = (s.name || "")
+															.replace(/\s+/g, " ")
+															.trim()
+															.toLowerCase();
+														return normalizedName.includes(normalizedSearch);
+													}).length === 0 && (
+														<li className="px-4 py-3 text-sm text-gray-500 text-center italic">
+															কোনো নাম পাওয়া যায়নি
+														</li>
+													)}
+												</>
+											}
+										</ul>
+									)}
 								</div>
-								<div className="space-y-2">
+								<div className="space-y-2 relative">
 									<Label className={labelClasses}>রোল নম্বর *</Label>
 									<Input
-										list="student-rolls-list"
 										type="text"
 										value={formData.roll}
+										onFocus={() => {
+											setShowRollSuggestions(true);
+											if (students.length === 0 && !studentsLoading)
+												fetchStudents();
+										}}
+										onBlur={() =>
+											setTimeout(() => setShowRollSuggestions(false), 200)
+										}
 										onChange={(e) => {
 											const val = e.target.value;
 											setFormData({ ...formData, roll: val });
 											handleAutoFill(val, "roll");
+											setShowRollSuggestions(true);
 										}}
 										className={inputClasses}
+										placeholder="রোল নম্বর লিখুন..."
 										required
+										autoComplete="off"
 									/>
-									<datalist id="student-rolls-list">
-										{students.map((s) => (
-											<option key={s._id} value={s.roll} />
-										))}
-									</datalist>
+									{showRollSuggestions && formData.roll.length > 0 && (
+										<ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto mt-1 top-full">
+											{studentsLoading ?
+												<li className="px-4 py-3 text-sm text-gray-500 text-center italic flex items-center justify-center">
+													<span className="animate-spin mr-2">⌛</span> লোড
+													হচ্ছে...
+												</li>
+											:	<>
+													{students
+														.filter((s) => {
+															const normalizedSearch = formData.roll
+																.toString()
+																.trim();
+															const normalizedRoll = (s.roll || "")
+																.toString()
+																.trim();
+															return normalizedRoll.includes(normalizedSearch);
+														})
+														.map((s) => (
+															<li
+																key={s._id}
+																className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 last:border-0"
+																onClick={() => {
+																	setFormData({ ...formData, roll: s.roll });
+																	handleAutoFill(s.roll, "roll");
+																	setShowRollSuggestions(false);
+																}}
+															>
+																<span className="font-medium">{s.roll}</span>
+																{s.name && (
+																	<span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">
+																		নাম: {s.name}
+																	</span>
+																)}
+																{!s.isActive && (
+																	<span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1 rounded">
+																		Inactive
+																	</span>
+																)}
+															</li>
+														))}
+													{students.filter((s) => {
+														const normalizedSearch = formData.roll
+															.toString()
+															.trim();
+														const normalizedRoll = (s.roll || "")
+															.toString()
+															.trim();
+														return normalizedRoll.includes(normalizedSearch);
+													}).length === 0 && (
+														<li className="px-4 py-3 text-sm text-gray-500 text-center italic">
+															কোনো রোল পাওয়া যায়নি
+														</li>
+													)}
+												</>
+											}
+										</ul>
+									)}
 								</div>
 							</div>
 
@@ -705,11 +852,13 @@ export default function ResultsManageForm() {
 												...formData,
 												department: value,
 												class: "",
+												term: "",
 											});
 											const conf = classConfigs.find(
-												(c: any) => c.department === value
+												(c: any) => c.department === value,
 											);
 											setFormAvailableClasses(conf ? conf.classes : []);
+											setFormAvailableExams(conf ? conf.exams || [] : []);
 										}}
 									>
 										<SelectTrigger className={selectClasses}>
@@ -752,20 +901,17 @@ export default function ResultsManageForm() {
 										onValueChange={(value) =>
 											setFormData({ ...formData, term: value })
 										}
+										disabled={!formData.department}
 									>
 										<SelectTrigger className={selectClasses}>
 											<SelectValue placeholder="পরীক্ষা নির্বাচন করুন" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="১ম পরীক্ষা ২০২৫">
-												১ম পরীক্ষা ২০২৫
-											</SelectItem>
-											<SelectItem value="২য় পরীক্ষা ২০২৫">
-												২য় পরীক্ষা ২০২৫
-											</SelectItem>
-											<SelectItem value="১ম পরীক্ষা ২০২৬">
-												১ম পরীক্ষা ২০২৬
-											</SelectItem>
+											{formAvailableExams.map((t) => (
+												<SelectItem key={t} value={t}>
+													{t}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 								</div>
@@ -875,7 +1021,7 @@ export default function ResultsManageForm() {
 													onChange={(e) => {
 														const updatedSubjects = [...formData.subjects];
 														updatedSubjects[index].total = Number(
-															e.target.value
+															e.target.value,
 														);
 														setFormData({
 															...formData,

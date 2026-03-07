@@ -27,7 +27,7 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 	const { pageData, faqs } = initialData;
 
 	const communicationFaq = faqs.filter(
-		(item: FaqItem) => item.category === "communication"
+		(item: FaqItem) => item.category === "communication",
 	);
 
 	const [formData, setFormData] = useState<FormData>({
@@ -43,7 +43,7 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 	const [error, setError] = useState<string | null>(null);
 
 	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({
@@ -152,7 +152,7 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 	return (
 		<div className="bg-gray-50 min-h-screen">
 			{/* Header Banner */}
-			<div className="bg-linear-to-r from-button to-green-700 text-white py-12">
+			<div className="bg-emerald-900 text-white py-12">
 				<div className="max-w-6xl mx-auto px-4">
 					<h1 className="text-3xl font-bold mb-4">{pageData.header.title}</h1>
 					<p className="text-green-100 text-lg">{pageData.header.subtitle}</p>
@@ -175,7 +175,21 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 										className={`w-12 h-12 ${info.color} mx-auto mb-4`}
 									/>
 									<h3 className="font-bold text-gray-800 mb-2">{info.title}</h3>
-									<p className="text-gray-600">{info.details}</p>
+									{info.icon === "Phone" ?
+										<a
+											href={`tel:${info.details.replace(/\s+/g, "")}`}
+											className="text-gray-600 hover:text-green-600 hover:underline transition-colors block"
+										>
+											{info.details}
+										</a>
+									: info.icon === "Mail" ?
+										<a
+											href={`mailto:${info.details}`}
+											className="text-gray-600 hover:text-green-600 hover:underline transition-colors block"
+										>
+											{info.details}
+										</a>
+									:	<p className="text-gray-600">{info.details}</p>}
 								</div>
 							);
 						})}
@@ -284,14 +298,13 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 									disabled={sending}
 									className="w-full bg-button text-white py-3 rounded-lg font-semibold hover:bg-hover cursor-pointer transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
 								>
-									{sending ? (
+									{sending ?
 										<>sending...</>
-									) : (
-										<>
+									:	<>
 											<Send className="w-5 h-5" />
 											বার্তা পাঠান
 										</>
-									)}
+									}
 								</button>
 							</div>
 						</div>
@@ -359,10 +372,22 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 								<h3 className="font-bold text-gray-800 mb-3">{dept.name}</h3>
 								<div className="space-y-2 text-sm">
 									<p className="text-gray-600">
-										<strong>ফোন:</strong> {dept.phone}
+										<strong>ফোন:</strong>{" "}
+										<a
+											href={`tel:${dept.phone.replace(/\s+/g, "")}`}
+											className="hover:text-green-600 hover:underline transition-colors"
+										>
+											{dept.phone}
+										</a>
 									</p>
 									<p className="text-gray-600">
-										<strong>ইমেইল:</strong> {dept.email}
+										<strong>ইমেইল:</strong>{" "}
+										<a
+											href={`mailto:${dept.email}`}
+											className="hover:text-green-600 hover:underline transition-colors"
+										>
+											{dept.email}
+										</a>
 									</p>
 								</div>
 							</div>

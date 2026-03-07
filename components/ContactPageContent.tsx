@@ -60,7 +60,7 @@ const defaultData: IContactPageData = {
 		{
 			icon: "Phone",
 			title: "ফোন নম্বর",
-			details: "+৮৮০১৭१२-०५४७६३",
+			details: "+8801943-834216",
 			color: "text-blue-600",
 		},
 		{
@@ -104,12 +104,14 @@ export default function ContactPageContent() {
 			const json = await res.json();
 			if (json.success && json.data) {
 				const merged = { ...defaultData, ...json.data };
-				merged.contactInfo = json.data.contactInfo?.length
-					? json.data.contactInfo
-					: defaultData.contactInfo;
-				merged.departments = json.data.departments?.length
-					? json.data.departments
-					: defaultData.departments;
+				merged.contactInfo =
+					json.data.contactInfo?.length ?
+						json.data.contactInfo
+					:	defaultData.contactInfo;
+				merged.departments =
+					json.data.departments?.length ?
+						json.data.departments
+					:	defaultData.departments;
 				// Ensure quickInfo structure exists if not in DB
 				merged.quickInfo = {
 					...defaultData.quickInfo,
@@ -156,7 +158,7 @@ export default function ContactPageContent() {
 		field: string | null,
 		value: any,
 		index: number | null = null,
-		subfield: string | null = null
+		subfield: string | null = null,
 	) => {
 		setData((prev: any) => {
 			const newData = { ...prev };
@@ -219,11 +221,9 @@ export default function ContactPageContent() {
 					disabled={saving}
 					className="bg-green-600 hover:bg-green-700 text-white"
 				>
-					{saving ? (
+					{saving ?
 						<Loader2 className="animate-spin w-4 h-4 mr-2" />
-					) : (
-						<Save className="w-4 h-4 mr-2" />
-					)}
+					:	<Save className="w-4 h-4 mr-2" />}
 					সেভ করুন
 				</Button>
 			</div>
