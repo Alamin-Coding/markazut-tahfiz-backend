@@ -40,7 +40,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 			!selectedRoll
 		) {
 			toast.error(
-				"অনুগ্রহ করে বছর, পরীক্ষা, বিভাগ, শ্রেণী এবং রোল নম্বর টাইপ বা নির্বাচন করুন"
+				"অনুগ্রহ করে বছর, পরীক্ষা, বিভাগ, শ্রেণী এবং রোল নম্বর টাইপ বা নির্বাচন করুন",
 			);
 			return;
 		}
@@ -61,7 +61,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 				setResultData(json.data);
 				const totalMarks = json.data.subjects.reduce(
 					(sum: number, subject: any) => sum + subject.total,
-					0
+					0,
 				);
 				setTotalPossibleMarks(totalMarks);
 				setShowResult(true);
@@ -76,6 +76,16 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 		}
 	};
 
+	const formatDate = (dateString?: string) => {
+		if (!dateString) return "";
+		const dateObj = new Date(dateString);
+		if (isNaN(dateObj.getTime())) return "";
+		return new Intl.DateTimeFormat("en-US", {
+			month: "long",
+			day: "numeric",
+			year: "numeric",
+		}).format(dateObj);
+	};
 
 	const downloadPDF = (): void => {
 		if (!resultData) return;
@@ -96,9 +106,46 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
           
           * { margin: 0; padding: 0; box-sizing: border-box; }
 
+          @media print {
+            @page { 
+              size: A4 portrait;
+              margin: 0; 
+            }
+            body { 
+              -webkit-print-color-adjust: exact !important; 
+              print-color-adjust: exact !important;
+              width: 100%;
+              height: 100vh;
+              page-break-inside: avoid;
+              margin: 0;
+            }
+            html {
+              height: 100vh;
+              overflow: hidden;
+            }
+            .body-wrapper {
+              flex: 1;
+              min-height: 0 !important;
+              margin-bottom: 0 !important;
+            }
+            .footer {
+              page-break-inside: avoid;
+            }
+          }
+
+          html, body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+          }
+
           body {
             font-family: "Noto Serif Bengali", serif;
             background: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
           }
 
           /* ====== HEADER ====== */
@@ -219,7 +266,10 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
           /* ====== BODY ====== */
           .body-wrapper {
             padding: 20px 24px;
-            min-height: 600px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
           }
 
           .result-title {
@@ -477,59 +527,64 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
               <th>শতকরা</th>
             </tr>
             ${resultData.subjects
-              .map(
-                (subject) => `
+							.map(
+								(subject) => `
               <tr>
                 <td>${subject.name}</td>
                 <td>${subject.marks}</td>
                 <td>${subject.total}</td>
                 <td>${((subject.marks / subject.total) * 100).toFixed(1)}%</td>
               </tr>
-            `
-              )
-              .join("")}
+            `,
+							)
+							.join("")}
           </table>
 
-          <div class="summary-box">
-            <div class="summary-item">
-              <span class="summary-label">সম্মিলিত ফলাফল:</span>
-              <span>${resultData.totalMarks}/${totalPossibleMarks}</span>
-            </div>
-          </div>
-
-          <div class="summary-box">
-            <div class="summary-item">
-              <span class="summary-label">গড়:</span>
-              <span>${((resultData.subjects.reduce((sum, subject) => sum + (subject.marks / subject.total), 0) / resultData.subjects.length) * 100).toFixed(1)}%</span>
-            </div>
-          </div>
-
-          <div class="summary-box">
-            <div class="summary-item">
-              <span class="summary-label"> গ্রেড:</span>
-              <span>${(() => {
-                const percentage = (resultData.totalMarks / totalPossibleMarks) * 100;
-                if (percentage >= 80) return 'মুমতাজ ';
-                if (percentage >= 65) return 'জায়্যিদ জিদ্দান ';
-                if (percentage >= 50) return 'জায়্যিদ';
-                if (percentage >= 33) return 'মাকবুল ';
-                return 'রাসিব';
-              })()}</span>
-            </div>
-          </div>
-
-          <div style="font-size: 13px; color: #444; margin-top: 8px;">
-            <div><span style="font-weight:700; color:#0f5c2a;">পরীক্ষার তারিখ:</span> ${resultData.examDate}</div>
-            <div style="margin-top:4px;"><span style="font-weight:700; color:#0f5c2a;">ফলাফল প্রকাশের তারিখ:</span> ${resultData.resultDate}</div>
-          </div>
-
-          <div class="signature-area">
-            <div class="signature-box">
-              <div class="signature-image">
-              <img src="sign.png" alt="sign"/>
+          <div style="display: flex; gap: 12px; margin: 10px 0 20px 0;">
+            <div class="summary-box" style="flex: 1; margin: 0; padding: 12px 10px;">
+              <div class="summary-item" style="margin: 0; align-items: center;">
+                <span class="summary-label">সম্মিলিত ফলাফল:</span>
+                <span>${resultData.totalMarks}/${totalPossibleMarks}</span>
               </div>
-              <div class="signature-line"></div>
-              <div style="font-size:12px; color:#333;">প্রধানের স্বাক্ষর</div>
+            </div>
+
+            <div class="summary-box" style="flex: 1; margin: 0; padding: 12px 10px;">
+              <div class="summary-item" style="margin: 0; align-items: center;">
+                <span class="summary-label">গড়:</span>
+                <span>${((resultData.subjects.reduce((sum, subject) => sum + subject.marks / subject.total, 0) / resultData.subjects.length) * 100).toFixed(1)}%</span>
+              </div>
+            </div>
+
+            <div class="summary-box" style="flex: 1; margin: 0; padding: 12px 10px;">
+              <div class="summary-item" style="margin: 0; align-items: center;">
+                <span class="summary-label">গ্রেড:</span>
+                <span>${(() => {
+									const percentage =
+										(resultData.totalMarks / totalPossibleMarks) * 100;
+									if (percentage >= 80) return "মুমতাজ ";
+									if (percentage >= 65) return "জায়্যিদ জিদ্দান ";
+									if (percentage >= 50) return "জায়্যিদ";
+									if (percentage >= 33) return "মাকবুল ";
+									return "রাসিব";
+								})()}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: auto;">
+            <div style="font-size: 13px; color: #444; margin-top: 8px;">
+              <div><span style="font-weight:700; color:#0f5c2a;">পরীক্ষার তারিখ:</span> ${formatDate(resultData.examDate)}</div>
+              <div style="margin-top:4px;"><span style="font-weight:700; color:#0f5c2a;">ফলাফল প্রকাশের তারিখ:</span> ${formatDate(resultData.resultDate)}</div>
+            </div>
+
+            <div class="signature-area">
+              <div class="signature-box">
+                <div class="signature-image">
+                <img src="sign.png" alt="sign"/>
+                </div>
+                <div class="signature-line"></div>
+                <div style="font-size:12px; color:#333;">প্রধানের স্বাক্ষর</div>
+              </div>
             </div>
           </div>
         </div>
@@ -560,12 +615,12 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
       </html>
     `;
 
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
-  };
+		printWindow.document.write(htmlContent);
+		printWindow.document.close();
+		setTimeout(() => {
+			printWindow.print();
+		}, 250);
+	};
 
 	return (
 		<div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-50 py-8 px-4">
@@ -573,11 +628,11 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 				{/* Header */}
 				<div className="text-center mb-8">
 					<div className="flex justify-center mb-4">
-						<div className="flex max-h-26 max-w-26 overflow-hidden mx-auto rounded-full justify-center mb-4">
+						<div className="flex max-h-32 max-w-32 mx-auto justify-center mb-4">
 							<img
 								src="logo.avif"
 								loading="lazy"
-								className="w-26 h-26"
+								className="w-32 h-32"
 								alt="logo"
 							/>
 						</div>
@@ -824,16 +879,23 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 							<div className="bg-linear-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border-l-4 border-emerald-500">
 								<p className="text-sm text-gray-600 mb-2">সম্মিলিত ফলাফল</p>
 								<p className="text-3xl font-bold text-emerald-900">
-									{resultData.totalMarks}/
-
-									{totalPossibleMarks}
+									{resultData.totalMarks}/{totalPossibleMarks}
 								</p>
 							</div>
 
 							<div className="bg-linear-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border-l-4 border-emerald-500">
 								<p className="text-sm text-gray-600 mb-2">গড়</p>
 								<p className="text-3xl font-bold text-emerald-900">
-									{((resultData.subjects.reduce((sum: number, subject: any) => sum + (subject.marks / subject.total), 0) / resultData.subjects.length) * 100).toFixed(2)}%
+									{(
+										(resultData.subjects.reduce(
+											(sum: number, subject: any) =>
+												sum + subject.marks / subject.total,
+											0,
+										) /
+											resultData.subjects.length) *
+										100
+									).toFixed(2)}
+									%
 								</p>
 							</div>
 
@@ -841,32 +903,31 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 								<p className="text-sm text-gray-600 mb-2">গ্রেড</p>
 								<p className="text-3xl font-bold text-emerald-900">
 									{(() => {
-										const percentage = (resultData.totalMarks / totalPossibleMarks) * 100;
-										if (percentage >= 80) return 'মুমতাজ ';
-										if (percentage >= 65) return 'জায়্যিদ জিদ্দান ';
-										if (percentage >= 50) return 'জায়্যিদ';
-										if (percentage >= 33) return 'মাকবুল ';
+										const percentage =
+											(resultData.totalMarks / totalPossibleMarks) * 100;
+										if (percentage >= 80) return "মুমতাজ ";
+										if (percentage >= 65) return "জায়্যিদ জিদ্দান ";
+										if (percentage >= 50) return "জায়্যিদ";
+										if (percentage >= 33) return "মাকবুল ";
 
-										return 'রাসিব';
+										return "রাসিব";
 									})()}
 								</p>
 							</div>
 						</div>
-
-
 
 						{/* Additional Info */}
 						<div className="bg-gray-50 rounded-lg p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div>
 								<p className="text-sm text-gray-600">পরীক্ষার তারিখ</p>
 								<p className="font-semibold text-gray-900">
-									{resultData.examDate}
+									{formatDate(resultData.examDate)}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-600">ফলাফল প্রকাশের তারিখ</p>
 								<p className="font-semibold text-gray-900">
-									{resultData.resultDate}
+									{formatDate(resultData.resultDate)}
 								</p>
 							</div>
 						</div>
