@@ -596,7 +596,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
             <div class="footer-branch">
               <div class="footer-branch-icon">🏠</div>
               <div class="footer-branch-text">
-                <strong>ঝুটপট্টি শাখা:</strong> বাড়ী-১০, এটি.-১, হক-সি, সেকশন-১০, মিরপুর।
+                <strong>ঝুটপট্টি শাখা:</strong> বাড়ী-১০, এভি.-১, ব্লক-সি, সেকশন-১০, মিরপুর।
               </div>
             </div>
 
