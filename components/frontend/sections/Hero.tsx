@@ -1,4 +1,5 @@
 import { AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 interface HeroData {
 	title: string;
@@ -48,9 +49,9 @@ const Hero: React.FC<HeroProps> = ({ data }) => {
 						{description}
 					</p>
 
-					<button className="bg-button hover:bg-hover cursor-pointer text-white px-6 py-3 rounded-full text-base sm:text-lg font-medium transition-all hover:scale-105 duration-300 inline-flex items-center gap-2">
+					<Link href="/about" className="bg-button hover:bg-hover cursor-pointer text-white px-6 py-3 rounded-full text-base sm:text-lg font-medium transition-all hover:scale-105 duration-300 inline-flex items-center gap-2">
 						{buttonText}
-					</button>
+					</Link>
 				</div>
 			</div>
 

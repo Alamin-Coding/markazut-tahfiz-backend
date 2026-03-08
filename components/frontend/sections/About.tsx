@@ -7,6 +7,7 @@ import {
 	BookOpenText,
 	AlertCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 interface StepCardProps {
 	number: string;
@@ -143,9 +144,7 @@ export default function About({ data }: AboutProps) {
 
 						{/* Right Content */}
 						<div className="lg:col-span-1 flex flex-col justify-start">
-							<div className="mb-4 flex items-center gap-2 text-green-700">
-								<span className="text-sm font-semibold">🎯 আমাদের সেবা</span>
-							</div>
+							
 
 							<h2 className="text-3xl lg:text-4xl font-bold mb-6 leading-tight">
 								{title}
@@ -157,28 +156,17 @@ export default function About({ data }: AboutProps) {
 
 							{/* CTA Buttons */}
 							<div className="flex flex-col sm:flex-row gap-4">
-								<button className="bg-button hover:bg-hover cursor-pointer text-white font-semibold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-colors">
+								<Link href={"/about"} className="bg-button hover:bg-hover cursor-pointer text-white font-semibold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-colors">
 									<span>বিস্তারিত</span>
 									<ArrowRight size={18} />
-								</button>
+								</Link>
 								<button className="bg-hover hover:bg-button cursor-pointer text-white font-semibold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-colors">
 									<Phone size={18} />
-									<span>ফোন করুন</span>
+									<a href="tel:+8801943834216" >ফোন করুন</a>
 								</button>
 							</div>
 
-							{/* Phone Number */}
-							<div className="mt-6 pt-6 border-t border-gray-200">
-								<p className="text-gray-600 text-xs font-medium mb-2">
-									যোগাযোগ
-								</p>
-								<a
-									href="tel:+8801943834216"
-									className="text-2xl font-bold text-green-700 hover:text-green-800 hover:underline transition-colors block"
-								>
-									+8801943-834216
-								</a>
-							</div>
+							
 						</div>
 					</div>
 				</div>
