@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
 
 	return (
 		<nav
-			className={`bg-white shadow-md top-0 z-50 transition-all duration-300 ${
+			className={`bg-white shadow-md top-0 z-50 transition-all duration-300 rounded-b-4xl ${
 				isScrolled ? "shadow-lg fixed py-2 w-full" : "py-4 sticky"
 			}`}
 		>
@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
 				<div className="flex justify-between items-center">
 					{/* Logo */}
 					<Link href={"/"} className="flex items-center gap-3">
-						<div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
+						<div className="w-10 h-10 sm:w-12 sm:h-12  rounded-full flex items-center justify-center overflow-hidden">
 							<Image
 								src="/logo.avif"
 								alt="markazut tahfiz logo"
@@ -98,7 +98,7 @@ const Navbar: React.FC = () => {
 										href={item.href}
 										className={`flex items-center gap-1 font-medium transition-colors ${
 											isActive(item.href) ?
-												"text-green-600 after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-0.5 after:bg-green-600"
+												"text-green-600 after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-green-600"
 											:	"text-gray-700 hover:text-green-600"
 										}`}
 									>
@@ -140,7 +140,7 @@ const Navbar: React.FC = () => {
 									href={item.href}
 									className={`relative font-medium transition-colors ${
 										isActive(item.href) ?
-											"text-green-600 after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-0.5 after:bg-green-600"
+											"text-green-600 after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-green-600"
 										:	"text-gray-700 hover:text-green-600"
 									}`}
 								>

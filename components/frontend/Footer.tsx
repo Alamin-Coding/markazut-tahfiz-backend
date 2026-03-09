@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
 	const year = new Date().getFullYear();
 
 	return (
-		<footer className="bg-gray-800 text-white pt-12 pb-4">
+		<footer className="bg-gray-800 text-white pt-12 pb-4 rounded-t-3xl">
 			<div className="container mx-auto px-4">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-8 justify-around items-center">
 					{/* Logo & Info */}

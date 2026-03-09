@@ -332,7 +332,7 @@ const ContactContent: React.FC<ContactContentProps> = ({ initialData }) => {
 								</p>
 								<div className="flex gap-4">
 									<a
-										href={pageData.quickInfo.socials.facebook}
+										href={"https://www.facebook.com/profile.php?id=100064894085765"}
 										className="text-blue-600 hover:text-blue-800"
 										target="_blank"
 										rel="noopener noreferrer"
