@@ -7,6 +7,7 @@ import {
 	Phone,
 	Facebook,
 	Youtube,
+	PhoneIcon,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,13 +16,13 @@ const Footer: React.FC = () => {
 	const year = new Date().getFullYear();
 
 	return (
-		<footer className="bg-gray-800 text-white pt-16 pb-8">
+		<footer className="bg-gray-800 text-white pt-12 pb-4">
 			<div className="container mx-auto px-4">
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-8 justify-around items-center">
 					{/* Logo & Info */}
-					<div className="flex flex-col gap-6">
+					<div className="flex flex-col gap-3">
 						<Link href="/" className="flex items-center gap-3">
-							<div className="w-16 h-16 bg-white rounded-full flex items-center justify-center p-2">
+							<div className="w-18 h-16 flex items-center justify-center p-2">
 								<Image
 									src="/logo.avif"
 									alt="logo"
@@ -31,15 +32,18 @@ const Footer: React.FC = () => {
 									unoptimized={true}
 								/>
 							</div>
-							<h3 className="text-2xl font-bold font-arabic">المركز</h3>
+							<h3 className="text-3xl font-bold font-arabic">المركز</h3>
 						</Link>
-						<p className="text-emerald-100/70 text-sm leading-relaxed">
-							একটি আধুনিক দ্বীনি শিক্ষা প্রতিষ্ঠান যেখানে কুরআন হিফজর পাশাপাশি
-							জেনারেল বিষয়েও গুরুত্ব প্রদান করা হয়।
+						<h3 className="text-emerald-100/70 text-xl font-bold mt-4 leading-relaxed">
+							একটি ইন্টারন্যাশনাল শিক্ষা মিশন
+						</h3>
+						<p className="text-white text-sm leading-relaxed">
+							১২৩টি দেশের মধ্যে কোরআন প্রতিযোগিতায় বিশ্বের সেরা হিফজ মাদরাসা 
 						</p>
 						<div className="flex gap-4">
 							<a
-								href="#"
+								href="https://www.facebook.com/profile.php?id=100064894085765"
+								target="blank"
 								className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-emerald-500 transition-colors"
 							>
 								<Facebook size={20} />
@@ -49,6 +53,13 @@ const Footer: React.FC = () => {
 								className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-emerald-500 transition-colors"
 							>
 								<Youtube size={20} />
+							</a>
+							<a
+								href="https://api.whatsapp.com/send?phone=8801943834216"
+								target="blank"
+								className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-emerald-500 transition-colors"
+							>
+								<PhoneIcon size={20} />
 							</a>
 						</div>
 					</div>
@@ -71,12 +82,9 @@ const Footer: React.FC = () => {
 								<li key={link.label}>
 									<Link
 										href={link.href}
-										className="text-emerald-100/70 hover:text-white flex items-center gap-2 transition-colors group"
+										className="text-white hover:text-emerald-100/50 flex items-center gap-2 transition-colors group"
 									>
-										<ChevronRight
-											size={16}
-											className="text-emerald-500 group-hover:translate-x-1 transition-transform"
-										/>
+										
 										{link.label}
 									</Link>
 								</li>
@@ -92,48 +100,40 @@ const Footer: React.FC = () => {
 						</h3>
 						<ul className="grid gap-6">
 							<li className="flex items-start gap-4">
-								<div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
-									<MapPin size={20} className="text-emerald-400" />
-								</div>
+								
 								<div>
-									<h4 className="font-semibold text-sm mb-1">ঠিকানা</h4>
-									<p className="text-emerald-100/70 text-sm">
-										মিরপুর-১০, ঢাকা, বাংলাদেশ
+									<h4 className="font-semibold text-base mb-1">ঝুটপট্টি শাখাঃ</h4>
+									<p className="text-white text-sm">
+										এভি: ১, বাড়ীঃ ১০, ব্লকঃ সি, সেকশন ১০ <br /> (ঝুটপট্টি মোড় বউবাজার), মিরপুর, ঢাকা।  
 									</p>
 								</div>
 							</li>
 							<li className="flex items-start gap-4">
-								<div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
-									<Phone size={20} className="text-emerald-400" />
-								</div>
+								
 								<div>
-									<h4 className="font-semibold text-sm mb-1">ফোন নম্বর</h4>
-									<a
-										href="tel:+8801943834216"
-										className="text-emerald-100/70 text-sm hover:text-white hover:underline transition-colors block"
+									<h4 className="font-semibold text-base mb-1">সেনপাড়া পর্বতা শাখাঃ</h4>
+									<p
+										className="text-white text-sm  block"
 									>
-										+8801943-834216
-									</a>
+										বাণিজ্যিক প্লটঃ ৩০ মেইন (১০ নং পানির ট্যাংক এর বিপরীত) <br /> সেনপাড়া পর্বতা, মিরপুর ১০, ঢাকা। 
+									</p>
 								</div>
 							</li>
 							<li className="flex items-start gap-4">
-								<div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
-									<Mail size={20} className="text-emerald-400" />
-								</div>
+								
 								<div>
-									<h4 className="font-semibold text-sm mb-1">ইমেইল</h4>
-									<a
-										href="mailto:tahfizmirpur@gmail.com"
-										className="text-emerald-100/70 text-sm hover:text-white hover:underline transition-colors block"
+									<h4 className="font-semibold text-base mb-1">মোবাইলঃ</h4>
+									<p
+										className="text-white text-sm block"
 									>
-										tahfizmirpur@gmail.com
-									</a>
+										01943834216 (প্রিন্সিপাল) 01982233298 (পরিচালক) <br /> 01630079118 (পরিচালক) 01677272255 (পরিচালক)
+									</p>
 								</div>
 							</li>
 						</ul>
 					</div>
 
-					{/* Map Section */}
+					{/* Map Section
 					<div>
 						<h3 className="text-xl font-bold mb-6 flex items-center gap-2">
 							<span className="w-2 h-8 bg-emerald-500 rounded-full"></span>
@@ -150,7 +150,7 @@ const Footer: React.FC = () => {
 								referrerPolicy="no-referrer-when-downgrade"
 							></iframe>
 						</div>
-					</div>
+					</div> */}
 				</div>
 
 				{/* Copyright */}
