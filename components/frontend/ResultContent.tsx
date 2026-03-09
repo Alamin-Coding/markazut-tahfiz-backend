@@ -464,7 +464,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 
             <!-- Center text content -->
             <div class="header-content">
-              <div class="header-tagline">১০৩ টি দেশের মধ্যে কুরআন প্রতিযোগিতায় বিশ্বসেরা হিফজ মাদরাসা</div>
+              <div class="header-tagline">১২৩ টি দেশের মধ্যে কুরআন প্রতিযোগিতায় বিশ্বসেরা হিফজ মাদরাসা</div>
               <div class="header-bn-name">মারকাজুত তাহফিজ ইন্টা. মাদরাসা</div>
               <div class="header-arabic">مـركـز الـتـحـفـيـظ انترنـاشـيـونـال</div>
               <div class="header-en-name">MARKAZUT TAHFIZ INT. MADRASHA</div>
@@ -476,7 +476,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 
           <!-- Phone numbers -->
           <div class="header-phones">
-            01943-834216, 01629-238535, 01677-272255, 01982-233298
+            01943-834216, 01630079118, 01677-272255, 01982-233298
           </div>
 
           <div class="header-divider"></div>
@@ -583,7 +583,8 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
                 <img src="sign.png" alt="sign"/>
                 </div>
                 <div class="signature-line"></div>
-                <div style="font-size:12px; color:#333;">প্রধানের স্বাক্ষর</div>
+                <div style="font-size:14px; color:#333;">প্রিন্সিপালের স্বাক্ষর</div>
+                <div style="font-size:12px; color:#333;">(মারকাজুত তাহফিজ ইন্টা. মাদরাসা)</div>
               </div>
             </div>
           </div>
@@ -591,7 +592,6 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 
         <!-- ===== FOOTER ===== -->
         <div class="footer">
-          <div class="footer-top-stripe"></div>
           <div class="footer-inner">
             <div class="footer-branch">
               <div class="footer-branch-icon">🏠</div>
