@@ -23,6 +23,22 @@ const nextConfig: NextConfig = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
+	images: {
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "ui-avatars.com",
+			},
+			{
+				protocol: "https",
+				hostname: "res.cloudinary.com",
+			},
+			{
+				protocol: "http",
+				hostname: "res.cloudinary.com",
+			},
+		],
+	},
 };
 
 export default nextConfig;

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,14 @@ import { DatePicker } from "@/components/ui/date-picker";
 import * as XLSX from "xlsx";
 import { inputClasses, labelClasses, selectClasses } from "./Constants";
 import { toast } from "sonner";
+import {
+	Rocket,
+	FileSpreadsheet,
+	Plus,
+	Pencil,
+	Trash2,
+	Ban,
+} from "lucide-react";
 
 export interface ResultType {
 	_id: string;
@@ -31,6 +39,7 @@ export interface ResultType {
 	studentId: string;
 	principal: string;
 	isActive: boolean;
+	status: "draft" | "published";
 	createdAt: string;
 	updatedAt: string;
 }
@@ -48,6 +57,7 @@ export default function ResultsManageForm() {
 	const [selectedClass, setSelectedClass] = useState("all");
 	const [selectedYear, setSelectedYear] = useState("all");
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
+	const [subjectConfigs, setSubjectConfigs] = useState<any[]>([]);
 	const [availableClasses, setAvailableClasses] = useState<any[]>([]);
 	const [formAvailableClasses, setFormAvailableClasses] = useState<string[]>(
 		[],
@@ -70,13 +80,8 @@ export default function ResultsManageForm() {
 		examDate: "",
 		resultDate: "",
 		principal: "মুফতী ইকরাম হুসাইন খসরু",
-		subjects: [
-			{ name: "কোরআন (হিফজ)", marks: 0, total: 100 },
-			{ name: "কোরআন (তাজবিদ)", marks: 0, total: 100 },
-			{ name: "ইসলামিক স্টাডিজ", marks: 0, total: 100 },
-			{ name: "আরবি ব্যাকরণ", marks: 0, total: 100 },
-			{ name: "আচরণ ও শৃঙ্খলা", marks: 0, total: 100 },
-		],
+		subjects: [],
+		status: "draft" as "draft" | "published",
 	});
 	const [examDateValue, setExamDateValue] = useState<Date | undefined>(
 		undefined,
@@ -90,7 +95,39 @@ export default function ResultsManageForm() {
 		fetchResults();
 		fetchStudents();
 		fetchClassConfigs();
+		fetchSubjectConfigs();
 	}, []);
+
+	const fetchSubjectConfigs = async () => {
+		try {
+			const res = await fetch("/api/subject-config");
+			const json = await res.json();
+			if (json.success) setSubjectConfigs(json.data);
+		} catch (err) {
+			console.error("Error fetching subject configs:", err);
+		}
+	};
+
+	const getSubjectsForClass = (department: string, cls: string): any[] => {
+		const config = subjectConfigs.find(
+			(c) => c.department === department && c.class === cls
+		);
+		if (config && config.subjects?.length > 0) {
+			return config.subjects.map((s: any) => ({ name: s.name, marks: 0, total: s.total || 100 }));
+		}
+		// Fallback defaults if no specific configuration
+		return [
+			{ name: "কোরআনুল কারিম", marks: 0, total: 100 },
+			{ name: "তাজবিদ", marks: 0, total: 100 },
+			{ name: "দোয়া / মাসআলা-মাসায়েল", marks: 0, total: 100 },
+			{ name: "বাংলা / ব্যাকরণ", marks: 0, total: 100 },
+			{ name: "গণিত", marks: 0, total: 100 },
+			{ name: "ইংরেজী / গ্রামার", marks: 0, total: 100 },
+			{ name: "ছবি আঁকি", marks: 0, total: 100 },
+			{ name: "সাধারণ জ্ঞান", marks: 0, total: 100 },
+			{ name: "পরিবেশ পরিচিতি", marks: 0, total: 100 },
+		];
+	};
 
 	const fetchClassConfigs = async () => {
 		try {
@@ -175,6 +212,7 @@ export default function ResultsManageForm() {
 					studentId: student.studentId || "",
 					class: student.class,
 					department: student.department,
+					subjects: getSubjectsForClass(student.department, student.class),
 				};
 				// Update classes for the select box
 				const conf = classConfigs.find(
@@ -221,6 +259,7 @@ export default function ResultsManageForm() {
 			resultDate:
 				resultDateValue ? resultDateValue.toISOString() : formData.resultDate,
 			principal: formData.principal,
+			status: formData.status,
 		};
 
 		try {
@@ -273,13 +312,8 @@ export default function ResultsManageForm() {
 			examDate: "",
 			resultDate: "",
 			principal: "মুফতী ইকরাম হুসাইন খসরু",
-			subjects: [
-				{ name: "কোরআন (হিফজ)", marks: 0, total: 100 },
-				{ name: "কোরআন (তাজবিদ)", marks: 0, total: 100 },
-				{ name: "ইসলামিক স্টাডিজ", marks: 0, total: 100 },
-				{ name: "আরবি ব্যাকরণ", marks: 0, total: 100 },
-				{ name: "আচরণ ও শৃঙ্খলা", marks: 0, total: 100 },
-			],
+			subjects: getSubjectsForClass("", ""),
+			status: "draft",
 		});
 		setExamDateValue(undefined);
 		setResultDateValue(undefined);
@@ -352,6 +386,7 @@ export default function ResultsManageForm() {
 			resultDate: result.resultDate,
 			principal: result.principal,
 			subjects: result.subjects,
+			status: result.status || "draft",
 		});
 		const parsedExam = new Date(result.examDate);
 		setExamDateValue(isNaN(parsedExam.getTime()) ? undefined : parsedExam);
@@ -378,6 +413,69 @@ export default function ResultsManageForm() {
 			} catch (error) {
 				console.error("Error deleting result:", error);
 				toast.error("Failed to delete result");
+			}
+		}
+	};
+
+	const handlePublish = async (
+		id: string,
+		currentStatus: "draft" | "published",
+	) => {
+		const newStatus = currentStatus === "published" ? "draft" : "published";
+		try {
+			const response = await fetch(`/api/result/${id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ status: newStatus }),
+			});
+			const result = await response.json();
+			if (result.success) {
+				toast.success(
+					`ফলাফল ${newStatus === "published" ? "পাবলিশড" : "ড্রাফট"} করা হয়েছে`,
+				);
+				fetchResults();
+			} else {
+				toast.error(result.message || "Failed to update status");
+			}
+		} catch (error) {
+			console.error("Error updating status:", error);
+			toast.error("Failed to update status");
+		}
+	};
+
+	const handlePublishAll = async () => {
+		const draftResults = filteredResults.filter(
+			(r) => r.status === "draft" || !r.status,
+		);
+		if (draftResults.length === 0) {
+			toast.info("পাবলিশ করার মতো কোনো ড্রাফট ফলাফল নেই");
+			return;
+		}
+
+		if (
+			confirm(
+				`আপনি কি নিশ্চিত যে ${draftResults.length} টি ফলাফল একসাথে পাবলিশ করতে চান?`,
+			)
+		) {
+			setLoading(true);
+			try {
+				let successCount = 0;
+				for (const result of draftResults) {
+					const response = await fetch(`/api/result/${result._id}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ status: "published" }),
+					});
+					const resData = await response.json();
+					if (resData.success) successCount++;
+				}
+				toast.success(`${successCount} টি ফলাফল সফলভাবে পাবলিশ করা হয়েছে`);
+				fetchResults();
+			} catch (error) {
+				console.error("Error bulk publishing:", error);
+				toast.error("ফলাফল পাবলিশ করতে সমস্যা হয়েছে");
+			} finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -433,19 +531,32 @@ export default function ResultsManageForm() {
 				<h2 className="text-lg font-medium text-gray-900 dark:text-white">
 					ফলাফল পরিচালনা
 				</h2>
-				<div className="flex gap-2">
+				<div className="flex gap-2 flex-wrap">
+					<Button
+						onClick={handlePublishAll}
+						className="bg-blue-600 hover:bg-blue-700 font-medium"
+					>
+						<Rocket className="w-4 h-4 mr-2" />
+						সব পাবলিশ করুন
+					</Button>
 					<Button
 						onClick={() => {
 							setEditingId(null);
 							resetForm();
 							setShowAddForm(true);
 						}}
-						className="bg-green-600 hover:bg-green-700"
+						className="bg-green-600 hover:bg-green-700 font-medium"
 					>
-						+ নতুন ফলাফল যোগ করুন
+						<Plus className="w-5 h-5 mr-2" />
+						নতুন ফলাফল যোগ করুন
 					</Button>
-					<Button onClick={exportToExcel} variant="outline">
-						📊 এক্সেলে এক্সপোর্ট
+					<Button
+						onClick={exportToExcel}
+						variant="outline"
+						className="font-medium"
+					>
+						<FileSpreadsheet className="w-4 h-4 mr-2 text-emerald-600" />
+						এক্সেলে এক্সপোর্ট
 					</Button>
 				</div>
 			</div>
@@ -584,6 +695,9 @@ export default function ResultsManageForm() {
 								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									নম্বর
 								</th>
+								<th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+									স্ট্যাটাস
+								</th>
 								<th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
 									অ্যাকশন
 								</th>
@@ -617,21 +731,50 @@ export default function ResultsManageForm() {
 										{result.totalMarks} /{" "}
 										{result.subjects.reduce((sum, s) => sum + s.total, 0)}
 									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-center text-sm">
+										<span
+											className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
+												result.status === "published" ?
+													"bg-green-100 text-green-700"
+												:	"bg-orange-100 text-orange-700"
+											}`}
+										>
+											{result.status === "published" ? "Published" : "Draft"}
+										</span>
+									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-										<div className="flex justify-end gap-2">
+										<div className="flex justify-end gap-3 text-xl items-center">
+											<button
+												onClick={() =>
+													handlePublish(
+														result._id,
+														result.status as "draft" | "published",
+													)
+												}
+												className={`cursor-pointer ${result.status === "published" ? "text-orange-500 hover:text-orange-700" : "text-green-500 hover:text-green-700"}`}
+												title={
+													result.status === "published" ?
+														"Unpublish (Draft)"
+													:	"Publish"
+												}
+											>
+												{result.status === "published" ?
+													<Ban className="w-5 h-5" />
+												:	<Rocket className="w-5 h-5" />}
+											</button>
 											<button
 												onClick={() => handleEdit(result)}
-												className="text-blue-500 hover:text-blue-700"
+												className="cursor-pointer text-blue-500 hover:text-blue-700"
 												title="Edit"
 											>
-												✎
+												<Pencil className="w-4 h-4" />
 											</button>
 											<button
 												onClick={() => handleDelete(result._id)}
-												className="text-red-500 hover:text-red-700"
+												className="cursor-pointer text-red-500 hover:text-red-700"
 												title="Delete"
 											>
-												🗑
+												<Trash2 className="w-4 h-4" />
 											</button>
 										</div>
 									</td>
@@ -848,17 +991,18 @@ export default function ResultsManageForm() {
 									<Select
 										value={formData.department}
 										onValueChange={(value) => {
-											setFormData({
-												...formData,
-												department: value,
-												class: "",
-												term: "",
-											});
 											const conf = classConfigs.find(
 												(c: any) => c.department === value,
 											);
 											setFormAvailableClasses(conf ? conf.classes : []);
 											setFormAvailableExams(conf ? conf.exams || [] : []);
+											setFormData({
+												...formData,
+												department: value,
+												class: "",
+												term: "",
+												subjects: getSubjectsForClass(value, ""),
+											});
 										}}
 									>
 										<SelectTrigger className={selectClasses}>
@@ -878,7 +1022,11 @@ export default function ResultsManageForm() {
 									<Select
 										value={formData.class}
 										onValueChange={(value) =>
-											setFormData({ ...formData, class: value })
+											setFormData({
+												...formData,
+												class: value,
+												subjects: getSubjectsForClass(formData.department, value),
+											})
 										}
 										disabled={!formData.department}
 									>
@@ -972,9 +1120,9 @@ export default function ResultsManageForm() {
 										onClick={addSubject}
 										variant="outline"
 										size="sm"
-										className="text-green-600 border-green-600 hover:bg-green-50"
+										className="text-green-600 border-green-600 hover:bg-green-50 flex items-center gap-1"
 									>
-										+ নতুন বিষয় যোগ করুন
+										<Plus className="w-4 h-4" /> নতুন বিষয় যোগ করুন
 									</Button>
 								</div>
 								<div className="space-y-4">
@@ -1035,11 +1183,12 @@ export default function ResultsManageForm() {
 												<Button
 													type="button"
 													variant="ghost"
+													size="icon"
 													onClick={() => removeSubject(index)}
-													className="text-red-500 hover:text-red-700 hover:bg-red-50"
+													className="text-red-500 hover:text-red-700 hover:bg-red-50 h-10 w-10"
 													title="মুছে ফেলুন"
 												>
-													🗑️
+													<Trash2 className="w-4 h-4" />
 												</Button>
 											</div>
 										</div>
@@ -1047,8 +1196,28 @@ export default function ResultsManageForm() {
 								</div>
 							</div>
 
+							<div className="space-y-4 pt-2">
+								<Label className={labelClasses}>ফলাফলের অবস্থা</Label>
+								<Select
+									value={formData.status}
+									onValueChange={(value: "draft" | "published") =>
+										setFormData({ ...formData, status: value })
+									}
+								>
+									<SelectTrigger className={selectClasses}>
+										<SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="draft">Draft (ড্রাফট)</SelectItem>
+										<SelectItem value="published">
+											Published (পাবলিশড)
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
 							{/* Total Marks Display */}
-							<div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+							<div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mt-4">
 								<div className="text-lg font-medium text-gray-900 dark:text-white">
 									সম্মিলিত নম্বর:{" "}
 									{formData.subjects.reduce((sum, subj) => sum + subj.marks, 0)}

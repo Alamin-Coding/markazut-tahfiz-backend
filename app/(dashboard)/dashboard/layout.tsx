@@ -38,6 +38,12 @@ const pages = [
 		icon: "👤",
 		path: "/dashboard/users",
 	},
+	{
+		id: "subject-config",
+		label: "বিষয় সেটিং",
+		icon: "⚙️",
+		path: "/dashboard/subject-config",
+	},
 ];
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {

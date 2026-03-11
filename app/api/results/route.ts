@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
 		const roll = searchParams.get("roll");
 		const year = searchParams.get("year");
 
+		const status = searchParams.get("status");
+
 		if (!term || !department || !class_ || !roll || !year) {
 			return NextResponse.json(
 				{ success: false, message: "Missing search parameters" },
@@ -19,14 +21,18 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		const result = await Result.findOne({
+		const query: any = {
 			term,
 			department,
 			class: class_,
 			roll,
 			examYear: year,
 			isActive: true,
-		});
+		};
+
+		if (status) query.status = status;
+		
+		const result = await Result.findOne(query);
 
 		if (!result) {
 			return NextResponse.json(
@@ -49,7 +55,13 @@ export async function POST(request: NextRequest) {
 	try {
 		await dbConnect();
 		const body = await request.json();
-		const result = new Result(body);
+		// Ensure new results are created as draft by default unless explicitly specified
+		const resultData = { ...body };
+		if (!resultData.status) {
+			resultData.status = "draft";
+		}
+		
+		const result = new Result(resultData);
 		await result.save();
 		return NextResponse.json({ success: true, data: result });
 	} catch (error: any) {

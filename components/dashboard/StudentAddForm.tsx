@@ -15,6 +15,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useEffect } from "react";
+import { Upload } from "lucide-react";
+import Image from "next/image";
 
 interface StudentAddFormProps {
 	onSuccess?: () => void;
@@ -25,6 +27,8 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 	const [admissionDate, setAdmissionDate] = useState<Date | undefined>(
 		undefined,
 	);
+	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
 	const [selectedDepartment, setSelectedDepartment] = useState("");
 	const [availableClasses, setAvailableClasses] = useState<string[]>([]);
@@ -41,6 +45,18 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 			if (data.success) setClassConfigs(data.data);
 		} catch (err) {
 			console.error("Failed to load configs");
+		}
+	};
+
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0] ?? null;
+		if (file) {
+			setImageFile(file);
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setImagePreview(reader.result as string | null);
+			};
+			reader.readAsDataURL(file);
 		}
 	};
 
@@ -63,6 +79,24 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 			payload.feePlan = {
 				monthlyAmount: Number(formData.get("monthlyAmount")) || 0,
 			};
+
+			if (imageFile) {
+				const uploadFormData = new FormData();
+				uploadFormData.append("files", imageFile);
+				uploadFormData.append("folder", "students");
+
+				const uploadRes = await fetch("/api/upload", {
+					method: "POST",
+					body: uploadFormData,
+				});
+
+				const uploadResult = await uploadRes.json();
+				if (uploadResult.success && uploadResult.data?.length > 0) {
+					payload.image = uploadResult.data[0].url;
+				} else {
+					throw new Error("ছবি আপলোড করতে ব্যর্থ হয়েছে");
+				}
+			}
 
 			const res = await fetch("/api/students", {
 				method: "POST",
@@ -87,6 +121,8 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 				setAdmissionDate(undefined);
 				setSelectedDepartment("");
 				setSelectedClass("");
+				setImageFile(null);
+				setImagePreview(null);
 				if (onSuccess) onSuccess();
 			} else {
 				toast.error(data.message || "শিক্ষার্থী যুক্ত করতে ব্যর্থ হয়েছে");
@@ -234,6 +270,38 @@ export default function StudentAddForm({ onSuccess }: StudentAddFormProps) {
 							className="w-full"
 						/>
 					</div>
+				</div>
+				<div className="grid grid-cols-2 gap-4 items-center">
+					<div>
+						<Label className={labelClasses}>শিক্ষার্থীর ছবি</Label>
+						<label className="flex items-center justify-center w-full px-4 py-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-600 transition bg-gray-50 dark:bg-gray-900 mt-2">
+							<div className="flex flex-col items-center">
+								<Upload className="w-6 h-6 text-gray-400 mb-1" />
+								<span className="text-xs text-gray-600 dark:text-gray-400">
+									ছবি নির্বাচন করুন
+								</span>
+							</div>
+							<input
+								type="file"
+								accept="image/*"
+								onChange={handleImageChange}
+								className="hidden"
+							/>
+						</label>
+					</div>
+					{imagePreview && (
+						<div className="flex items-center justify-center pt-6">
+							<div className="border border-emerald-600 rounded overflow-hidden">
+								<Image
+									src={imagePreview}
+									alt="Preview"
+									width={80}
+									height={80}
+									className="w-20 h-20 object-cover"
+								/>
+							</div>
+						</div>
+					)}
 				</div>
 				<Button type="submit" disabled={loading} className="w-full">
 					{loading ? "সংরক্ষণ হচ্ছে..." : "শিক্ষার্থী যোগ করুন"}

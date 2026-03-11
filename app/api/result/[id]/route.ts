@@ -13,6 +13,29 @@ export async function PUT(
 
 		const { id } = await params;
 		const body = await request.json();
+
+		// Handle partial update for status (e.g., Publish/Draft action)
+		if (Object.keys(body).length === 1 && body.status) {
+			const updatedResult = await Result.findByIdAndUpdate(
+				id,
+				{ status: body.status },
+				{ new: true }
+			);
+
+			if (!updatedResult) {
+				return NextResponse.json(
+					{ success: false, message: "Result not found" },
+					{ status: 404 }
+				);
+			}
+
+			return NextResponse.json({
+				success: true,
+				data: updatedResult,
+				message: `Result ${body.status} successfully`,
+			});
+		}
+
 		const {
 			name,
 			roll,
@@ -26,6 +49,7 @@ export async function PUT(
 			resultDate,
 			principal,
 			isActive,
+			status,
 		} = body;
 
 		// STRICT STUDENT VALIDATION
@@ -69,6 +93,7 @@ export async function PUT(
 				resultDate,
 				principal,
 				isActive,
+				status: status || "draft",
 			},
 			{ new: true }
 		);

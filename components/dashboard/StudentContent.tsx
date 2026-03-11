@@ -25,7 +25,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { EditIcon, TrashIcon, Upload } from "lucide-react";
+import Image from "next/image";
 
 export default function StudentContent() {
 	const [students, setStudents] = useState<any[]>([]);
@@ -36,6 +37,8 @@ export default function StudentContent() {
 	const [classConfigs, setClassConfigs] = useState<any[]>([]);
 	const [availableClasses, setAvailableClasses] = useState<string[]>([]);
 	const [editingItem, setEditingItem] = useState<any>(null);
+	const [editImageFile, setEditImageFile] = useState<File | null>(null);
+	const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const [admissionDate, setAdmissionDate] = useState<Date | undefined>(
 		undefined,
@@ -99,6 +102,18 @@ export default function StudentContent() {
 		}
 	};
 
+	const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0] ?? null;
+		if (file) {
+			setEditImageFile(file);
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setEditImagePreview(reader.result as string | null);
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
 	const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (!editingItem) return;
@@ -108,12 +123,30 @@ export default function StudentContent() {
 			const dataObj = Object.fromEntries(formData.entries());
 
 			// Structure the payload for nested feePlan
-			const payload = {
+			const payload: any = {
 				...dataObj,
 				feePlan: {
 					monthlyAmount: Number(dataObj.monthlyAmount) || 0,
 				},
 			};
+
+			if (editImageFile) {
+				const uploadFormData = new FormData();
+				uploadFormData.append("files", editImageFile);
+				uploadFormData.append("folder", "students");
+
+				const uploadRes = await fetch("/api/upload", {
+					method: "POST",
+					body: uploadFormData,
+				});
+
+				const uploadResult = await uploadRes.json();
+				if (uploadResult.success && uploadResult.data?.length > 0) {
+					payload.image = uploadResult.data[0].url;
+				} else {
+					throw new Error("ছবি আপলোড করতে ব্যর্থ হয়েছে");
+				}
+			}
 
 			const res = await fetch(`/api/students/${editingItem._id}`, {
 				method: "PUT",
@@ -202,6 +235,9 @@ export default function StudentContent() {
 								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									রোল
 								</th>
+								<th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+									ছবি
+								</th>
 								<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									নাম
 								</th>
@@ -239,6 +275,25 @@ export default function StudentContent() {
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
 										{student.roll}
+									</td>
+									<td className="px-4 py-3 whitespace-nowrap text-center">
+										{student.image ? (
+											<Image
+												src={student.image}
+												alt={student.name || "Student"}
+												width={40}
+												height={40}
+												className="w-10 h-10 rounded-full object-cover mx-auto border border-gray-200 dark:border-gray-700 bg-gray-100"
+											/>
+										) : (
+											<Image
+												src={`https://ui-avatars.com/api/?name=${encodeURIComponent(student.name || "Student")}&background=random`}
+												alt={student.name || "Student"}
+												width={40}
+												height={40}
+												className="w-10 h-10 rounded-full object-cover mx-auto border border-gray-200 dark:border-gray-700"
+											/>
+										)}
 									</td>
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
 										{student.name}
@@ -278,7 +333,11 @@ export default function StudentContent() {
 									<td className="px-4 py-3 whitespace-nowrap text-sm text-right">
 										<div className="flex justify-end gap-3">
 											<button
-												onClick={() => setEditingItem(student)}
+												onClick={() => {
+													setEditingItem(student);
+													setEditImagePreview(student.image || null);
+													setEditImageFile(null);
+												}}
 												className="text-blue-500 hover:text-blue-700 cursor-pointer"
 												title="Edit"
 											>
@@ -416,6 +475,44 @@ export default function StudentContent() {
 											<SelectItem value="left">Left (ছেড়ে চলে গেছে)</SelectItem>
 										</SelectContent>
 									</Select>
+								</div>
+								
+								<div className="col-span-2 grid grid-cols-[1fr_auto] gap-6 items-center mt-2 border-t dark:border-gray-700 pt-4">
+									<div>
+										<Label className={labelClasses}>শিক্ষার্থীর ছবি পরিবর্তন করুন</Label>
+										<label className="flex items-center justify-center w-full px-4 py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-emerald-600 transition bg-gray-50 dark:bg-gray-900 mt-2">
+											<div className="flex flex-col items-center">
+												<Upload className="w-5 h-5 text-gray-400 mb-1" />
+												<span className="text-xs text-gray-600 dark:text-gray-400">
+													নতুন ছবি নির্বাচন করুন
+												</span>
+											</div>
+											<input
+												type="file"
+												accept="image/*"
+												onChange={handleEditImageChange}
+												className="hidden"
+											/>
+										</label>
+									</div>
+									<div className="flex items-center justify-center pt-5">
+										{editImagePreview ? (
+											<div className="border border-emerald-600 rounded overflow-hidden">
+												<Image
+													src={editImagePreview}
+													alt="Preview"
+													width={64}
+													height={64}
+													className="w-16 h-16 object-cover"
+												/>
+											</div>
+										) : (
+											<div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center rounded border dark:border-gray-600 text-[10px] text-gray-400">
+												<span>ছবি</span>
+												<span>নেই</span>
+											</div>
+										)}
+									</div>
 								</div>
 							</div>
 							<div className="flex gap-3 pt-4">

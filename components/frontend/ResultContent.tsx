@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -53,6 +53,7 @@ const ResultContent: React.FC<ResultContentProps> = ({ initialOptions }) => {
 				department: selectedDepartment,
 				class: selectedClass,
 				roll: selectedRoll,
+				status: "published",
 			});
 			// Using relative URL for production compatibility
 			const res = await fetch(`/api/results?${params.toString()}`);

@@ -64,7 +64,7 @@ export async function DELETE(
 	try {
 		await dbConnect();
 		const { id } = await params;
-		const student = await Student.findByIdAndUpdate(id, { isActive: false });
+		const student = await Student.findByIdAndDelete(id);
 		if (!student) {
 			return NextResponse.json(
 				{ success: false, message: "Student not found" },

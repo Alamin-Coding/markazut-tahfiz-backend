@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
 			examDate,
 			resultDate,
 			principal,
+			status,
 		} = body;
 
 		if (
@@ -143,6 +144,7 @@ export async function POST(request: NextRequest) {
 			examDate,
 			resultDate,
 			principal,
+			status: status || "draft",
 		});
 
 		await result.save();

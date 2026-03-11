@@ -72,6 +72,11 @@ const ResultSchema = new mongoose.Schema(
 			required: true,
 			trim: true,
 		},
+		status: {
+			type: String,
+			enum: ["draft", "published"],
+			default: "draft",
+		},
 		isActive: {
 			type: Boolean,
 			default: true,

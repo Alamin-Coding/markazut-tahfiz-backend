@@ -17,6 +17,10 @@ const StudentSchema = new mongoose.Schema(
 			type: String,
 			trim: true,
 		},
+		image: {
+			type: String,
+			trim: true,
+		},
 		email: {
 			type: String,
 			trim: true,
